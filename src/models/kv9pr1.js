@@ -6,7 +6,10 @@
 // control strip is only partly visible in the photographs, so its button
 // layout is a reasoned reconstruction.
 import * as THREE from 'three';
-import { Kit, rr, ring, loft, plate, rbox, slotRow } from '../kit.js';
+import {
+  Kit, rr, ring, loft, plate, rbox, skipSides, straightFace, faceLocal, lay,
+  rectOutline, holeRect, holeCircle, holeFits, boxCavity, roundCavity,
+} from '../kit.js';
 import { makeBrandTexture, makeDrawTexture } from '../labels.js';
 
 const W = 218, D = 296, BASE_H = 13, SHELL_H = 171, H = BASE_H + SHELL_H;
@@ -36,21 +39,25 @@ export const META = {
 
 export function buildMonitor() {
   const k = new Kit(META.name);
-  k.mat('shell', { color: 0xe2bc9a, roughness: 0.55, bumpMap: k.grain, bumpScale: 0.2 });
+  // Soft orange. 0xe2bc9a is so pale that studio light lifts it to cream, and
+  // 0xf0a066 still rendered as pale peach. This is deep enough to stay apricot.
+  k.mat('shell', { color: 0xe07a3c, roughness: 0.42, bumpMap: k.grain, bumpScale: 0.2, roughnessMap: k.rough });
   k.mat('bezel', { color: 0x34363b, roughness: 0.42 });
-  k.mat('rib', { color: 0x69665c, roughness: 0.7 });
+  k.mat('rib', { color: 0x69665c, roughness: 0.7, roughnessMap: k.rough });
   k.mat('window', { color: 0x0c0c0e, roughness: 0.25 });
   const keyMat = () => new THREE.MeshStandardMaterial({ name: 'key', color: 0x9ea28f, roughness: 0.5 });
 
   // ---- soft-orange shell with rounded front edge -----------------------------
   const R = 5;
   const prof = (inset) => rr(W - 2 * inset, SHELL_H - 2 * inset, 15 - inset, 0, CY);
-  const rings = [ring(prof(0), SHELL_BZ), ring(prof(0), FZ - R)];
+  // Left side is a separate plate so the speaker grille can be real holes.
+  k.add('shell', loft([ring(prof(0), SHELL_BZ), ring(prof(0), FZ - R)], { skip: skipSides('left') }));
+  const frontRings = [ring(prof(0), FZ - R)];
   for (let i = 1; i <= 4; i++) {
     const t = (i / 4) * (Math.PI / 2);
-    rings.push(ring(prof(R * (1 - Math.cos(t))), FZ - R + R * Math.sin(t)));
+    frontRings.push(ring(prof(R * (1 - Math.cos(t))), FZ - R + R * Math.sin(t)));
   }
-  k.add('shell', loft(rings));
+  k.add('shell', loft(frontRings));
   const bz = { w: 206, h: 158, cy: BASE_H + 2.5 + 79 };
   const bezelOut = rr(bz.w, bz.h, 10, 0, bz.cy);
   k.add('shell', plate(prof(R), [bezelOut], FZ));
@@ -90,28 +97,58 @@ export function buildMonitor() {
   for (const l of [standby, sleepLamp]) { l.material.color.setHex(0x6b6b66); l.raycast = () => {}; }
 
   // ---- ribbed grey rear section and end cap --------------------------------------
-  const ribProf = rr(W - 4, SHELL_H - 4, 13, 0, CY);
-  k.add('rib', loft([ring(ribProf, RIB_BZ), ring(ribProf, SHELL_BZ)]));
+  const ribW = W - 4, ribH = SHELL_H - 4, ribR = 13;
+  const ribProf = rr(ribW, ribH, ribR, 0, CY);
+  k.add('rib', loft([ring(ribProf, RIB_BZ), ring(ribProf, SHELL_BZ)], { skip: skipSides('top', 'left', 'right') }));
   k.add('rib', plate(ribProf, [], 0).rotateY(Math.PI).translate(0, 0, RIB_BZ));
   const capProf = rr(W - 30, SHELL_H - 44, 10, 0, CY + 8);
   k.add('rib', loft([ring(capProf, BZ), ring(capProf, RIB_BZ)]));
   k.add('rib', plate(capProf, [], 0).rotateY(Math.PI).translate(0, 0, BZ));
   k.add('rib', new THREE.BoxGeometry(150, BASE_H + 4, 46).translate(0, (BASE_H + 4) / 2, RIB_BZ + 32));
   const ribLen = SHELL_BZ - RIB_BZ - 1, ribZ = (SHELL_BZ + RIB_BZ) / 2;
-  k.bucket.slot ||= [];
-  for (const side of [-1, 1]) {
-    k.bucket.slot.push(...slotRow({ n: 30, pitch: 4.7, len: ribLen, t: 1.3, at: [side * ((W - 4) / 2 + 0.06), BASE_H + 18, ribZ], step: [0, 1, 0], face: side < 0 ? 'left' : 'right' }));
+  const ribShell = { w: ribW, h: ribH, r: ribR, cy: CY, z0: RIB_BZ, z1: SHELL_BZ };
+  const addRibFace = (side, fill) => {
+    const desc = straightFace(side, ribShell);
+    const holes = [];
+    fill(desc, holes);
+    k.add('rib', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
+  };
+  const groove = (desc, holes, world, len, t) => {
+    const p = faceLocal(desc, world);
+    if (!holeFits(desc, p.x, p.y, len, t, 0.3)) return;
+    holes.push(holeRect(len, t, p.x, p.y));
+    k.add('cavity', lay(boxCavity(len, t, 2.4), desc.face, desc.origin, p.x, p.y));
+  };
+  for (const side of ['left', 'right']) {
+    addRibFace(side, (desc, holes) => {
+      for (let i = 0; i < 30; i++) {
+        groove(desc, holes, new THREE.Vector3(desc.origin.x, BASE_H + 18 + i * 4.7, ribZ), ribLen, 1.3);
+      }
+    });
   }
-  k.bucket.slot.push(...slotRow({ n: 39, pitch: 4.7, len: 1.3, t: ribLen, at: [-89.3, CY + (SHELL_H - 4) / 2 + 0.06, ribZ], step: [1, 0, 0] }));
-
-  // ---- left side: round speaker grille -------------------------------------------
-  const hole = new THREE.CircleGeometry(1.35, 8);
-  for (let r = 0; r <= 8; r++) {
-    const n = r === 0 ? 1 : Math.round((2 * Math.PI * r * 5) / 5.4);
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2 + r * 0.31;
-      k.bucket.slot.push(hole.clone().rotateY(-Math.PI / 2).translate(-(W / 2 + 0.06), 100 + Math.sin(a) * r * 5, 9 + Math.cos(a) * r * 5));
+  addRibFace('top', (desc, holes) => {
+    for (let i = 0; i < 39; i++) {
+      groove(desc, holes, new THREE.Vector3(-89.3 + i * 4.7, desc.origin.y, ribZ), 1.3, ribLen);
     }
+  });
+
+  // ---- left side: round speaker grille, holes through the shell -----------------
+  {
+    const desc = straightFace('left', { w: W, h: SHELL_H, r: 15, cy: CY, z0: SHELL_BZ, z1: FZ - R });
+    const holes = [];
+    const radius = 1.35;
+    for (let r = 0; r <= 8; r++) {
+      const n = r === 0 ? 1 : Math.round((2 * Math.PI * r * 5) / 5.4);
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + r * 0.31;
+        const world = new THREE.Vector3(desc.origin.x, 100 + Math.sin(a) * r * 5, 9 + Math.cos(a) * r * 5);
+        const p = faceLocal(desc, world);
+        if (!holeFits(desc, p.x, p.y, radius * 2, radius * 2, 0.4)) continue;
+        holes.push(holeCircle(radius, p.x, p.y, 8));
+        k.add('cavity', lay(roundCavity(radius, 4.2, 8), desc.face, desc.origin, p.x, p.y));
+      }
+    }
+    k.add('shell', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
   }
 
   // ---- top: control strip (reconstructed) and aerial stub -------------------------

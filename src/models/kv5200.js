@@ -6,7 +6,10 @@
 // straight-on photograph; the hood slant, handle and rear cover from side and
 // three-quarter photographs.
 import * as THREE from 'three';
-import { Kit, rr, ring, loft, plate, rbox, slotRow } from '../kit.js';
+import {
+  Kit, rr, ring, loft, plate, rbox, skipSides, straightFace, faceLocal, lay,
+  rectOutline, holeRect, holeFits, boxCavity,
+} from '../kit.js';
 import { makeBrandTexture, makeDrawTexture } from '../labels.js';
 
 const W = 162, D = 330, BODY_H = 205, H = 269;
@@ -35,7 +38,7 @@ export const META = {
 
 export function buildMonitor() {
   const k = new Kit(META.name);
-  k.mat('silver', { color: 0xb7b0a4, roughness: 0.42, metalness: 0.55, bumpMap: k.grain, bumpScale: 0.25 });
+  k.mat('silver', { color: 0xb7b0a4, roughness: 0.42, metalness: 0.55, bumpMap: k.grain, bumpScale: 0.25, roughnessMap: k.rough });
   k.mat('hood', { color: 0x0b0b0b, roughness: 0.8 });
   k.mat('gloss', { color: 0x0d0d0d, roughness: 0.28 });
   k.mat('rear', { color: 0x161616, roughness: 0.7 });
@@ -46,7 +49,7 @@ export function buildMonitor() {
   const upH = BODY_H - UP0, upCy = UP0 + upH / 2;
   const slant = (pts) => pts.map((p) => new THREE.Vector3(p.x, p.y, FZ_LOW + ((p.y - UP0) / upH) * (FZ_TOP - FZ_LOW)));
   const outer = rr(W, upH, 9, 0, upCy), inner = rr(W - 10, upH - 10, 6, 0, upCy);
-  k.add('silver', loft([ring(outer, RZ), slant(outer)]));
+  k.add('silver', loft([ring(outer, RZ), slant(outer)], { skip: skipSides('top') }));
   k.add('silver', loft([slant(outer), slant(inner)]));       // rim of the hood
   const bezelZ = FZ_LOW - 12;
   const bezel = rr(W - 12, upH - 12, 5, 0, upCy);
@@ -175,11 +178,22 @@ export function buildMonitor() {
   k.decal(makeDrawTexture(23, 12, 20, (g, font) => {
     g.fillStyle = '#6f6a61'; g.textAlign = 'center'; g.font = `700 3.4px ${font}`; g.fillText('PUSH', 11.5, 7.3);
   }), 23, 12, 0, top + 1.46, 76).rotation.x = -Math.PI / 2;
-  for (const side of [-1, 1]) {
-    for (const z of [-96, -109]) {
-      k.bucket.slot ||= [];
-      k.bucket.slot.push(...slotRow({ n: 22, pitch: 2.6, len: 1.25, t: 9, at: [side * 19, top + 0.06, z], step: [side, 0, 0] }));
+  // Top vents are shallow slots in the shell, not black decals. The flat top
+  // ends at the corner radius, so a slot that would clip that radius is left out.
+  {
+    const desc = straightFace('top', { w: W, h: upH, r: 9, cx: 0, cy: upCy, z0: RZ, z1: FZ_TOP });
+    const holes = [];
+    for (const side of [-1, 1]) {
+      for (const z of [-96, -109]) {
+        for (let i = 0; i < 22; i++) {
+          const p = faceLocal(desc, new THREE.Vector3(side * 19 + side * i * 2.6, desc.origin.y, z));
+          if (!holeFits(desc, p.x, p.y, 1.25, 9, 0.35)) continue;
+          holes.push(holeRect(1.25, 9, p.x, p.y));
+          k.add('cavity', lay(boxCavity(1.25, 9, 2.8), desc.face, desc.origin, p.x, p.y));
+        }
+      }
     }
+    k.add('silver', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
   }
 
   // ---- right side: closed control door --------------------------------------------
