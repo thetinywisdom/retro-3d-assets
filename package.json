@@ -1,12 +1,12 @@
 {
-  "name": "sony-pvm",
+  "name": "retro-3d-assets",
   "version": "1.0.0",
-  "description": "Interactive 3D Sony PVM-9042QM Trinitron monitor as a web component",
+  "description": "Interactive 3D retro hardware as web components: Sony CRTs, a shelf, games and consoles",
   "type": "module",
-  "main": "dist/sony-pvm.js",
-  "module": "dist/sony-pvm.js",
+  "main": "dist/retro-3d.js",
+  "module": "dist/retro-3d.js",
   "exports": {
-    ".": "./dist/sony-pvm.js",
+    ".": "./dist/retro-3d.js",
     "./react": "./react/SonyPVM.jsx"
   },
   "files": [

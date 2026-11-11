@@ -32,7 +32,7 @@ export const SonyPVM = forwardRef(function SonyPVM(props, ref) {
   useImperativeHandle(ref, () => el.current, []);
 
   useEffect(() => {
-    import('../dist/sony-pvm.js');
+    import('../dist/retro-3d.js');
     const node = el.current;
     const offs = Object.entries(EVENTS).map(([prop, type]) => {
       const fn = (e) => handlers.current[prop]?.(e.detail, e);

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>retro-shelf dev</title>
+<style>
+  html, body { margin: 0; height: 100%; background: radial-gradient(120% 90% at 50% 100%, #2a2622 0%, #151312 60%, #0c0b0b 100%); color: #ddd; font-family: system-ui, sans-serif; }
+  .pg { height: 100%; box-sizing: border-box; padding: 24px; background: #f3efe6; color: #1c1a17; font-size: 26px; }
+</style>
+</head>
+<body>
+<retro-shelf id="shelf" muted>
+  <div class="pg" slot="pvm-20m4e"><b>20-inch</b><br>Main page</div>
+  <div class="pg" slot="pvm-9042qm" style="background:#1c3a5e;color:#fff">9-inch monitor</div>
+  <div class="pg" slot="kv-9pr1" style="background:#ffd23f">KV-9PR1</div>
+  <div class="pg" slot="kv-5200" style="background:#ff7a59">KV-5200</div>
+  <retro-item type="ps1" title="Midnight Ramen" subtitle="Vol. 1" color="#e4572e" href="#ramen">A four-panel strip about a ramen stall that only opens after midnight.</retro-item>
+  <retro-item type="ps1" title="Cat Station" color="#2f4858"></retro-item>
+  <retro-item type="ps1" title="深夜ラーメン" color="#ffd23f"></retro-item>
+  <retro-item type="ps1" title="Tiny Wisdom" subtitle="Disc 2" color="#7fd1c7"></retro-item>
+  <retro-item type="ps1" title="Paper Moon" color="#c9b6ff"></retro-item>
+  <retro-item type="gba" title="Pocket Days" color="#9fe07c"></retro-item>
+  <retro-item type="gba" title="Slow Train" color="#ff7a59"></retro-item>
+  <retro-item type="gba" title="Umbrella Club" color="#5d8fd6"></retro-item>
+  <retro-item type="vita" title="Night Shift"></retro-item>
+  <retro-item type="vita" title="Second Coffee" color="#d9534f"></retro-item>
+  <retro-item type="vita" title="Laundry Day" color="#ffd23f"></retro-item>
+  <retro-item type="psp" title="Bus Stop Stories" color="#2f4858"></retro-item>
+  <retro-item type="psp" title="Weekend Mode" color="#ffb3c7"></retro-item>
+  <retro-item type="book" title="About Me" subtitle="Brian"></retro-item>
+  <retro-item type="book" title="Process Notes" color="#2f4858"></retro-item>
+  <retro-item type="book" title="Sketchbook 2024" color="#e8e2d2"></retro-item>
+  <retro-item type="book" title="How I Draw" color="#d9534f"></retro-item>
+  <retro-item type="book" title="Press" color="#7fd1c7"></retro-item>
+  <retro-item type="book" title="Contact" color="#ffd23f"></retro-item>
+</retro-shelf>
+<script type="module">
+  import './src/index.js';
+  const el = document.getElementById('shelf');
+  const q = new URLSearchParams(location.search);
+  for (const k of ['stack', 'layout']) if (q.get(k)) el.setAttribute(k, q.get(k));
+  window.shelf = el;
+</script>
+</body>
+</html>

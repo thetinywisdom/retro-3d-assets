@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>props preview</title>
+<style>html,body{margin:0;height:100%;background:#e9e9e6}canvas{display:block;width:100%;height:100%}</style>
+<canvas id="c"></canvas>
+<script type="module">
+  import * as THREE from 'three';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+  import { PROPS } from '../src/props/consoles.js';
+  const q = new URLSearchParams(location.search);
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+  renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight, false);
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xe9e9e6);
+  const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.6;
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-300, 600, 500); scene.add(key);
+  const cam = new THREE.PerspectiveCamera(26, innerWidth / innerHeight, 10, 5000);
+  const tilt = +(q.get('tilt') ?? 0.5), yaw = +(q.get('yaw') ?? 0);
+  const place = (name, x, y, flat) => { const g = PROPS[name](); const h = new THREE.Group(); h.add(g); if (flat) g.rotation.x = Math.PI / 2 - tilt; else g.rotation.x = -tilt + 0.3; h.rotation.y = yaw; h.position.set(x, y, 0); scene.add(h); };
+  place('ps-one', -120, 110, true); place('dualshock', 110, 110, true);
+  place('gba', -170, -150, false); place('ps-vita', 0, -150, false); place('psp-go', 165, -160, false);
+  cam.position.set(0, 0, 1150); cam.lookAt(0, -10, 0);
+  renderer.render(scene, cam); window.done = true;
+</script>

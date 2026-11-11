@@ -22,7 +22,7 @@ const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const linear = (t) => t;
 
-const STYLE = /* css */ `
+export const STYLE = /* css */ `
 :host { display: block; position: relative; width: 100%; height: 480px; }
 :host([hidden]) { display: none; }
 .stage { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab;
@@ -304,7 +304,9 @@ export class SonyPVMElement extends Base {
       wrap.className = 'input';
       wrap.dataset.input = id;
       const slot = document.createElement('slot');
-      if (i > 0) slot.name = id;
+      const pre = this._slotPrefix;
+      if (pre) slot.name = i > 0 ? `${pre}:${id}` : pre;
+      else if (i > 0) slot.name = id;
       slot.addEventListener('slotchange', () => this._applyPicture());
       wrap.append(slot);
       this._inputsEl.append(wrap);
@@ -367,7 +369,7 @@ export class SonyPVMElement extends Base {
       if (c.kind === 'button') this._poseButton(c.id, this._buttonRest(c.id), 0); else this._poseValue(c.id);
     }
     this._syncLamps();
-    if (this.isConnected) this._resize();
+    if (this._host) { if (this._m.shadow) this._m.shadow.visible = false; } else if (this.isConnected) this._resize();
   }
 
   /** Swap to another model ("pvm-9042qm", "pvm-20m4e", "kv-5200", "kv-9pr1"). */
@@ -419,6 +421,7 @@ export class SonyPVMElement extends Base {
   // --------------------------------------------------------------- render --
   /** Ask for a redraw. The scene only renders when something changed. */
   invalidate() {
+    if (this._host) { this._host.invalidate(); return; }
     if (!this._raf && this._ready && this.isConnected) this._raf = requestAnimationFrame(this._frame);
   }
 
@@ -433,19 +436,59 @@ export class SonyPVMElement extends Base {
     this.invalidate();
   }
 
-  _frame(now) {
-    this._raf = 0;
-    if (!this._ready) return;
-    const dt = Math.min((now - (this._last || now)) / 1000, 0.05);
-    this._last = now;
+  _runTweens(now) {
     let active = false;
-
     for (const [key, tw] of this._tweens) {
       const t = (now - tw.start) / tw.dur;
       if (t < 0) { active = true; continue; }
       tw.fn(tw.from + (tw.to - tw.from) * tw.ease(Math.min(t, 1)));
       if (t >= 1) { this._tweens.delete(key); tw.done?.(); } else active = true;
     }
+    return active;
+  }
+
+  // ------------------------------------------------------------ hosted mode --
+  /**
+   * Run this set inside another element's scene instead of its own canvas
+   * (this is how <retro-shelf> stacks several sets). The host owns the
+   * renderer, camera and pointer handling and calls _tick() every frame.
+   * host: { parent: Object3D, invalidate(), sound, reduced, el }
+   */
+  _attachHost(host, slotPrefix) {
+    this._host = host;
+    this._slotPrefix = slotPrefix;
+    this._sound = host.sound;
+    this._reduced = host.reduced;
+    this._visible = true;
+    this._inited = true;
+    this._resetState();
+    this._scene = host.parent;
+    this._screenObj = new CSS3DObject(this._screenEl);
+    this._screenEl.style.userSelect = 'auto';
+    this._screenEl.style.webkitUserSelect = 'auto';
+    this._screenEl.style.pointerEvents = 'none';
+    this._mountModel();
+    this._ready = true;
+    this._applyPicture();
+    this._applyPower(true);
+  }
+
+  /** Hosted mode: advance animations and keep the glass shader's camera current. */
+  _tick(now, camera) {
+    const active = this._runTweens(now);
+    const u = this._m.crtMaterial.uniforms;
+    u.uCam.value.copy(camera.position);
+    this._m.root.worldToLocal(u.uCam.value);
+    u.uTime.value = (now / 1000) % 1000;
+    return active;
+  }
+
+  _frame(now) {
+    this._raf = 0;
+    if (!this._ready) return;
+    const dt = Math.min((now - (this._last || now)) / 1000, 0.05);
+    this._last = now;
+    let active = this._runTweens(now);
 
     const o = this._orbit;
     if (this._autoRotate && !this._reduced && !this.state.focused && !this._drag && this._visible) {
@@ -823,7 +866,7 @@ export class SonyPVMElement extends Base {
 
     // VOLUME drives any media in the content
     const vol = power ? k('volume') : 0;
-    for (const m of this.querySelectorAll('video, audio')) {
+    for (const m of (this._host?.el || this).querySelectorAll('video, audio')) {
       try { m.volume = vol; } catch {}
     }
   }

@@ -1,6 +1,50 @@
-# Sony CRT set — interactive 3D monitors and TVs
+# Retro 3D assets
 
-Four Sony CRTs as one web component. The picture on the tube is your own HTML, and the controls work.
+Interactive 3D retro hardware as web components, in one file (`dist/retro-3d.js`, about 200 KB gzipped, three.js included).
+
+- **`<sony-pvm>`**: one Sony CRT with a real HTML page on its tube and working controls. Four models.
+- **`<retro-shelf>`**: all four CRTs stacked on a shelf unit holding PS1 cases, Game Boy Advance boxes, PS Vita and PSP cases, books, a PS one with its DualShock, a Game Boy Advance, a PS Vita and a PSP Go.
+
+## `<retro-shelf>`
+
+```html
+<script type="module" src="retro-3d.js"></script>
+
+<retro-shelf stack="pyramid" style="height: 100vh">
+  <div slot="pvm-20m4e">Page for the 20-inch monitor</div>
+  <div slot="kv-5200">Page for the 5-inch TV</div>
+  <retro-item type="ps1" title="My Comic" subtitle="2024" color="#e4572e" cover="cover.jpg" href="/comic">
+    Text shown on the card when this case is picked.
+  </retro-item>
+  <retro-item type="book" title="About Me"></retro-item>
+</retro-shelf>
+```
+
+One straight-on camera. Tapping a TV moves in to it and its page becomes usable (a "Fill screen" button goes closer). Tapping a case or a book slides it out, turns its cover to face you and shows a card. On a narrow screen the shelf switches to a taller two-column unit, and if it is taller than the element, ordinary scrolling moves the camera down it.
+
+| Attribute | Meaning |
+| --- | --- |
+| `stack` | `pyramid` (default) or `pile`. Positions are in `STACKS` in `src/shelf-element.js`; add your own arrangement there |
+| `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
+| `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |
+| `power` | Which TVs start switched on: `all` (default) or a list of model ids |
+| `muted` | No sounds |
+
+TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-5200`. More pages for a TV's other inputs or channels use `slot="<model id>:<input>"`, for example `slot="kv-5200:ch-5"`.
+
+`<retro-item>` attributes: `type` (`ps1`, `gba`, `vita`, `psp`, `book`), `title`, `subtitle`, `color`, `cover` (image for the front), `href` and `link-text` (button on the card), and for books `thickness` and `height` in mm. Its content is the card text. Japanese titles are set vertically on the spine. Each type has its own compartment; items that do not fit are skipped with a console warning.
+
+Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, and every `pvm-*` event from the TVs with `detail.tv` added.
+
+Methods: `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
+
+Parts for styling: `card`, `back`, `fill`, `hint`.
+
+Prop sizes are the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5) with details modelled from reference photos. Case sizes: PS1 jewel case 142 × 125 × 10.4, GBA box 127 × 127 × 22, Vita case 104 × 135 × 13, PSP case 105 × 170 × 14.5.
+
+## `<sony-pvm>`
+
+Four Sony CRTs as one element. The picture on the tube is your own HTML, and the controls work.
 
 | `model` | What it is | Size (W × H × D) | Reference used |
 | --- | --- | --- | --- |
@@ -9,7 +53,6 @@ Four Sony CRTs as one web component. The picture on the tube is your own HTML, a
 | `kv-5200` | 5-inch portable colour TV | 162 × 269 × 330 mm (handle up) | Service manual size + photos |
 | `kv-9pr1` | 9-inch personal TV, soft orange | about 218 × 184 × 296 mm | Photos only. **Size estimated; top buttons reconstructed** |
 
-- `dist/sony-pvm.js` — the component (one file, about 185 KB gzipped, three.js included)
 - `dist/sony-<model>.glb` — each model as a standard 3D file (metres, Y up)
 - `demo/index.html` — demo page (`npm run dev`, then open `/demo/index.html`)
 - `react/SonyPVM.jsx` — React / Next.js wrapper
@@ -19,7 +62,7 @@ Four Sony CRTs as one web component. The picture on the tube is your own HTML, a
 ### Plain HTML
 
 ```html
-<script type="module" src="sony-pvm.js"></script>
+<script type="module" src="retro-3d.js"></script>
 
 <sony-pvm model="kv-5200" power="on" style="height: 100vh">
   <main>Your site goes here</main>
@@ -163,7 +206,7 @@ On all models the HTML picture is flat behind the curved glass (the curve is sug
 ```bash
 npm install
 npm run dev          # dev server
-npm run build        # dist/sony-pvm.js
+npm run build        # dist/retro-3d.js
 npm run demo         # rebuild the demo pages
 npm run export-glb   # dist/sony-<model>.glb for every model (needs Playwright)
 ```

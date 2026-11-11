@@ -186,7 +186,7 @@
   </section>
 </div>
 
-<script type="module" src="../dist/sony-pvm.js"></script>
+<script type="module" src="../dist/retro-3d.js"></script>
 <script type="module">
   const pvm = document.getElementById('pvm');
   const $ = (id) => document.getElementById(id);
@@ -267,7 +267,7 @@
     $('m-controls').innerHTML = info.controls.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('');
     for (const b of $('models').children) b.setAttribute('aria-pressed', String(b.dataset.model === id));
     const brand = $('brand').value.trim();
-    $('snippet').innerHTML = esc(`<script type="module" src="sony-pvm.js"></` + `script>
+    $('snippet').innerHTML = esc(`<script type="module" src="retro-3d.js"></` + `script>
 
 <sony-pvm model="${id}"${brand ? ` brand="${brand}"` : ''} power="on" style="height: 100vh">
   <main>Your site goes here</main>
