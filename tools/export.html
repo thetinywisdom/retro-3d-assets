@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GLB export</title>
+<script type="module">
+  // Builds each model, swaps the web-only CRT shader for a standard glass
+  // material, converts millimetres to metres and exports binary glTF.
+  import * as THREE from 'three';
+  import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+  import { MODELS } from '../src/models/index.js';
+
+  const out = {};
+  try {
+    for (const [id, model] of Object.entries(MODELS)) {
+      const m = model.build();
+      m.root.remove(m.shadow);
+      m.glass.material = new THREE.MeshPhysicalMaterial({ name: 'crt-glass', color: 0x1b201d, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 });
+      m.root.traverse((o) => { if (o.material?.bumpMap) { o.material = o.material.clone(); o.material.bumpMap = null; } });
+      m.root.scale.setScalar(0.001);
+      m.root.updateMatrixWorld(true);
+      const buf = await new GLTFExporter().parseAsync(m.root, { binary: true });
+      let s = '';
+      const u8 = new Uint8Array(buf);
+      for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+      out[id] = btoa(s);
+    }
+    window.__glb = out;
+  } catch (err) { window.__glbError = String(err); }
+</script>

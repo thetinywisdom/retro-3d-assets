@@ -1,0 +1,377 @@
+<title>CRT Shelf Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a dark bench, same as the monitor demo. Four directions, each a
+     band with a desktop frame and a phone frame side by side and the notes
+     beside them. Single dark look on purpose: these are lit tubes in a dim room. */
+  :root {
+    color-scheme: dark;
+    --desk: #131211;
+    --bench: #1c1b19;
+    --line: #33312d;
+    --ink: #ebe7df;
+    --dim: #a39e93;
+    --tally: #ff4b38;
+    --led: #56e072;
+    --tube: #49b9b1;
+    --wood: #6b5540;
+    --legend: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  html, body { background: var(--desk); }
+  body { color: var(--ink); font: 400 15px/1.55 var(--body); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; flex-direction: column; gap: 36px; }
+  h1, h2, h3 { font-family: var(--legend); font-weight: 700; text-transform: uppercase; margin: 0; text-wrap: balance; }
+  h1 { font-size: 30px; line-height: 1.1; letter-spacing: 0.04em; }
+  h2 { font-size: 22px; letter-spacing: 0.04em; line-height: 1.15; }
+  h3 { font-size: 13px; color: var(--dim); letter-spacing: 0.12em; }
+  p { margin: 0; }
+  .lede { color: var(--dim); max-width: 68ch; }
+  .lede b, li b, td b { color: var(--ink); font-weight: 500; }
+
+  .dir { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 28px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .mocks { display: grid; grid-template-columns: minmax(0, 3.2fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  figcaption { font: 500 11px/1 var(--mono); color: var(--dim); letter-spacing: 0.06em; }
+  svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #0c0b0b; }
+  .phone svg { border-radius: 12px; }
+  .notes { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .tag { font: 600 12px/1 var(--legend); letter-spacing: 0.14em; color: var(--dim); }
+  .pick { color: #10210f; background: var(--led); padding: 4px 7px; border-radius: 3px; margin-left: 8px; }
+  ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--dim); }
+  .pc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .pc > div { display: flex; flex-direction: column; gap: 8px; }
+
+  .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .row3 p { color: var(--dim); font-size: 14px; }
+  .row3 figure { gap: 10px; }
+  .row3 strong { font: 600 14px/1.2 var(--legend); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); display: block; }
+  section.block { display: flex; flex-direction: column; gap: 16px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; }
+  th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 600 12px/1.4 var(--legend); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  td { color: var(--dim); }
+  td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+  ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--dim); max-width: 72ch; }
+
+  @media (max-width: 860px) {
+    .dir { grid-template-columns: minmax(0, 1fr); }
+    .row3 { grid-template-columns: minmax(0, 1fr); }
+    h1 { font-size: 24px; }
+    .pc { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+
+<div class="wrap">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <h1>CRT shelf: four directions</h1>
+    <p class="lede">The pieces are the same in every direction: your four CRTs on top of a shelf unit, books and PS1 jewel cases inside it with <b>text you can edit</b>, and the PlayStation with its controller on the lowest shelf. What changes is how a visitor moves through it, which matters most on a phone. These are flat sketches, not the final look.</p>
+  </div>
+
+  <!-- A -->
+  <div class="dir">
+    <div class="mocks">
+      <figure><svg id="a-desk" viewBox="0 0 320 200" role="img" aria-label="Direction A on desktop: the whole shelf seen straight on"></svg><figcaption>DESKTOP</figcaption></figure>
+      <figure class="phone"><svg id="a-phone" viewBox="0 0 100 200" role="img" aria-label="Direction A on a phone: the shelf fills the width and continues below the screen"></svg><figcaption>PHONE</figcaption></figure>
+    </div>
+    <div class="notes">
+      <span class="tag">DIRECTION A</span>
+      <h2>The wall, straight on</h2>
+      <p class="lede">One fixed camera looking at the whole unit, like the gallery photo. Nothing to learn: tap a thing and the camera moves in to it.</p>
+      <div class="pc">
+        <div><h3>How it works</h3><ul>
+          <li>Tap a TV: zoom in, its page becomes usable.</li>
+          <li>Tap a book or a CD: it slides out and turns to face you.</li>
+          <li>Phone: the unit is taller than the screen, so normal scrolling moves the camera down it.</li>
+        </ul></div>
+        <div><h3>Trade-offs</h3><ul>
+          <li><b>Good:</b> simplest to use, fastest to build, reads at a glance.</li>
+          <li><b>Less good:</b> it is a flat view, so the 3D only shows when something moves.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="dir">
+    <div class="mocks">
+      <figure><svg id="b-desk" viewBox="0 0 320 200" role="img" aria-label="Direction B on desktop: four camera stops along a scroll path"></svg><figcaption>DESKTOP &middot; 4 STOPS AS YOU SCROLL</figcaption></figure>
+      <figure class="phone"><svg id="b-phone" viewBox="0 0 100 200" role="img" aria-label="Direction B on a phone: one stop fills the screen with a progress rail"></svg><figcaption>PHONE &middot; STOP 3</figcaption></figure>
+    </div>
+    <div class="notes">
+      <span class="tag">DIRECTION B</span>
+      <h2>Scroll tour</h2>
+      <p class="lede">Scrolling drives the camera along a planned path: it opens close on one lit TV, pulls back to show the stack, then travels down the shelves and ends at the PlayStation.</p>
+      <div class="pc">
+        <div><h3>How it works</h3><ul>
+          <li>Each stop is a section of your site: intro, work, writing, contact.</li>
+          <li>A short caption sits beside each stop.</li>
+          <li>Phone: identical. Scrolling is the one gesture every phone user already knows.</li>
+        </ul></div>
+        <div><h3>Trade-offs</h3><ul>
+          <li><b>Good:</b> most cinematic, tells a story, best on phones.</li>
+          <li><b>Less good:</b> visitors follow your order; jumping straight to one item needs a small menu as well.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="dir">
+    <div class="mocks">
+      <figure><svg id="c-desk" viewBox="0 0 320 200" role="img" aria-label="Direction C on desktop: a room corner seen at an angle with posters"></svg><figcaption>DESKTOP</figcaption></figure>
+      <figure class="phone"><svg id="c-phone" viewBox="0 0 100 200" role="img" aria-label="Direction C on a phone: the same corner, swipe to turn"></svg><figcaption>PHONE</figcaption></figure>
+    </div>
+    <div class="notes">
+      <span class="tag">DIRECTION C</span>
+      <h2>The room corner</h2>
+      <p class="lede">A small piece of a room seen at an angle, like the second photo: wall, framed posters, a lamp, the shelf. Visitors can turn the view a little and look around.</p>
+      <div class="pc">
+        <div><h3>How it works</h3><ul>
+          <li>Drag or swipe to turn about 40&deg; each way.</li>
+          <li>Posters on the wall can be your own strips.</li>
+          <li>Tap anything to move in to it.</li>
+        </ul></div>
+        <div><h3>Trade-offs</h3><ul>
+          <li><b>Good:</b> most atmosphere and personality.</li>
+          <li><b>Less good:</b> most work to build, heaviest on phones, and swiping to turn competes with scrolling the page.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="dir">
+    <div class="mocks">
+      <figure><svg id="d-desk" viewBox="0 0 320 200" role="img" aria-label="Direction D on desktop: one large TV, with the shelf beside it as the menu"></svg><figcaption>DESKTOP</figcaption></figure>
+      <figure class="phone"><svg id="d-phone" viewBox="0 0 100 200" role="img" aria-label="Direction D on a phone: TV pinned at the top, discs in a row below"></svg><figcaption>PHONE</figcaption></figure>
+    </div>
+    <div class="notes">
+      <span class="tag">DIRECTION D <span class="pick">MY PICK</span></span>
+      <h2>Put the disc in</h2>
+      <p class="lede">The shelf is the menu and the TV is the page. Pick a jewel case, the disc goes into the PlayStation, the lid closes, and that project plays on the big screen. Books open on the screen the same way.</p>
+      <div class="pc">
+        <div><h3>How it works</h3><ul>
+          <li>One main TV shows content. The smaller TVs show previews of the other discs.</li>
+          <li>The TV's own buttons still work: channels step through discs.</li>
+          <li>Phone: the TV stays pinned at the top, the discs and books become a row you swipe under it.</li>
+        </ul></div>
+        <div><h3>Trade-offs</h3><ul>
+          <li><b>Good:</b> every object has a job, the PlayStation earns its place, works well in a narrow phone screen.</li>
+          <li><b>Less good:</b> the insert animation must stay short (about a second) or it gets tiring on repeat visits.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>How to stack the TVs</h2>
+    <p class="lede">Real sizes matter here: the 20-inch is 450 mm wide, the two 9-inch sets about 218 mm each, the 5-inch only 162 mm. Two 9-inch sets side by side almost exactly cover the top of the 20-inch.</p>
+    <div class="row3">
+      <figure><svg id="s-1" viewBox="0 0 160 110" role="img" aria-label="Pyramid stack"></svg><div><strong>Pyramid</strong><p>20-inch at the bottom, both 9-inch sets on it, the 5-inch on top. Tidy, physically believable, uses each model once.</p></div></figure>
+      <figure><svg id="s-2" viewBox="0 0 160 110" role="img" aria-label="Wall of repeated sets"></svg><div><strong>Wall</strong><p>Each model repeated to fill a grid, like the gallery photo. Most striking, but about a dozen screens to fill and heavier on phones.</p></div></figure>
+      <figure><svg id="s-3" viewBox="0 0 160 110" role="img" aria-label="Loose pile"></svg><div><strong>Loose pile</strong><p>Sets slightly turned and offset, one sitting on books. Feels lived-in, suits the room corner best.</p></div></figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>What each object could do</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Object</th><th>Editable</th><th>Suggested job on the site</th></tr></thead>
+      <tbody>
+        <tr><td>TVs</td><td>The page on each screen, the badge text</td><td>Where content is shown. One is the main screen; the others loop previews or a short animation.</td></tr>
+        <tr><td>PS1 jewel cases</td><td>Spine title, front cover image, back text</td><td>One per comic series or project. The thin spine with a title is exactly how these look on a shelf.</td></tr>
+        <tr><td>Books</td><td>Spine title, author line, colour, thickness</td><td>Longer reading: about, process notes, a blog, press.</td></tr>
+        <tr><td>PlayStation</td><td>Disc label</td><td>Plays whichever case is picked. Power button could be "start here".</td></tr>
+        <tr><td>Controller</td><td>&mdash;</td><td>Optional: D-pad moves between items, &times; opens, &#9651; goes back. Also works from a real keyboard.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="lede">Editing would work like the monitor does now: a short list in your HTML, for example one line per case with its title and cover image. No 3D tools needed.</p>
+  </section>
+
+  <section class="block">
+    <h2>Three things to decide</h2>
+    <ol>
+      <li><b>Which direction?</b> They also combine: my suggestion is the straight-on wall (A) as the layout with the disc mechanic (D) on top of it.</li>
+      <li><b>Which PlayStation?</b> You wrote SCPH-1000, which is the original grey 1994 console with the grey controller without sticks. The picture you sent is the small white PS one (SCPH-100) with a DualShock. Tell me which one you want.</li>
+      <li><b>How many items?</b> A rough count of cases and books lets me size the shelf. Around 8 to 12 cases and 6 to 10 books fills two shelves well.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const C = { p9042: '#6a6863', p20: '#a9a8a0', k52: '#b7b0a4', k9: '#e2bc9a', off: '#232b28', lit: '#49b9b1', wood: '#6b5540', woodD: '#463829', ink: '#ebe7df', dim: '#a39e93', line: '#33312d', ps: '#b9b8b3', red: '#ff4b38', led: '#56e072' };
+  const SP = ['#ffd23f', '#ff7a59', '#7fd1c7', '#c9b6ff', '#9fe07c', '#ffb3c7', '#e8e2d2', '#5d8fd6'];
+  const el = (svg, tag, a, text) => { const n = document.createElementNS(NS, tag); for (const k in a) n.setAttribute(k, a[k]); if (text) n.textContent = text; svg.appendChild(n); return n; };
+  const R = (s, x, y, w, h, fill, extra = {}) => el(s, 'rect', { x, y, width: w, height: h, fill, ...extra });
+  const T = (s, x, y, str, size = 6.5, fill = C.dim, anchor = 'start', font = 'IBM Plex Mono, monospace') => el(s, 'text', { x, y, 'font-size': size, fill, 'text-anchor': anchor, 'font-family': font, 'font-weight': 500 }, str);
+  let seed = 7; const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+
+  // a CRT: body, tube, a hint of its controls
+  function tv(s, x, y, w, kind, lit = false, pic = 0) {
+    const h = kind === 'k52' ? w * 1.26 : kind === 'k9' ? w * 0.85 : w * 1.0;
+    const body = C[kind];
+    R(s, x, y, w, h, body, { rx: kind === 'k9' ? w * 0.07 : w * 0.03 });
+    const strip = kind === 'p20' ? 0.16 : kind === 'p9042' ? 0.2 : kind === 'k52' ? 0.3 : 0.08;
+    const m = w * (kind === 'k9' ? 0.07 : 0.06);
+    const sw = w - m * 2, sh = Math.min(sw * 0.75, h * (1 - strip) - m * 1.6);
+    const sx = x + m, sy = y + m * (kind === 'p20' || kind === 'p9042' ? 1.4 : 1);
+    R(s, sx - m * 0.35, sy - m * 0.35, sw + m * 0.7, sh + m * 0.7, '#111', { rx: w * 0.03 });
+    R(s, sx, sy, sw, sh, lit ? C.lit : C.off, { rx: w * 0.04 });
+    if (lit) {
+      const cols = [['#f3efe6', '#ffd23f', '#ff7a59'], ['#1c3a5e', '#e86a4a', '#f3efe6'], ['#2d2a4a', '#9fe07c', '#c9b6ff']][pic % 3];
+      R(s, sx, sy, sw, sh, cols[0], { rx: w * 0.04 });
+      R(s, sx + sw * 0.1, sy + sh * 0.2, sw * 0.35, sh * 0.6, cols[1]);
+      R(s, sx + sw * 0.52, sy + sh * 0.2, sw * 0.38, sh * 0.26, cols[2]);
+      R(s, sx + sw * 0.52, sy + sh * 0.54, sw * 0.38, sh * 0.26, cols[1], { opacity: 0.6 });
+    }
+    if (kind === 'k52') { R(s, x + w * 0.06, y + h * 0.74, w * 0.88, h * 0.17, '#111', { rx: 1 }); R(s, x + w * 0.42, y - w * 0.22, w * 0.16, w * 0.22, body); }
+    if (kind === 'p9042' || kind === 'p20') for (let i = 0; i < 5; i++) el(s, 'circle', { cx: x + w * (0.42 + i * 0.1), cy: y + h * (1 - strip / 2), r: w * 0.028, fill: '#1b1b1b' });
+    if (kind === 'k9') R(s, x + w * 0.3, y + h, w * 0.4, w * 0.05, body);
+    return h;
+  }
+  // pyramid stack, bottom-centre at (cx, by), 20-inch width W
+  function stack(s, cx, by, W, lit = [1, 1, 1, 1]) {
+    const h20 = W * 1.0, w9 = W * 0.485;
+    tv(s, cx - W / 2, by - h20, W, 'p20', lit[0], 0);
+    const h9 = w9 * 1.0;
+    tv(s, cx - W / 2, by - h20 - h9, w9, 'p9042', lit[1], 1);
+    tv(s, cx + W / 2 - w9, by - h20 - w9 * 0.9, w9, 'k9', lit[2], 2);
+    const w5 = W * 0.36;
+    tv(s, cx - W / 2 + (w9 - w5) / 2, by - h20 - h9 - w5 * 1.26, w5, 'k52', lit[3], 1);
+    return h20 + h9 + w5 * 1.26;
+  }
+  function books(s, x, y, w, h, n) {
+    let px = x;
+    for (let i = 0; i < n && px < x + w - 3; i++) {
+      const bw = 3 + rnd() * 4.5, bh = h * (0.72 + rnd() * 0.26);
+      R(s, px, y + h - bh, bw, bh, SP[Math.floor(rnd() * SP.length)], { rx: 0.4 });
+      R(s, px + bw * 0.25, y + h - bh * 0.8, bw * 0.5, bh * 0.45, '#1c1a17', { opacity: 0.35 });
+      px += bw + 0.5;
+    }
+  }
+  function cds(s, x, y, w, h, n, pulled = -1) {
+    const cw = Math.min(3.1, w / n - 0.5), ch = Math.min(h * 0.82, cw * 9);
+    for (let i = 0; i < n; i++) {
+      const px = x + i * (cw + 0.6), up = i === pulled ? ch * 0.28 : 0;
+      R(s, px, y + h - ch - up, cw, ch, '#e9e6de', { rx: 0.3 });
+      R(s, px, y + h - ch - up, cw, ch * 0.12, '#111');
+      R(s, px + cw * 0.2, y + h - ch * 0.8 - up, cw * 0.6, ch * 0.6, SP[i % SP.length]);
+    }
+  }
+  function ps1(s, x, y, w) {
+    R(s, x, y, w, w * 0.3, C.ps, { rx: w * 0.03 });
+    el(s, 'circle', { cx: x + w * 0.5, cy: y + w * 0.15, r: w * 0.115, fill: 'none', stroke: '#8a8985', 'stroke-width': w * 0.014 });
+    R(s, x + w * 0.08, y + w * 0.2, w * 0.14, w * 0.05, '#8a8985', { rx: 0.6 });
+    R(s, x + w * 0.78, y + w * 0.2, w * 0.14, w * 0.05, '#8a8985', { rx: 0.6 });
+    // controller
+    const cx = x + w * 1.28, cy = y + w * 0.2;
+    R(s, cx - w * 0.2, cy - w * 0.07, w * 0.4, w * 0.13, C.ps, { rx: w * 0.05 });
+    R(s, cx - w * 0.2, cy, w * 0.1, w * 0.12, C.ps, { rx: w * 0.04 });
+    R(s, cx + w * 0.1, cy, w * 0.1, w * 0.12, C.ps, { rx: w * 0.04 });
+    el(s, 'path', { d: `M${x + w} ${y + w * 0.22} C ${x + w * 1.05} ${y + w * 0.36}, ${cx - w * 0.1} ${cy - w * 0.2}, ${cx} ${cy - w * 0.07}`, fill: 'none', stroke: '#77766f', 'stroke-width': w * 0.012 });
+  }
+  // whole unit: stack on top of a shelf with 2 rows; returns nothing
+  function unit(s, cx, top, W, opts = {}) {
+    const sw = W * 1.9, sh = W * 1.25, sx = cx - sw / 2;
+    const stH = W * (1 + 0.485 + 0.36 * 1.26);
+    const sy = top + stH;
+    stack(s, cx, sy, W, opts.lit);
+    R(s, sx, sy, sw, sh, C.woodD, { rx: 1 });
+    R(s, sx, sy, sw, 3, C.wood);
+    const rowH = (sh - 9) / 2;
+    R(s, sx + 2.5, sy + 4, sw - 5, rowH, '#15120f');
+    R(s, sx + 2.5, sy + 5.5 + rowH, sw - 5, rowH, '#15120f');
+    R(s, sx, sy + 4 + rowH, sw, 1.5, C.wood);
+    books(s, sx + 4, sy + 4, sw * 0.42, rowH, 16);
+    cds(s, sx + sw * 0.5, sy + 4, sw * 0.46, rowH, Math.floor(sw * 0.46 / 3.8), opts.pulled ?? -1);
+    ps1(s, sx + 8, sy + 5.5 + rowH + rowH - W * 0.5 * 0.3 - 1, W * 0.5);
+    books(s, sx + sw * 0.62, sy + 5.5 + rowH, sw * 0.34, rowH, 10);
+    return { sx, sy, sw, sh, rowH };
+  }
+  const dot = (s, x, y, n) => { el(s, 'circle', { cx: x, cy: y, r: 5, fill: C.ink }); T(s, x, y + 2.3, String(n), 6.5, '#131211', 'middle'); };
+  const arrow = (s, x1, y1, x2, y2, col = C.ink) => {
+    el(s, 'line', { x1, y1, x2, y2, stroke: col, 'stroke-width': 1.2 });
+    const a = Math.atan2(y2 - y1, x2 - x1), L = 4;
+    el(s, 'path', { d: `M${x2} ${y2} L${x2 - L * Math.cos(a - 0.5)} ${y2 - L * Math.sin(a - 0.5)} L${x2 - L * Math.cos(a + 0.5)} ${y2 - L * Math.sin(a + 0.5)} Z`, fill: col });
+  };
+  const $ = (id) => document.getElementById(id);
+  const clip = (s, id, x, y, w, h) => { const d = el(s, 'defs', {}); const c = document.createElementNS(NS, 'clipPath'); c.setAttribute('id', id); d.appendChild(c); const r = document.createElementNS(NS, 'rect'); for (const [k, v] of Object.entries({ x, y, width: w, height: h })) r.setAttribute(k, v); c.appendChild(r); const g = el(s, 'g', { 'clip-path': `url(#${id})` }); return g; };
+
+  // ---- A ----
+  { const s = $('a-desk'); seed = 3; unit(s, 160, 10, 55); T(s, 246, 56, 'tap a TV', 6.5); arrow(s, 244, 58, 196, 74); T(s, 250, 128, 'tap a case', 6.5); arrow(s, 248, 130, 210, 136); }
+  { const s = $('a-phone'); seed = 3; const g = clip(s, 'ap', 0, 0, 100, 200); unit(g, 50, 26, 46);
+    R(s, 0, 176, 100, 24, '#0c0b0b', { opacity: 0.85 }); arrow(s, 50, 181, 50, 194); T(s, 50, 16, 'scroll moves down', 6, C.dim, 'middle'); }
+
+  // ---- B ----
+  { const s = $('b-desk');
+    const frames = [[10, 'INTRO'], [88, 'THE STACK'], [166, 'SHELF'], [244, 'PLAYSTATION']];
+    frames.forEach(([x, name], i) => {
+      R(s, x, 46, 66, 96, '#0c0b0b', { stroke: C.line, rx: 3 });
+      const g = clip(s, 'bf' + i, x, 46, 66, 96);
+      seed = 5;
+      if (i === 0) tv(g, x - 12, 52, 92, 'p20', true, 0);
+      if (i === 1) stack(g, x + 33, 136, 40);
+      if (i === 2) { R(g, x - 10, 60, 90, 70, '#15120f'); R(g, x - 10, 130, 90, 3, C.wood); books(g, x - 4, 66, 40, 64, 7); cds(g, x + 38, 66, 40, 64, 7); }
+      if (i === 3) { R(g, x - 10, 60, 90, 70, '#15120f'); R(g, x - 10, 118, 90, 3, C.wood); ps1(g, x + 4, 100, 46); }
+      dot(s, x + 33, 34, i + 1); T(s, x + 33, 156, name, 6.5, C.dim, 'middle');
+      if (i < 3) arrow(s, x + 68, 94, x + 76, 94, C.dim);
+    });
+    T(s, 160, 184, 'one continuous camera move, driven by the scroll wheel', 6.5, C.dim, 'middle'); }
+  { const s = $('b-phone'); const g = clip(s, 'bp', 0, 0, 100, 200); seed = 5;
+    R(g, 0, 40, 100, 96, '#15120f'); R(g, 0, 136, 100, 4, C.wood); books(g, 6, 50, 40, 86, 7); cds(g, 50, 50, 44, 86, 9);
+    R(s, 6, 150, 78, 38, '#1c1b19', { rx: 3, stroke: C.line }); R(s, 12, 158, 44, 4, C.ink); R(s, 12, 167, 64, 2.5, C.dim); R(s, 12, 173, 56, 2.5, C.dim); R(s, 12, 179, 38, 2.5, C.dim);
+    R(s, 93, 40, 2, 120, C.line); R(s, 93, 100, 2, 30, C.ink); T(s, 50, 22, '3 / 4  WORK', 6.5, C.dim, 'middle'); }
+
+  // ---- C ----
+  function room(s, w, h, cx, W) {
+    el(s, 'polygon', { points: `0,0 ${w},0 ${w},${h * 0.8} 0,${h * 0.72}`, fill: '#1a1917' });
+    el(s, 'polygon', { points: `0,${h * 0.72} ${w},${h * 0.8} ${w},${h} 0,${h}`, fill: '#0f0e0d' });
+    const g = el(s, 'g', { transform: `translate(${cx} 0) skewY(4) translate(${-cx} 0)` });
+    [[0.08, 0.1, '#5d8fd6'], [0.72, 0.07, '#ff7a59']].forEach(([px, py, col]) => { R(g, w * px, h * py, w * 0.17, h * 0.26, '#111', { stroke: '#3a3835' }); R(g, w * px + 2, h * py + 2, w * 0.17 - 4, h * 0.26 - 4, col, { opacity: 0.75 }); });
+    seed = 9; unit(g, cx, h * 0.07, W);
+    // side face of the shelf for depth
+    const sw = W * 1.9, sy = h * 0.07 + W * (1 + 0.485 + 0.36 * 1.26);
+    el(g, 'polygon', { points: `${cx + sw / 2},${sy} ${cx + sw / 2 + W * 0.3},${sy - W * 0.12} ${cx + sw / 2 + W * 0.3},${sy + W * 1.13} ${cx + sw / 2},${sy + W * 1.25}`, fill: '#33281d' });
+  }
+  { const s = $('c-desk'); room(s, 320, 200, 150, 54); T(s, 300, 190, 'drag to turn', 6.5, C.dim, 'end'); el(s, 'path', { d: 'M236 186 q 14 -8 28 0', fill: 'none', stroke: C.dim, 'stroke-width': 1 }); }
+  { const s = $('c-phone'); const g = clip(s, 'cp', 0, 0, 100, 200); room(g, 100, 200, 46, 40); T(s, 50, 192, 'swipe to turn', 6, C.dim, 'middle'); }
+
+  // ---- D ----
+  { const s = $('d-desk'); seed = 11;
+    tv(s, 22, 12, 138, 'p20', true, 0);
+    tv(s, 176, 14, 40, 'p9042', true, 1); tv(s, 176, 60, 40, 'k9', true, 2); tv(s, 180, 100, 32, 'k52', true, 1);
+    R(s, 226, 14, 84, 172, C.woodD, { rx: 1 }); R(s, 229, 18, 78, 78, '#15120f'); R(s, 229, 100, 78, 82, '#15120f'); R(s, 226, 96, 84, 2, C.wood);
+    cds(s, 233, 20, 70, 74, 16, 6); books(s, 233, 102, 70, 78, 12);
+    ps1(s, 40, 160, 62);
+    el(s, 'path', { d: 'M254 34 C 240 150, 170 150, 112 166', fill: 'none', stroke: C.ink, 'stroke-width': 1.2, 'stroke-dasharray': '3 3' });
+    arrow(s, 118, 165, 108, 167); dot(s, 256, 12, 1); dot(s, 30, 168, 2); dot(s, 32, 24, 3);
+    T(s, 150, 196, '1 pick a case   2 disc goes in   3 it plays on the TV', 6.5, C.dim, 'middle'); }
+  { const s = $('d-phone'); seed = 11;
+    tv(s, 8, 8, 84, 'p20', true, 0);
+    R(s, 0, 102, 100, 58, '#15120f'); R(s, 0, 160, 100, 3, C.wood);
+    [[-10, '#ff7a59'], [18, '#ffd23f'], [46, '#7fd1c7'], [74, '#c9b6ff']].forEach(([x, col], i) => { const up = i === 1 ? 6 : 0; R(s, x, 110 - up, 24, 24, '#e9e6de', { rx: 1 }); R(s, x, 110 - up, 3, 24, '#111'); R(s, x + 5, 112 - up, 17, 20, col); R(s, x + 2, 138 - up, 20, 2.5, i === 1 ? C.ink : C.dim); });
+    T(s, 50, 154, 'swipe the discs', 6, C.dim, 'middle');
+    ps1(s, 14, 172, 44); }
+
+  // ---- stacking ----
+  { const s = $('s-1'); stack(s, 80, 104, 52); }
+  { const s = $('s-2'); const kinds = ['p9042', 'k9', 'p20', 'k52', 'k9', 'p9042']; let i = 0;
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { const k = ['p20', 'p9042', 'k9', 'p9042'][(r + c) % 4]; const w = 30; const g = el(s, 'g', {}); tv(g, 14 + c * 34, 6 + r * 34 + (k === 'k9' ? 4 : 0), w, k, (r + c) % 3 !== 0, i++); } }
+  { const s = $('s-3');
+    R(s, 96, 96, 44, 4, SP[1]); R(s, 98, 92, 40, 4, SP[5]); R(s, 95, 88, 46, 4, SP[2]);
+    tv(s, 18, 50, 54, 'p20');
+    let g = el(s, 'g', { transform: 'rotate(-5 60 30)' }); tv(g, 30, 22, 28, 'p9042', true, 1);
+    g = el(s, 'g', { transform: 'rotate(4 118 70)' }); tv(g, 100, 54, 36, 'k9', true, 2);
+    g = el(s, 'g', { transform: 'rotate(8 90 80)' }); tv(g, 76, 72, 20, 'k52'); }
+})();
+</script>

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0">
+<title>PVM-9042QM Monitor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: one dark bench. The monitor sits on a wide stage at the top;
+     underneath, a two-column strip (what each control does | live state),
+     then the embed snippet. Single dark look on purpose: it is a lit tube. */
+  :root {
+    color-scheme: dark;
+    --desk: #131211;
+    --bench: #1c1b19;
+    --line: #33312d;
+    --ink: #ebe7df;
+    --dim: #a39e93;
+    --tally: #ff4b38;
+    --led: #56e072;
+    --legend: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  html, body { background: var(--desk); }
+  body { color: var(--ink); font: 400 15px/1.55 var(--body); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; flex-direction: column; gap: 28px; }
+  h1, h2 { font-family: var(--legend); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+  h1 { font-size: 30px; line-height: 1.1; }
+  h2 { font-size: 15px; color: var(--dim); letter-spacing: 0.12em; }
+  p { margin: 0; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+  .head p { color: var(--dim); font-family: var(--mono); font-size: 12.5px; }
+
+  .stage { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid var(--line);
+    background: radial-gradient(120% 90% at 50% 105%, #2a2824 0%, #191816 55%, #111010 100%); }
+  sony-pvm { height: clamp(380px, 66vh, 720px); }
+  .quick { position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; z-index: 5; }
+  button.q { font: 600 12.5px/1 var(--legend); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+    background: rgba(28, 27, 25, 0.82); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; cursor: pointer; }
+  button.q:hover { border-color: var(--dim); }
+  button.q:focus-visible, .copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  button.q[aria-pressed="true"] { color: #10210f; background: var(--led); border-color: var(--led); }
+
+  .cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; }
+  .cols > section, .embed { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0; border-top: 1px solid var(--line); }
+  dt, dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  dt { font: 600 13px/1.5 var(--legend); letter-spacing: 0.1em; text-transform: uppercase; padding-right: 20px; white-space: nowrap; }
+  dd { color: var(--dim); }
+  dd b { color: var(--ink); font-weight: 500; }
+
+  .state { background: var(--bench); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font: 500 11.5px/1 var(--mono); padding: 6px 8px; border-radius: 3px; border: 1px solid var(--line); color: var(--dim); }
+  .pill.on { color: #10210f; background: var(--led); border-color: var(--led); }
+  .pill.rec { color: #2a0b07; background: var(--tally); border-color: var(--tally); }
+  .knobs { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; gap: 6px 10px; align-items: center;
+    font: 400 11.5px/1 var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+  .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--ink); width: 50%; }
+  .log { margin: 0; padding: 0; list-style: none; font: 400 11.5px/1.7 var(--mono); color: var(--dim); height: 8.5em; overflow: hidden; }
+  .log li:first-child { color: var(--ink); }
+
+  .code { position: relative; background: var(--bench); border: 1px solid var(--line); border-radius: 6px; }
+  .code pre { margin: 0; padding: 16px; overflow-x: auto; font: 400 12.5px/1.65 var(--mono); color: var(--ink); }
+  .code .c { color: var(--dim); }
+  .copy { position: absolute; top: 8px; right: 8px; font: 600 11px/1 var(--legend); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--dim); background: var(--desk); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; cursor: pointer; }
+  .copy:hover { color: var(--ink); }
+  .note { color: var(--dim); max-width: 68ch; }
+
+
+  .picker { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+  .models { display: flex; flex-wrap: wrap; gap: 6px; }
+  .models button { font: 600 13px/1 var(--legend); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim);
+    background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; cursor: pointer; }
+  .models button:hover { color: var(--ink); }
+  .models button[aria-pressed="true"] { color: var(--desk); background: var(--ink); border-color: var(--ink); }
+  .models button:focus-visible, .brand input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .brand { display: flex; align-items: center; gap: 8px; font: 600 12.5px/1 var(--legend); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+  .brand input { font: 500 13px/1 var(--mono); color: var(--ink); background: var(--bench); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 11em; max-width: 100%; }
+  .acc { color: var(--dim); font-size: 13.5px; max-width: 78ch; }
+
+  @media (max-width: 760px) {
+    .cols { grid-template-columns: minmax(0, 1fr); }
+    h1 { font-size: 24px; }
+    dl { grid-template-columns: minmax(0, 1fr); }
+    dt { border-bottom: 0; padding-bottom: 0; }
+    dd { padding-top: 2px; }
+    .quick { right: 8px; top: 8px; }
+    .code pre { padding-top: 44px; }
+  }
+
+  /* ---- placeholder site shown on the tube (640 x 480 CSS px) ---- */
+  .site { min-height: 100%; box-sizing: border-box; padding: 26px 30px 34px; background: #f3efe6; color: #1c1a17; font: 400 17px/1.45 var(--body); }
+  .site header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 3px solid #1c1a17; padding-bottom: 10px; margin-bottom: 18px; }
+  .site h3 { margin: 0; font: 700 34px/1 var(--legend); letter-spacing: 0.02em; text-transform: uppercase; }
+  .site header span { font: 500 13px/1 var(--mono); }
+  .site .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .site a.tile { display: flex; align-items: flex-end; aspect-ratio: 4 / 3; padding: 10px; box-sizing: border-box; border: 3px solid #1c1a17;
+    color: #1c1a17; text-decoration: none; font: 700 17px/1.1 var(--legend); letter-spacing: 0.04em; text-transform: uppercase; }
+  .site a.tile:hover, .site a.tile:focus-visible { background-color: #1c1a17 !important; color: #f3efe6; outline: none; }
+  .site .t1 { background: #ffd23f; } .site .t2 { background: #ff7a59; } .site .t3 { background: #7fd1c7; }
+  .site .t4 { background: #c9b6ff; } .site .t5 { background: #9fe07c; } .site .t6 { background: #ffb3c7; }
+  .site p { margin: 16px 0 0; }
+  .site small { display: block; margin-top: 18px; font: 400 13px/1.5 var(--mono); color: #5d584f; }
+  .site.b { background: #1c1a17; color: #f3efe6; }
+  .site.b header { border-color: #f3efe6; }
+  .site.b small { color: #a39e93; }
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <h1 id="m-name">Sony PVM-9042QM</h1>
+    <p id="m-spec"></p>
+  </div>
+
+  <div class="picker">
+    <div class="models" id="models" role="group" aria-label="Model"></div>
+    <label class="brand" for="brand">Badge text <input id="brand" type="text" maxlength="14" placeholder="SONY" autocomplete="off" spellcheck="false"></label>
+  </div>
+
+  <div class="stage">
+    <div class="quick">
+      <button class="q" id="btn-power" type="button" aria-pressed="false">Power</button>
+      <button class="q" id="btn-zoom" type="button">Zoom to screen</button>
+    </div>
+    <sony-pvm id="pvm" view="hero">
+      <div class="site">
+        <header><h3>Your Name</h3><span id="page1-tag">PAGE 1 &middot; WORK</span></header>
+        <div class="grid">
+          <a class="tile t1" href="#strip-1">Strip 01</a>
+          <a class="tile t2" href="#strip-2">Strip 02</a>
+          <a class="tile t3" href="#strip-3">Strip 03</a>
+          <a class="tile t4" href="#strip-4">Strip 04</a>
+          <a class="tile t5" href="#strip-5">Strip 05</a>
+          <a class="tile t6" href="#strip-6">Strip 06</a>
+        </div>
+        <p>Placeholder page. Whatever HTML you put inside the tag shows here: it is real page content, so links, hover states, scrolling and text selection all work.</p>
+        <p id="page1-hint"></p>
+        <small id="clicked">Zoom in and click a tile.</small>
+      </div>
+      <div class="site b" id="page2">
+        <header><h3>About</h3><span id="page2-tag">PAGE 2 &middot; ABOUT</span></header>
+        <p>This is a second page. On the studio monitors it is wired to a second video input, and on the TVs to another channel.</p>
+        <p>Give any element a <code>slot</code> attribute to place it on an input or channel.</p>
+        <small>Placeholder text. Replace it with your own.</small>
+      </div>
+    </sony-pvm>
+  </div>
+  <p class="acc" id="m-acc"></p>
+
+  <div class="cols">
+    <section>
+      <h2>Controls on this model</h2>
+      <dl id="m-controls"></dl>
+    </section>
+    <section>
+      <h2>Live state</h2>
+      <div class="state" aria-live="off">
+        <div class="pills">
+          <span class="pill" id="s-power">POWER OFF</span>
+          <span class="pill" id="s-input">LINE A</span>
+          <span class="pill" id="s-focus">WHOLE SET</span>
+        </div>
+        <div class="knobs" id="s-knobs"></div>
+        <ul class="log" id="s-log"><li>Waiting for the first event.</li></ul>
+      </div>
+      <p class="note">Every control sends an event your own code can listen to, so the panel can drive your site however you like.</p>
+    </section>
+  </div>
+
+  <section class="embed">
+    <h2>Put it on a page</h2>
+    <div class="code">
+      <button class="copy" id="copy" type="button">Copy</button>
+<pre id="snippet"></pre>
+    </div>
+    <p class="note">The maker's badge is editable: <code>brand="YOUR NAME"</code> for text, <code>brand-logo="logo.svg"</code> for an image, <code>brand=""</code> to remove it. On the two PVMs the tally window can also take a logo with <code>tally-logo</code>.</p>
+  </section>
+</div>
+
+<script type="module" src="../dist/sony-pvm.js"></script>
+<script type="module">
+  const pvm = document.getElementById('pvm');
+  const $ = (id) => document.getElementById(id);
+  const SCREEN = 'Click it to zoom in. The page on the tube is then fully usable. <b>Esc</b> or the Back button zooms out.';
+  const PVM_COMMON = [
+    ['Degauss', 'Fires the degauss coil: the picture wobbles in rainbow colours and settles.'],
+    ['Blue only', 'Shows only the blue signal.'],
+    ['Under scan', 'Shrinks the picture by about 6% so all four corners are visible.'],
+    ['16:9', 'Squeezes the picture to widescreen height.'],
+    ['H/V delay', 'Shifts the picture to expose the blanking area.'],
+    ['Knobs', 'Drag left or right, or scroll over one. They change sharpness, brightness, colour, hue and contrast of the page, and the volume of any video or audio on it.'],
+  ];
+  const INFO = {
+    'pvm-9042qm': {
+      spec: '9-inch Trinitron studio monitor \u00b7 217 \u00d7 217 \u00d7 352.5 mm',
+      acc: 'Accuracy: size from Sony\u2019s dimension drawing; front and top measured from photos of a real unit.',
+      slot: 'line-b', tags: ['LINE A', 'LINE B'], hint: 'Press <b>A/B</b> on the front panel to switch to the second page.',
+      controls: [['Power', 'Warms the tube up and shows the picture. Clicking the screen while it is off does the same.'], ['Screen', SCREEN],
+        ['A/B', 'Switches between the LINE A and LINE B pages.'], ['Sync int/ext', 'EXT has no sync source connected, so the picture rolls. Press again to lock it.'], ...PVM_COMMON],
+    },
+    'pvm-20m4e': {
+      spec: '20-inch HR Trinitron studio monitor \u00b7 450 \u00d7 458 \u00d7 503 mm',
+      acc: 'Accuracy: cabinet size from the published specification. I had no photos or panel drawing for this one, so the front layout is reconstructed from the manual\u2019s list of controls and is approximate.',
+      slot: 'line-b', tags: ['LINE A', 'LINE B'], hint: 'Press <b>LINE B</b> on the front panel to switch to the second page.',
+      controls: [['Power', 'Warms the tube up and shows the picture.'], ['Screen', SCREEN],
+        ['Line A, Line B, RGB', 'Input buttons with indicator lamps. Each shows its own page.'], ['Ext sync', 'No sync source is connected, so the picture rolls.'],
+        ...PVM_COMMON, ['Menu, arrows, Enter', 'Send events only, for your own code to use.']],
+    },
+    'kv-5200': {
+      spec: '5-inch portable Trinitron colour TV \u00b7 162 \u00d7 269 \u00d7 330 mm with the handle up',
+      acc: 'Accuracy: size from the service manual; front, hood, handle and rear measured from photos. The control door on the right side is modelled closed.',
+      slot: 'ch-5', tags: ['CH 2', 'CH 5'], hint: 'Press channel <b>5</b> for the second page. Other channels show static.',
+      controls: [['Power', 'Warms the tube up and shows the picture.'], ['Screen', SCREEN],
+        ['Channel keys', 'Fourteen keys, 2 to 13 and two UHF presets. Each can hold its own page; the number above the selected key lights up. Empty channels show static.'],
+        ['Volume', 'Drag the slider. It sets the volume of any video or audio on the page.']],
+    },
+    'kv-9pr1': {
+      spec: '9-inch Trinitron personal TV, 1985 \u00b7 about 218 \u00d7 184 \u00d7 296 mm',
+      acc: 'Accuracy: no manual exists for this one, so the size is estimated from your photos and the 9-inch tube. The buttons on top are only partly visible in the photos, so their layout is a reconstruction.',
+      slot: 'ch-2', tags: ['CH 1', 'CH 2'], hint: 'Press <b>channel \u25b2</b> on top of the set for the second page. Other channels show static.',
+      controls: [['Power', 'On top of the set. The red standby lamp on the front goes out when the set is on.'], ['Screen', SCREEN],
+        ['Channel \u25bc \u25b2', 'Step through 12 channels. Each can hold its own page; empty channels show static.'],
+        ['Volume \u2212 +', 'Step the volume of any video or audio on the page.'], ['Sleep', 'Lights the sleep lamp on the front and sends an event.']],
+    },
+  };
+  const NAMES = { 'pvm-9042qm': 'PVM-9042QM', 'pvm-20m4e': 'PVM-20M4E', 'kv-5200': 'KV-5200', 'kv-9pr1': 'KV-9PR1' };
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  const log = (text) => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    const ul = $('s-log');
+    if (!log.started) { ul.textContent = ''; log.started = true; }
+    ul.prepend(li);
+    while (ul.children.length > 5) ul.lastChild.remove();
+  };
+  const sync = () => {
+    const on = pvm.power;
+    $('s-power').textContent = on ? 'POWER ON' : 'POWER OFF';
+    $('s-power').classList.toggle('on', on);
+    $('btn-power').setAttribute('aria-pressed', String(on));
+    $('s-input').textContent = pvm.input.replace('-', ' ').toUpperCase();
+    $('s-focus').textContent = pvm.focused ? 'ZOOMED TO SCREEN' : 'WHOLE SET';
+    $('btn-zoom').textContent = pvm.focused ? 'Zoom out' : 'Zoom to screen';
+    $('s-knobs').innerHTML = Object.entries(pvm.state.values).map(([k, v]) =>
+      `<span>${k.toUpperCase()}</span><span class="bar"><i style="width:${Math.round(v * 100)}%"></i></span><span>${Math.round(v * 100)}</span>`).join('');
+  };
+  const show = (id) => {
+    const info = INFO[id];
+    pvm.setAttribute('model', id);
+    $('page2').setAttribute('slot', info.slot);
+    $('m-name').textContent = 'Sony ' + NAMES[id];
+    $('m-spec').textContent = info.spec + ' \u00b7 interactive 3D model';
+    $('m-acc').textContent = info.acc;
+    $('page1-tag').textContent = info.tags[0] + ' \u00b7 WORK';
+    $('page2-tag').textContent = info.tags[1] + ' \u00b7 ABOUT';
+    $('page1-hint').innerHTML = info.hint;
+    $('m-controls').innerHTML = info.controls.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('');
+    for (const b of $('models').children) b.setAttribute('aria-pressed', String(b.dataset.model === id));
+    const brand = $('brand').value.trim();
+    $('snippet').innerHTML = esc(`<script type="module" src="sony-pvm.js"></` + `script>
+
+<sony-pvm model="${id}"${brand ? ` brand="${brand}"` : ''} power="on" style="height: 100vh">
+  <main>Your site goes here</main>
+  <section slot="${info.slot}">A second page</section>
+</sony-pvm>
+
+<script>
+  const tv = document.querySelector('sony-pvm');
+  tv.addEventListener('pvm-button', (e) => console.log(e.detail));
+  tv.addEventListener('pvm-input', (e) => console.log(e.detail));
+  tv.setBrand('YOUR NAME');        // or tv.setBrandLogo('logo.svg')
+</` + `script>`);
+    sync();
+  };
+
+  $('models').innerHTML = Object.keys(INFO).map((id) => `<button type="button" data-model="${id}" aria-pressed="false">${NAMES[id]}</button>`).join('');
+  $('models').addEventListener('click', (e) => { const id = e.target.dataset?.model; if (id) show(id); });
+  $('brand').addEventListener('input', () => { const v = $('brand').value; pvm.setBrand(v.trim() ? v : null); show(pvm.model); });
+
+  pvm.addEventListener('pvm-power', (e) => { log(`pvm-power  on: ${e.detail.on}`); sync(); });
+  pvm.addEventListener('pvm-button', (e) => { log(`pvm-button  ${e.detail.id}: ${e.detail.pressed ? 'in' : 'out'}`); sync(); });
+  pvm.addEventListener('pvm-input', (e) => { log(`pvm-input  ${e.detail.input}`); sync(); });
+  pvm.addEventListener('pvm-knob', (e) => { sync(); clearTimeout(log.t); log.t = setTimeout(() => log(`pvm-knob  ${e.detail.id}: ${e.detail.value.toFixed(2)}`), 150); });
+  pvm.addEventListener('pvm-degauss', () => log('pvm-degauss'));
+  pvm.addEventListener('pvm-focus', (e) => { log(`pvm-focus  focused: ${e.detail.focused}`); sync(); });
+
+  $('btn-power').addEventListener('click', () => pvm.power = !pvm.power);
+  $('btn-zoom').addEventListener('click', () => {
+    if (pvm.focused) return pvm.unfocus();
+    pvm.power = true;
+    pvm.focusScreen();
+  });
+  pvm.addEventListener('click', (e) => {
+    const tile = e.target.closest?.('a.tile');
+    if (!tile) return;
+    e.preventDefault();
+    $('clicked').textContent = `You clicked "${tile.textContent}". A real link would open it.`;
+  });
+  $('copy').addEventListener('click', async () => {
+    const text = $('snippet').textContent;
+    try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied'; }
+    catch { const r = document.createRange(); r.selectNodeContents($('snippet')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copy').textContent = 'Selected'; }
+    setTimeout(() => ($('copy').textContent = 'Copy'), 1600);
+  });
+  customElements.whenDefined('sony-pvm').then(() => show('pvm-9042qm'));
+</script>
+
+</body>
+</html>
