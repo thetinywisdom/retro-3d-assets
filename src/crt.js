@@ -72,10 +72,21 @@ void main() {
   float win2 = softbox(R, normalize(vec3(0.80, 0.30, 0.52)), vec2(0.09, 0.45), 0.09);
   vec3 glare = (vec3(1.0, 0.98, 0.94) * win1 * 2.4 + vec3(0.82, 0.9, 1.0) * win2 * 1.0 + vec3(0.32)) * fres * uGlare;
 
-  // unlit phosphor: the grey-green of a tube that is switched off
-  vec3 L = normalize(vec3(-0.4, 0.7, 0.6));
-  float diff = 0.42 + 0.58 * max(dot(N, L), 0.0);
-  vec3 offCol = vec3(0.20, 0.235, 0.215) * diff * mix(0.82 * uOutside, 1.0, inside) + glare;
+  // Switched-off tube: dark phosphor seen through glossy glass. The picture
+  // path below is unchanged — this only feeds the unpowered colour.
+  float facing = clamp(dot(N, V), 0.0, 1.0);
+  float rim = pow(1.0 - facing, 3.0);
+  vec3 Lk = normalize(vec3(-0.46, 0.62, 0.63));
+  vec3 H = normalize(Lk + V);
+  float spec = pow(max(dot(N, H), 0.0), 280.0);
+  float broad = pow(max(dot(N, H), 0.0), 22.0);
+  float bowl = mix(0.62, 1.0, facing) * (1.0 - 0.28 * pow(clamp(length(q), 0.0, 1.15), 2.0));
+  vec3 phosphor = vec3(0.11, 0.145, 0.128) * bowl;
+  vec3 offCol = phosphor * mix(0.7 * uOutside, 1.0, inside)
+              + vec3(0.92, 0.96, 0.98) * spec * 1.25
+              + vec3(0.55, 0.62, 0.64) * broad * 0.16
+              + vec3(0.70, 0.78, 0.76) * rim * 0.85
+              + glare;
 
   // scanlines (fade out when too fine to resolve, keeping average brightness)
   float sv = (q.y * 0.5 + 0.5) * uLines;
@@ -106,6 +117,37 @@ void main() {
   float alpha = mix(1.0, a, k);
   gl_FragColor = vec4(rgb, alpha);
 }`;
+
+/**
+ * Dark phosphor card that sits just behind the glass. The web component's
+ * shader overwrites it (the HTML picture still shows through the canvas).
+ * In the GLB the glass is transmissive, so this is the inside of the tube.
+ */
+export function makePhosphorMesh(glassGeo) {
+  const g = glassGeo.clone();
+  const p = g.attributes.position;
+  let cx = 0, cy = 0;
+  for (let i = 0; i < p.count; i++) { cx += p.getX(i); cy += p.getY(i); }
+  cx /= p.count; cy /= p.count;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i);
+    p.setXYZ(i, cx + (x - cx) * 0.992, cy + (y - cy) * 0.992, p.getZ(i) - 2.6);
+  }
+  p.needsUpdate = true;
+  g.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({
+    name: 'crt-phosphor',
+    color: 0x24312c,
+    roughness: 0.7,
+    metalness: 0,
+    emissive: 0x16211d,
+    emissiveIntensity: 0.5,
+  });
+  const mesh = new THREE.Mesh(g, mat);
+  mesh.name = 'crt-phosphor';
+  mesh.raycast = () => {};
+  return mesh;
+}
 
 export function makeCrtMaterial({ rect, planeZ, lines = 240, corner = 5, outside = 1 }) {
   return new THREE.ShaderMaterial({

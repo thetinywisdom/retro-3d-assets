@@ -244,6 +244,51 @@ export function makeGrainTexture(size = 128) {
   g.putImageData(img, 0, 0);
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.NoColorSpace;
+  return t;
+}
+
+/**
+ * Low-contrast roughness blotches. Tiled in millimetre UVs (repeat 1/80),
+ * and kept near white so it only nudges a material's roughness factor.
+ */
+export function makeRoughnessTexture(size = 128) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const img = g.createImageData(size, size);
+  const grid = 4;
+  const cells = [];
+  let seed = 9001;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let y = 0; y <= grid; y++) {
+    cells[y] = [];
+    for (let x = 0; x <= grid; x++) cells[y][x] = rnd();
+  }
+  const fade = (t) => t * t * (3 - 2 * t);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const gx = (x / size) * grid, gy = (y / size) * grid;
+      const x0 = Math.floor(gx), y0 = Math.floor(gy);
+      const tx = fade(gx - x0), ty = fade(gy - y0);
+      const v = lerp(
+        lerp(cells[y0][x0], cells[y0][x0 + 1], tx),
+        lerp(cells[y0 + 1][x0], cells[y0 + 1][x0 + 1], tx),
+        ty,
+      );
+      const n = Math.round(228 + v * 27); // about 0.89–1.0
+      const i = (y * size + x) * 4;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = n;
+      img.data[i + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.name = 'paint-roughness';
+  t.colorSpace = THREE.NoColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1 / 80, 1 / 80);
   return t;
 }
 

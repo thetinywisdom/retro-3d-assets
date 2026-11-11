@@ -11,11 +11,14 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  makePanelLabels, makeBrandTexture, makeTrinitronLabel, makeGrainTexture,
+  makePanelLabels, makeBrandTexture, makeTrinitronLabel, makeGrainTexture, makeRoughnessTexture,
   makeShadowTexture, makeTallyTexture,
 } from '../labels.js';
-import { makeCrtMaterial } from '../crt.js';
-import { SEG, rr, circle, ring, loft, plate, rbox, well, onTop } from '../kit.js';
+import { makeCrtMaterial, makePhosphorMesh } from '../crt.js';
+import {
+  rr, circle, ring, loft, plate, rbox, well, onTop, skipSides, straightFace, faceLocal, lay,
+  rectOutline, holeRect, holeFits, boxCavity,
+} from '../kit.js';
 
 export const DIM = {
   W: 217, H: 217, D: 352.5,
@@ -91,10 +94,11 @@ export function buildMonitor({ tallyLogo = null } = {}) {
 
   const grain = makeGrainTexture();
   grain.repeat.set(1 / 9, 1 / 9);
+  const rough = makeRoughnessTexture();
 
   const M = {
-    cover: new THREE.MeshStandardMaterial({ name: 'cover', color: 0x93938e, roughness: 0.74, metalness: 0.05, bumpMap: grain, bumpScale: 0.6 }),
-    bezel: new THREE.MeshStandardMaterial({ name: 'bezel', color: 0x55534f, roughness: 0.66, metalness: 0.0, bumpMap: grain, bumpScale: 0.45 }),
+    cover: new THREE.MeshStandardMaterial({ name: 'cover', color: 0x93938e, roughness: 0.74, metalness: 0.05, bumpMap: grain, bumpScale: 0.6, roughnessMap: rough }),
+    bezel: new THREE.MeshStandardMaterial({ name: 'bezel', color: 0x55534f, roughness: 0.66, metalness: 0.0, bumpMap: grain, bumpScale: 0.45, roughnessMap: rough }),
     funnel: new THREE.MeshStandardMaterial({ name: 'funnel', color: 0x2b2a29, roughness: 0.72 }),
     panel: new THREE.MeshStandardMaterial({ name: 'panel', color: 0x3a3a39, roughness: 0.62 }),
     black: new THREE.MeshStandardMaterial({ name: 'black', color: 0x070707, roughness: 0.85 }),
@@ -103,7 +107,7 @@ export function buildMonitor({ tallyLogo = null } = {}) {
     handle: new THREE.MeshPhysicalMaterial({ name: 'handle', color: 0x0b0b0b, roughness: 0.32, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
     screw: new THREE.MeshStandardMaterial({ name: 'screw', color: 0xc4c4c0, roughness: 0.38, metalness: 1 }),
     trimmer: new THREE.MeshStandardMaterial({ name: 'trimmer', color: 0x1d1d1d, roughness: 0.5 }),
-    slot: new THREE.MeshBasicMaterial({ name: 'slot', color: 0x050505 }),
+    cavity: new THREE.MeshStandardMaterial({ name: 'cavity', color: 0x0c0c0c, roughness: 0.94, side: THREE.DoubleSide }),
   };
   const buttonMat = () => new THREE.MeshStandardMaterial({ name: 'button', color: 0xa9a699, roughness: 0.6 });
   const knobMat = () => new THREE.MeshStandardMaterial({ name: 'knob', color: 0x141414, roughness: 0.38 });
@@ -115,17 +119,13 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   const cw = W - 1, ch = BODY_H - 1, cr = 3.5;
   const cprof = rr(cw, ch, cr, 0, CY);
   const coverTop = CY + ch / 2;
-  add('cover', loft([ring(cprof, BZ), ring(cprof, ZB)], { skip: (i) => i === SEG })); // top is added separately
+  // Top and both sides are plates, so the vents can be openings rather than decals.
+  add('cover', loft([ring(cprof, BZ), ring(cprof, ZB)], { skip: skipSides('top', 'left', 'right') }));
   add('cover', plate(cprof, [], 0).rotateY(Math.PI).translate(0, 0, BZ));               // plain back
   add('panel', new THREE.PlaneGeometry(W - 28, BODY_H - 30).rotateY(Math.PI).translate(0, CY, BZ - 0.06));
 
-  // top plate with the carry-handle tray cut out (shape y = -world z)
   const tray = { w: 80, d: 240, zc: BZ + 170, depth: 7 };
-  const topRect = [
-    new THREE.Vector2(-(cw / 2 - cr), -ZB), new THREE.Vector2(cw / 2 - cr, -ZB),
-    new THREE.Vector2(cw / 2 - cr, -BZ), new THREE.Vector2(-(cw / 2 - cr), -BZ),
-  ];
-  add('cover', plate(topRect, [rr(tray.w, tray.d, 8, 0, -tray.zc)]).rotateX(-Math.PI / 2).translate(0, coverTop, 0));
+  const coverFace = { w: cw, h: ch, r: cr, cy: CY, z0: BZ, z1: ZB };
   // tray: soft lip, sloped walls, flat floor
   add('cover', onTop(loft([
     ring(rr(tray.w, tray.d, 8), 0), ring(rr(tray.w - 2.4, tray.d - 2.4, 7), -1.1),
@@ -151,23 +151,35 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   screw(new THREE.Matrix4().makeTranslation(0, trayFloor + 5.6, BZ + 93));
   screw(new THREE.Matrix4().makeTranslation(0, trayFloor + 5.6, BZ + 252));
 
-  // top vent slots: 2 columns each side, 4 groups front to back (measured)
-  const slotW = 16, slotT = 1.7;
+  // top plate: carry-handle tray plus the vent columns, each vent a real recess
+  const slotW = 16, slotT = 1.7, slotD = 2.8;
   const topGroups = [[12, 14], [88, 14], [164, 14], [240, 8]];
-  for (const sx of [-91.5, -67.5, 67.5, 91.5]) {
-    for (const [y0, n] of topGroups) {
-      for (let k = 0; k < n; k++) {
-        add('slot', new THREE.PlaneGeometry(slotW, slotT).rotateX(-Math.PI / 2).translate(sx, coverTop + 0.06, BZ + y0 + k * 5.05));
+  {
+    const desc = straightFace('top', coverFace);
+    const holes = [];
+    const trayAt = faceLocal(desc, new THREE.Vector3(0, desc.origin.y, tray.zc));
+    holes.push(rr(tray.w, tray.d, 8, trayAt.x, trayAt.y).slice().reverse());
+    for (const sx of [-91.5, -67.5, 67.5, 91.5]) {
+      for (const [y0, n] of topGroups) {
+        for (let k = 0; k < n; k++) {
+          const p = faceLocal(desc, new THREE.Vector3(sx, desc.origin.y, BZ + y0 + k * 5.05));
+          if (!holeFits(desc, p.x, p.y, slotW, slotT)) continue;
+          holes.push(holeRect(slotW, slotT, p.x, p.y));
+          add('cavity', lay(boxCavity(slotW, slotT, slotD), desc.face, desc.origin, p.x, p.y));
+        }
       }
     }
+    add('cover', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
   }
 
   // side vents + screws, from the dimension drawing (zf = mm behind the front face)
   const sideCols = [[47, 114], [122, 188], [196, 262], [270, 327]];
   const sideRows = [[12, 28], [36, 52], [60, 75], [132, 148], [156, 173]];
   const sideScrews = [[50, 100], [334, 100], [110, 198], [281, 198]];
-  for (const side of [-1, 1]) {
-    const x = side * (cw / 2 + 0.06);
+  for (const sideName of ['left', 'right']) {
+    const side = sideName === 'right' ? 1 : -1;
+    const desc = straightFace(sideName, coverFace);
+    const holes = [];
     for (const [z0, z1] of sideCols) {
       const n = Math.floor((z1 - z0 + 3) / 17.5);
       const len = (z1 - z0 - (n - 1) * 3) / n;
@@ -175,11 +187,15 @@ export function buildMonitor({ tallyLogo = null } = {}) {
         for (let r = 0; r < 4; r++) {
           for (let k = 0; k < n; k++) {
             const zf = z0 + len / 2 + k * (len + 3);
-            add('slot', new THREE.PlaneGeometry(len, slotT).rotateY(side * Math.PI / 2).translate(x, Y1 - (t0 + 1.2 + r * 4.6), FZ - zf));
+            const p = faceLocal(desc, new THREE.Vector3(desc.origin.x, Y1 - (t0 + 1.2 + r * 4.6), FZ - zf));
+            if (!holeFits(desc, p.x, p.y, len, slotT, 0.35)) continue;
+            holes.push(holeRect(len, slotT, p.x, p.y));
+            add('cavity', lay(boxCavity(len, slotT, slotD), desc.face, desc.origin, p.x, p.y));
           }
         }
       }
     }
+    add('cover', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
     for (const [zf, ft] of sideScrews) {
       screw(new THREE.Matrix4().makeRotationZ(-side * Math.PI / 2).setPosition(side * cw / 2, Y1 - ft, FZ - zf), 3.6);
     }
@@ -222,16 +238,19 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   add('funnel', loft([ring(rr(S.w, S.h, 5, scx, scy), FZ - 0.9), ring(rr(maskW + 3, maskH + 3, 7, scx, scy), FZ - funnelDepth)]));
   add('black', loft([ring(rr(maskW + 3, maskH + 3, 7, scx, scy), FZ - funnelDepth), ring(rr(maskW, maskH, 6, scx, scy), FZ - funnelDepth - 2)]));
 
-  // tally lamp window
+  // tally lamp window: bezel lip, dark shaft, diffuser at the back of the well
   const tallyFloor = { w: TL.w - 3, h: TL.h - 3 };
-  add('bezel', loft([ring(tallyOuter, FZ), ring(rr(tallyFloor.w, tallyFloor.h, 0.8, fxX(TL.fx), fyY(TL.fy)), FZ - 3)]));
+  const tallyDepth = 8;
+  const tallyLip = rr(TL.w - 1.5, TL.h - 1.5, 1.0, fxX(TL.fx), fyY(TL.fy));
+  add('bezel', loft([ring(tallyOuter, FZ), ring(tallyLip, FZ - 1.4)]));
+  add('black', loft([ring(tallyLip, FZ - 1.4), ring(rr(tallyFloor.w, tallyFloor.h, 0.7, fxX(TL.fx), fyY(TL.fy)), FZ - tallyDepth)]));
   const tallyMat = new THREE.MeshStandardMaterial({
-    name: 'tally', color: 0xd9d9d4, roughness: 0.45, emissive: 0xffffff, emissiveIntensity: 0,
+    name: 'tally', color: 0xd0d0ca, roughness: 0.55, emissive: 0xffffff, emissiveIntensity: 0,
     map: makeTallyTexture(tallyLogo, tallyFloor.w, tallyFloor.h),
   });
   tallyMat.emissiveMap = tallyMat.map;
   const tally = new THREE.Mesh(new THREE.PlaneGeometry(tallyFloor.w, tallyFloor.h), tallyMat);
-  tally.position.set(fxX(TL.fx), fyY(TL.fy), FZ - 2.95);
+  tally.position.set(fxX(TL.fx), fyY(TL.fy), FZ - tallyDepth + 0.2);
   tally.name = 'tally';
   tally.userData.size = tallyFloor;
   root.add(tally);
@@ -341,9 +360,9 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   })();
   for (const side of [-1, 1]) {
     const g = mergeGeometries([
-      new THREE.TubeGeometry(handlePath.path, 56, 3, 12, false),
-      new THREE.CylinderGeometry(4.4, 4.8, 1.8, 20).rotateX(Math.PI / 2).translate(0, 0, 0.9),
-      new THREE.CylinderGeometry(4.4, 4.8, 1.8, 20).rotateX(Math.PI / 2).translate(0, -handlePath.L, 0.9),
+      new THREE.TubeGeometry(handlePath.path, 72, 3, 24, false),
+      new THREE.CylinderGeometry(4.4, 4.8, 1.8, 28).rotateX(Math.PI / 2).translate(0, 0, 0.9),
+      new THREE.CylinderGeometry(4.4, 4.8, 1.8, 28).rotateX(Math.PI / 2).translate(0, -handlePath.L, 0.9),
     ]);
     g.rotateY(side * 0.2).translate(side * 99.2, fyY(166), FZ);
     add('handle', g);
@@ -355,7 +374,6 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   for (const [key, list] of Object.entries(bucket)) {
     const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g : g))), M[key]);
     mesh.name = key;
-    if (key === 'slot') mesh.raycast = () => {};
     body.add(mesh);
   }
   root.add(body);
@@ -381,6 +399,7 @@ export function buildMonitor({ tallyLogo = null } = {}) {
   glass.name = 'crt-glass';
   glass.userData.screen = true;
   root.add(glass);
+  root.add(makePhosphorMesh(glassGeo));
 
   // ---- contact shadow --------------------------------------------------------
   const pad = 70;

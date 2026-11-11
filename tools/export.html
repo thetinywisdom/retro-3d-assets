@@ -13,7 +13,23 @@
     for (const [id, model] of Object.entries(MODELS)) {
       const m = model.build();
       m.root.remove(m.shadow);
-      m.glass.material = new THREE.MeshPhysicalMaterial({ name: 'crt-glass', color: 0x1b201d, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 });
+      // Deep tube glass for DCC tools. Opaque, very low roughness, full clearcoat:
+      // transmission looks grainy in EEVEE at modest sample counts and reads as
+      // frosted plastic. The phosphor card stays behind the glass for tools that
+      // do trace refraction. The web component keeps the CRT shader on this mesh.
+      m.glass.material = new THREE.MeshPhysicalMaterial({
+        name: 'crt-glass',
+        color: 0x1c2824,
+        metalness: 0,
+        roughness: 0.02,
+        ior: 1.5,
+        clearcoat: 1,
+        clearcoatRoughness: 0.015,
+        emissive: 0x10201b,
+        emissiveIntensity: 0.55,
+        reflectivity: 0.6,
+        transparent: false,
+      });
       m.root.traverse((o) => { if (o.material?.bumpMap) { o.material = o.material.clone(); o.material.bumpMap = null; } });
       m.root.scale.setScalar(0.001);
       m.root.updateMatrixWorld(true);
