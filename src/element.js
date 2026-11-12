@@ -746,7 +746,7 @@ export class SonyPVMElement extends Base {
    * slowly between `low` and `high` (eased), and fades out when turned off. Steady with reduced motion.
    * Only keys built with a backlight (the KV-5200's channel keys) have the glow.
    */
-  setBacklight(on = true, { role = 'channel', low = 0.1, high = 0.3, cells = 0.22, period = 2400, duration = 700 } = {}) {
+  setBacklight(on = true, { role = 'channel', low = 0.1, high = 0.2, cells = 0.22, period = 4000, duration = 700 } = {}) {
     if (!this._m) return;
     this._bl ||= { v: 0, p: 0.5 };
     Object.assign(this._bl, { role, low, high, cells });
@@ -764,7 +764,7 @@ export class SonyPVMElement extends Base {
     const bl = this._bl;
     if (!bl || !this._m) return;
     const v = this.state.power ? bl.v : 0;
-    const level = this._reduced ? (bl.low + bl.high) / 2 : bl.low + (bl.high - bl.low) * bl.p;   // 10% .. 30%
+    const level = this._reduced ? (bl.low + bl.high) / 2 : bl.low + (bl.high - bl.low) * bl.p;   // 10% .. 20%
     for (const c of this._meta.controls) {
       const rec = this._m.controls[c.id];
       if (c.role !== bl.role || !rec) continue;

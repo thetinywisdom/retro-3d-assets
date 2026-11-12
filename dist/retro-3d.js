@@ -14945,7 +14945,7 @@ var Gf = class extends Hf {
 			r.pos = e, r.mesh.position.copy(r.home).addScaledVector(r.axis, r.travel * e);
 		}));
 	}
-	setBacklight(e = !0, { role: t = "channel", low: n = .1, high: r = .3, cells: i = .22, period: a = 2400, duration: o = 700 } = {}) {
+	setBacklight(e = !0, { role: t = "channel", low: n = .1, high: r = .2, cells: i = .22, period: a = 4e3, duration: o = 700 } = {}) {
 		if (!this._m) return;
 		this._bl || (this._bl = {
 			v: 0,
