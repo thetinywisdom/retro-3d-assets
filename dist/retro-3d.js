@@ -17073,7 +17073,8 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			"floor",
 			"floor-color",
 			"smoke",
-			"grain"
+			"grain",
+			"front-light"
 		];
 	}
 	constructor() {
@@ -17142,7 +17143,8 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 				"consoles",
 				"floor",
 				"floor-color",
-				"smoke"
+				"smoke",
+				"front-light"
 			].includes(e) && this._rebuild(), e === "brand") for (let e of Object.values(this._units)) e.setBrand(n);
 			e === "power" && this._applyPowerAttr();
 		}
@@ -17240,11 +17242,11 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 	_rebuild() {
 		if (!this._ready) return;
 		this._selected >= 0 && this.close(!0), this._dispose(this._furniture);
-		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r;
-		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .014 : .6, this._room = r ? .3 : i ? .06 : 1;
-		let a = t && this.hasAttribute("consoles");
-		this._floorPad = a ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._pitch = t ? a ? .27 : .12 : 0;
-		let o = t ? {
+		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r, a = this.hasAttribute("front-light") ? Math.max(0, parseFloat(this.getAttribute("front-light")) || 0) : 1;
+		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = r ? .3 : i ? .24 * a : .5, this._fill.color.set(i ? 16773596 : 14674175), this._fill.position.set(i ? 150 : 700, i ? 520 : 300, i ? 1600 : 1200), this._scene.environmentIntensity = r ? .16 : i ? .014 : .6, this._room = r ? .3 : i ? .06 : 1;
+		let o = t && this.hasAttribute("consoles");
+		this._floorPad = o ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._pitch = t ? o ? .27 : .12 : 0;
+		let s = t ? {
 			height: 0,
 			width: 0,
 			depth: 520,
@@ -17254,7 +17256,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			rows: 2,
 			cellW: e === "wide" ? 980 : 860
 		});
-		if (t || this._furniture.add(o.group), t || i) {
+		if (t || this._furniture.add(s.group), t || i) {
 			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po(i ? this.getAttribute("floor") === "carpet" ? Vp(this.getAttribute("floor-color") || "#55682f", 200) : {
 				color: 9079434,
 				map: Hp(6e4 / 1400),
@@ -17267,8 +17269,8 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			}));
 			e.position.set(0, -.5, 0), e.raycast = () => {}, this._furniture.add(e);
 		}
-		let s = this.getAttribute("backlight");
-		if (this.hasAttribute("wall") || s !== null) {
+		let c = this.getAttribute("backlight");
+		if (this.hasAttribute("wall") || c !== null) {
 			let e = new J(new Ya(9e3, 5e3), new po({
 				color: 10132122,
 				map: Hp(9e3 / 1400, !0),
@@ -17277,26 +17279,26 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
 		}
 		if (!i && !t) {
-			let e = new J(new Ya(o.width + 260, o.depth + 260).rotateX(-Math.PI / 2), new Yr({
-				map: td(o.width, o.depth, 130),
+			let e = new J(new Ya(s.width + 260, s.depth + 260).rotateX(-Math.PI / 2), new Yr({
+				map: td(s.width, s.depth, 130),
 				transparent: !0,
 				depthWrite: !1,
 				toneMapped: !1
 			}));
-			e.position.set(0, .5, -o.depth / 2), e.raycast = () => {}, this._furniture.add(e);
+			e.position.set(0, .5, -s.depth / 2), e.raycast = () => {}, this._furniture.add(e);
 		}
-		let c = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), l = Ip[e === "tall" && c[1] ? c[1] : c[0]] || Ip.pyramid;
+		let l = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), u = Ip[e === "tall" && l[1] ? l[1] : l[0]] || Ip.pyramid;
 		this._dark = i;
-		let u = {}, d = o.height, f = -o.width / 2, p = o.width / 2, m = (e) => {
-			if (e in u) return u[e];
-			let n = l[e], r = wf[e].META.size, a = n.on ? m(n.on) + wf[n.on].META.size.h : o.height, s = this._units[e]._parent;
-			return s.position.set(n.x, a, Fp - r.d / 2 + (n.z || 0)), s.rotation.y = Lt.degToRad(n.ry || 0), s.updateMatrixWorld(!0), d = Math.max(d, a + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, f = Math.min(f, n.x - r.w / 2), p = Math.max(p, n.x + r.w / 2), u[e] = a;
+		let d = {}, f = s.height, p = -s.width / 2, m = s.width / 2, h = (e) => {
+			if (e in d) return d[e];
+			let n = u[e], r = wf[e].META.size, a = n.on ? h(n.on) + wf[n.on].META.size.h : s.height, o = this._units[e]._parent;
+			return o.position.set(n.x, a, Fp - r.d / 2 + (n.z || 0)), o.rotation.y = Lt.degToRad(n.ry || 0), o.updateMatrixWorld(!0), f = Math.max(f, a + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, p = Math.min(p, n.x - r.w / 2), m = Math.max(m, n.x + r.w / 2), d[e] = a;
 		};
-		if (Pp.forEach(m), this._buildGlow(), this._bounds = {
-			w: Math.max(-f, p) * 2,
-			h: d
-		}, s !== null) {
-			let e = new K(s || "#10a045"), t = this._bounds.w / 2;
+		if (Pp.forEach(h), this._buildGlow(), this._bounds = {
+			w: Math.max(-p, m) * 2,
+			h: f
+		}, c !== null) {
+			let e = new K(c || "#10a045"), t = this._bounds.w / 2;
 			for (let [n, r, i] of [
 				[
 					-t * 1.5,
@@ -17319,7 +17321,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			}
 		}
 		if (this._smoke = [], this.hasAttribute("smoke")) {
-			let e = new K(s || (s === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = Bp(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
+			let e = new K(c || (c === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = Bp(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
 			for (let i = 0; i < 14; i++) {
 				let o = i < 9, s = 900 + a() * 1100, c = new Yr({
 					map: n,
@@ -17330,7 +17332,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 					opacity: (o ? .13 : .04) * t,
 					toneMapped: !1
 				}), l = new J(new Ya(s, s * .6), c);
-				l.position.set((a() - .5) * r * 4.2, o ? 120 + a() * d * .9 : 40 + a() * 160, o ? -330 - a() * 380 : 140 + a() * 420), l.rotation.z = (a() - .5) * .8, l.raycast = () => {}, l.renderOrder = 5, l.userData = {
+				l.position.set((a() - .5) * r * 4.2, o ? 120 + a() * f * .9 : 40 + a() * 160, o ? -330 - a() * 380 : 140 + a() * 420), l.rotation.z = (a() - .5) * .8, l.raycast = () => {}, l.renderOrder = 5, l.userData = {
 					x: l.position.x,
 					y: l.position.y,
 					r: l.rotation.z,
@@ -17341,7 +17343,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 				}, this._furniture.add(l), this._smoke.push(l);
 			}
 		}
-		if (a) {
+		if (o) {
 			let t = Math.max(this._bounds.w / 2 + 120, e === "tall" ? 330 : 520), n = e === "tall" ? [
 				[
 					"ps-one",
@@ -17428,7 +17430,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			this._buildA11y(), this._fit(), this._focusKey && this._aim();
 			return;
 		}
-		let h = [...this.querySelectorAll("retro-item")].map((e) => ({
+		let g = [...this.querySelectorAll("retro-item")].map((e) => ({
 			el: e,
 			type: (e.getAttribute("type") || "book").toLowerCase(),
 			title: e.getAttribute("title") || e.textContent.trim().slice(0, 40),
@@ -17442,7 +17444,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			let t = rp(e);
 			return t.userData.el = e.el, t;
 		});
-		for (let e of Np(this.getAttribute("arrange") || "browsed", o.cells, h, (e) => wp[e]())) {
+		for (let e of Np(this.getAttribute("arrange") || "browsed", s.cells, g, (e) => wp[e]())) {
 			if (e.userData.spec) {
 				e.userData.home = {
 					pos: e.position.clone(),

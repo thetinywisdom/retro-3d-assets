@@ -178,7 +178,7 @@ function concrete(repeat, wall = false) {
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'grain']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'grain', 'front-light']; }
 
   constructor() {
     super();
@@ -244,7 +244,7 @@ export class RetroShelfElement extends Base {
     if (name === 'muted') this._sound.muted = v !== null;
     if (name === 'grain') this._applyGrain();
     if (!this._renderer) return;
-    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke'].includes(name)) this._rebuild();
+    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'front-light'].includes(name)) this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
   }
@@ -367,8 +367,12 @@ export class RetroShelfElement extends Base {
     const mood = this.getAttribute('lighting');
     const dim = mood === 'dim', dark = mood === 'dark' || dim;   // dim = dark room with a little light left on
     // room light: normal, or nothing but the screens
+    // dark room: no room light, just a faint soft lamp from the viewer's side so the buttons can be made out
+    const front = this.hasAttribute('front-light') ? Math.max(0, parseFloat(this.getAttribute('front-light')) || 0) : 1;
     this._key.intensity = dim ? 0.22 : dark ? 0 : 2.1;
-    this._fill.intensity = dark ? 0 : 0.5;
+    this._fill.intensity = dim ? 0.3 : dark ? 0.24 * front : 0.5;
+    this._fill.color.set(dark ? 0xfff1dc : 0xdfe8ff);
+    this._fill.position.set(dark ? 150 : 700, dark ? 520 : 300, dark ? 1600 : 1200);
     this._scene.environmentIntensity = dim ? 0.16 : dark ? 0.014 : 0.6;
     this._room = dim ? 0.3 : dark ? 0.06 : 1;
     const spread = floorOnly && this.hasAttribute('consoles');
