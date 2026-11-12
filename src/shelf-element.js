@@ -54,13 +54,14 @@ export const STACKS = {
     'pvm-20m4e': { x: 30, ry: -2 },
     'kv-9pr1': { x: 420, ry: -13, z: 20 },
   },
-  // left where they were put down: two on the floor, two perched
+  // left where they were put down: two sets on the floor, each with a smaller one perched on it
   scatter: {
-    'pvm-20m4e': { x: -120, ry: 8, z: -60 },
-    'kv-9pr1': { x: 330, ry: -18, z: 90 },
-    'pvm-9042qm': { x: -60, on: 'pvm-20m4e', ry: -12 },
-    'kv-5200': { x: -470, ry: 24, z: 120 },
+    'pvm-20m4e': { x: -190, ry: 8, z: -60 },
+    'pvm-9042qm': { x: -130, on: 'pvm-20m4e', ry: -12, z: -60 },
+    'kv-9pr1': { x: 290, ry: -16, z: 90 },
+    'kv-5200': { x: 296, on: 'kv-9pr1', ry: -4, z: 96 },
   },
+
 };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
