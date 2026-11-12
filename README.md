@@ -31,7 +31,7 @@ One straight-on camera. Tapping a TV moves in to it and its page becomes usable 
 | `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is a dim green; `backlight="#ff3355"` picks a colour |
 | `floor` | Floor in the dark room: `concrete` (default, slight sheen) or `carpet` (matt, no reflections). `floor-color="#55682f"` sets the carpet colour; the default is moss green |
 | `smoke` | Slowly drifting haze that picks up the backlight colour. `smoke="2"` is thicker, `smoke="0.5"` thinner. It keeps the scene redrawing at a low frame rate, and stands still for visitors who have reduced motion turned on |
-| `grain` | Flickering film grain over the whole view, TV screens included. `grain="2"` is heavier, `grain="0.5"` lighter. It holds still for visitors who have reduced motion turned on |
+| `grain` | Fine, still film grain over the whole view, TV screens included. `grain="2"` is heavier, `grain="0.5"` lighter |
 | `consoles` | With `scene="floor"`: lays the PS one, controller, Game Boy Advance, PS Vita and PSP Go face up on the floor in front of the TVs, handheld screens lit |
 | `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |

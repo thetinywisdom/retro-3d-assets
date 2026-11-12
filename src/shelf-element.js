@@ -74,11 +74,7 @@ const STYLE = /* css */ `
 .wall::-webkit-scrollbar { display: none; }
 .wall.locked { overflow-y: hidden; touch-action: none; }
 .view { position: sticky; top: 0; height: 100%; overflow: hidden; }
-.grain { position: absolute; inset: -80px; z-index: 2; pointer-events: none; background-size: 160px 160px; image-rendering: pixelated;
-  opacity: 0; animation: shelf-grain 0.5s steps(6) infinite; }
-@keyframes shelf-grain { 0% { transform: translate(0, 0); } 17% { transform: translate(-31px, 22px); } 33% { transform: translate(27px, -38px); }
-  50% { transform: translate(-44px, -13px); } 67% { transform: translate(18px, 41px); } 83% { transform: translate(39px, -9px); } 100% { transform: translate(0, 0); } }
-@media (prefers-reduced-motion: reduce) { .grain { animation: none; } }
+.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }
 .ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .ui > * { pointer-events: auto; }
 .ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }
@@ -323,23 +319,24 @@ export class RetroShelfElement extends Base {
     this._sound.muted = this.hasAttribute('muted');
   }
 
-  /** Film grain over the whole view: grain, or grain="2" for heavier, grain="0.5" for lighter. */
+  /** Still film grain over the whole view: grain, or grain="2" for heavier, grain="0.5" for lighter. */
   _applyGrain() {
     const el = this.shadowRoot.querySelector('.grain');
     if (!this.hasAttribute('grain')) { el.style.opacity = 0; return; }
     if (!el.style.backgroundImage) {
       const c = document.createElement('canvas');
-      c.width = c.height = 160;
-      const g = c.getContext('2d'), img = g.createImageData(160, 160);
+      c.width = c.height = 512;
+      const g = c.getContext('2d'), img = g.createImageData(512, 512);
       for (let i = 0; i < img.data.length; i += 4) {
-        const v = Math.random();
-        img.data[i] = img.data[i + 1] = img.data[i + 2] = v > 0.5 ? 255 : 0;      // light and dark specks
-        img.data[i + 3] = Math.pow(Math.abs(v - 0.5) * 2, 2.2) * 255;
+        // bell-shaped, so most of the frame is untouched and specks are soft, like film stock
+        const v = (Math.random() + Math.random() + Math.random()) / 3 - 0.5;
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = v > 0 ? 235 : 0;
+        img.data[i + 3] = Math.min(255, Math.abs(v) * 2 * 255);
       }
       g.putImageData(img, 0, 0);
       el.style.backgroundImage = `url(${c.toDataURL()})`;
     }
-    el.style.opacity = Math.max(0, Math.min(1, 0.14 * (parseFloat(this.getAttribute('grain')) || 1)));
+    el.style.opacity = Math.max(0, Math.min(1, 0.2 * (parseFloat(this.getAttribute('grain')) || 1)));
   }
 
   /** The <sony-pvm> instance for one set: "pvm-20m4e", "pvm-9042qm", "kv-9pr1" or "kv-5200". */
