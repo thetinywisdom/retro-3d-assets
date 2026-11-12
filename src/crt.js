@@ -35,6 +35,7 @@ uniform float uFx;      // overlay strength
 uniform float uGlare;   // reflection strength
 uniform float uCorner;  // picture corner radius (mm)
 uniform float uOutside; // brightness of the face plate outside the picture
+uniform float uRoom;    // how much room light falls on the glass (1 = lit room, 0 = dark)
 
 float sdRoundRect(vec2 p, vec2 b, float r) {
   vec2 d = abs(p) - b + r;
@@ -75,7 +76,8 @@ void main() {
   // unlit phosphor: the grey-green of a tube that is switched off
   vec3 L = normalize(vec3(-0.4, 0.7, 0.6));
   float diff = 0.42 + 0.58 * max(dot(N, L), 0.0);
-  vec3 offCol = vec3(0.20, 0.235, 0.215) * diff * mix(0.82 * uOutside, 1.0, inside) + glare;
+  glare *= uRoom;
+  vec3 offCol = vec3(0.20, 0.235, 0.215) * diff * mix(0.82 * uOutside, 1.0, inside) * uRoom + glare;
 
   // scanlines (fade out when too fine to resolve, keeping average brightness)
   float sv = (q.y * 0.5 + 0.5) * uLines;
@@ -122,6 +124,7 @@ export function makeCrtMaterial({ rect, planeZ, lines = 240, corner = 5, outside
       uGlare: { value: 1 },
       uCorner: { value: corner },
       uOutside: { value: outside },
+      uRoom: { value: 1 },
     },
     vertexShader,
     fragmentShader,

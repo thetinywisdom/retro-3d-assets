@@ -24,8 +24,10 @@ One straight-on camera. Tapping a TV moves in to it and its page becomes usable 
 
 | Attribute | Meaning |
 | --- | --- |
-| `stack` | `pyramid` (default) or `pile`. Positions are in `STACKS` in `src/shelf-element.js`; add your own arrangement there |
+| `stack` | `pyramid` (default), `pile`, `tower`, `row` or `scatter`. Two names, such as `stack="scatter tower"`, use the first on wide screens and the second on tall ones. Positions are in `STACKS` in `src/shelf-element.js`; add your own arrangement there |
 | `arrange` | How the shelf contents are set out: `browsed` (default), `piled`, `display` or `tidy`. Each is a short script in `src/arrange.js`; add your own there |
+| `scene` | `floor` removes the shelf and its contents and stands the TVs on the floor |
+| `lighting` | `dark`: the room is black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV). `dim`: the same with a little room light left on |
 | `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |
 | `power` | Which TVs start switched on: `all` (default) or a list of model ids |
