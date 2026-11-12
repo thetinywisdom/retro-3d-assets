@@ -14922,13 +14922,38 @@ var Wf = class extends Vf {
 			r.pos = e, r.mesh.position.copy(r.home).addScaledVector(r.axis, r.travel * e);
 		}));
 	}
+	shimmerLamps(e = "channel", { cycles: t = 3, period: n = 2600, peak: r = .6, stagger: i = 90, delay: a = 600 } = {}) {
+		if (!this._m || !this.state.power) return;
+		let o = [];
+		for (let t of this._meta.controls) {
+			let n = this._m.controls[t.id]?.lamp;
+			t.role === e && n && this._buttonRest(t.id) !== 1 && o.push(n);
+		}
+		if (!o.length) return;
+		let s = a + (o.length - 1) * i + t * n;
+		if (this._reduced) {
+			for (let e of o) e.material.emissiveIntensity = r * .4;
+			this._tween("lamp-hint", 0, 1, s, () => {}, {
+				ease: Mf,
+				done: () => this._syncLamps()
+			});
+		} else this._tween("lamp-hint", 0, s, s, (e) => {
+			o.forEach((o, s) => {
+				let c = (e - a - s * i) / n;
+				o.material.emissiveIntensity = c > 0 && c < t ? r * Math.sin(c % 1 * Math.PI) ** 2 : 0;
+			});
+		}, {
+			ease: Mf,
+			done: () => this._syncLamps()
+		});
+	}
 	_syncLamps() {
 		if (this._m) {
 			for (let e of this._meta.controls) {
 				let t = this._m.controls[e.id];
 				if (e.kind !== "button") continue;
 				let n = this._buttonRest(e.id) === 1, r = this._a11y[e.id];
-				r?.hasAttribute("aria-pressed") && r.setAttribute("aria-pressed", String(n)), t?.lamp && e.role !== "power" && (t.lamp.material.emissiveIntensity = n && (this.state.power || e.lampAlways) ? t.lamp.userData.lampOn : 0);
+				r?.hasAttribute("aria-pressed") && r.setAttribute("aria-pressed", String(n)), (!this._tweens?.has("lamp-hint") || n) && t?.lamp && e.role !== "power" && (t.lamp.material.emissiveIntensity = n && (this.state.power || e.lampAlways) ? t.lamp.userData.lampOn : 0);
 			}
 			this.invalidate();
 		}

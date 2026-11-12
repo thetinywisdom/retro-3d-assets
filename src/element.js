@@ -739,6 +739,33 @@ export class SonyPVMElement extends Base {
   }
 
   /** Indicator lamps follow their button's resting state. */
+  /**
+   * A hint that keys can be pressed: the unlit lamps of the keys with this role (the number cells
+   * above the KV-5200's channel keys) glow softly in a wave, a few times, then go back to normal.
+   */
+  shimmerLamps(role = 'channel', { cycles = 3, period = 2600, peak = 0.6, stagger = 90, delay = 600 } = {}) {
+    if (!this._m || !this.state.power) return;
+    const lamps = [];
+    for (const c of this._meta.controls) {
+      const lamp = this._m.controls[c.id]?.lamp;
+      if (c.role === role && lamp && this._buttonRest(c.id) !== 1) lamps.push(lamp);
+    }
+    if (!lamps.length) return;
+    const total = delay + (lamps.length - 1) * stagger + cycles * period;
+    if (this._reduced) {
+      // no movement: a faint steady glow for the same time
+      for (const l of lamps) l.material.emissiveIntensity = peak * 0.4;
+      this._tween('lamp-hint', 0, 1, total, () => {}, { ease: linear, done: () => this._syncLamps() });
+      return;
+    }
+    this._tween('lamp-hint', 0, total, total, (ms) => {
+      lamps.forEach((l, i) => {
+        const t = (ms - delay - i * stagger) / period;
+        l.material.emissiveIntensity = t > 0 && t < cycles ? peak * Math.pow(Math.sin(Math.PI * (t % 1)), 2) : 0;
+      });
+    }, { ease: linear, done: () => this._syncLamps() });
+  }
+
   _syncLamps() {
     if (!this._m) return;
     for (const c of this._meta.controls) {
@@ -747,6 +774,7 @@ export class SonyPVMElement extends Base {
       const on = this._buttonRest(c.id) === 1;
       const a = this._a11y[c.id];
       if (a?.hasAttribute('aria-pressed')) a.setAttribute('aria-pressed', String(on));
+      if (this._tweens?.has('lamp-hint') && !on) continue;            // a lamp hint is playing on the unlit lamps
       if (rec?.lamp && c.role !== 'power') rec.lamp.material.emissiveIntensity = on && (this.state.power || c.lampAlways) ? rec.lamp.userData.lampOn : 0;
     }
     this.invalidate();
