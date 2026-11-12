@@ -14922,29 +14922,40 @@ var Wf = class extends Vf {
 			r.pos = e, r.mesh.position.copy(r.home).addScaledVector(r.axis, r.travel * e);
 		}));
 	}
-	shimmerLamps(e = "channel", { cycles: t = 3, period: n = 2600, peak: r = .6, stagger: i = 90, delay: a = 600 } = {}) {
+	shimmerLamps(e = "channel", { cycles: t = 3, period: n = 2600, peak: r = .45, keyPeak: i = .16, stagger: a = 90, delay: o = 600 } = {}) {
 		if (!this._m || !this.state.power) return;
-		let o = [];
+		let s = [];
 		for (let t of this._meta.controls) {
-			let n = this._m.controls[t.id]?.lamp;
-			t.role === e && n && this._buttonRest(t.id) !== 1 && o.push(n);
-		}
-		if (!o.length) return;
-		let s = a + (o.length - 1) * i + t * n;
-		if (this._reduced) {
-			for (let e of o) e.material.emissiveIntensity = r * .4;
-			this._tween("lamp-hint", 0, 1, s, () => {}, {
-				ease: Mf,
-				done: () => this._syncLamps()
+			let n = this._m.controls[t.id];
+			if (t.role !== e || !n?.mesh) continue;
+			let r = n.mesh.material;
+			n.lamp && r.emissive && r.emissive.copy(n.lamp.material.emissive), s.push({
+				cap: r,
+				lamp: n.lamp,
+				lit: this._buttonRest(t.id) === 1
 			});
-		} else this._tween("lamp-hint", 0, s, s, (e) => {
-			o.forEach((o, s) => {
-				let c = (e - a - s * i) / n;
-				o.material.emissiveIntensity = c > 0 && c < t ? r * Math.sin(c % 1 * Math.PI) ** 2 : 0;
+		}
+		if (!s.length) return;
+		let c = o + (s.length - 1) * a + t * n, l = (e, t) => {
+			e.cap.emissive && (e.cap.emissiveIntensity = i * t), e.lamp && !e.lit && (e.lamp.material.emissiveIntensity = r * t);
+		}, u = () => {
+			for (let e of s) e.cap.emissive && (e.cap.emissiveIntensity = 0);
+			this._syncLamps();
+		};
+		if (this._reduced) {
+			for (let e of s) l(e, .4);
+			this._tween("lamp-hint", 0, 1, c, () => {}, {
+				ease: Mf,
+				done: u
+			});
+		} else this._tween("lamp-hint", 0, c, c, (e) => {
+			s.forEach((r, i) => {
+				let s = (e - o - i * a) / n;
+				l(r, s > 0 && s < t ? Math.sin(s % 1 * Math.PI) ** 2 : 0);
 			});
 		}, {
 			ease: Mf,
-			done: () => this._syncLamps()
+			done: u
 		});
 	}
 	_syncLamps() {

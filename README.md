@@ -220,7 +220,7 @@ pvm.setKnob('bright', 0.7);    // 0..1
 pvm.getKnob('bright');
 pvm.focusScreen(); pvm.unfocus();
 pvm.setView({ azimuth: 30, polar: 75, zoom: 1.2 }); pvm.resetView();
-pvm.shimmerLamps('channel');  // a soft wave of light over the unlit channel lamps, as a hint they can be pressed
+pvm.shimmerLamps('channel');  // the channel keys and their number cells glow in a soft wave, as a hint they can be pressed
 pvm.setTally('red'); pvm.setTally(null);
 pvm.setTallyLogo('logo.svg');  // URL, <img> or <canvas>; null clears it
 pvm.setBrand('MY NAME'); pvm.setBrandLogo('logo.svg');

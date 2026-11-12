@@ -740,30 +740,39 @@ export class SonyPVMElement extends Base {
 
   /** Indicator lamps follow their button's resting state. */
   /**
-   * A hint that keys can be pressed: the unlit lamps of the keys with this role (the number cells
-   * above the KV-5200's channel keys) glow softly in a wave, a few times, then go back to normal.
+   * A hint that keys can be pressed: the keys with this role (the KV-5200's channel keys) glow softly
+   * in a wave, key and number cell together, a few times, then go back to normal. The key that is
+   * already on keeps its lamp lit.
    */
-  shimmerLamps(role = 'channel', { cycles = 3, period = 2600, peak = 0.6, stagger = 90, delay = 600 } = {}) {
+  shimmerLamps(role = 'channel', { cycles = 3, period = 2600, peak = 0.45, keyPeak = 0.16, stagger = 90, delay = 600 } = {}) {
     if (!this._m || !this.state.power) return;
-    const lamps = [];
+    const keys = [];
     for (const c of this._meta.controls) {
-      const lamp = this._m.controls[c.id]?.lamp;
-      if (c.role === role && lamp && this._buttonRest(c.id) !== 1) lamps.push(lamp);
+      const rec = this._m.controls[c.id];
+      if (c.role !== role || !rec?.mesh) continue;
+      const cap = rec.mesh.material;
+      if (rec.lamp && cap.emissive) cap.emissive.copy(rec.lamp.material.emissive);   // the key glows in its lamp's colour
+      keys.push({ cap, lamp: rec.lamp, lit: this._buttonRest(c.id) === 1 });
     }
-    if (!lamps.length) return;
-    const total = delay + (lamps.length - 1) * stagger + cycles * period;
+    if (!keys.length) return;
+    const total = delay + (keys.length - 1) * stagger + cycles * period;
+    const set = (k, w) => {
+      if (k.cap.emissive) k.cap.emissiveIntensity = keyPeak * w;
+      if (k.lamp && !k.lit) k.lamp.material.emissiveIntensity = peak * w;
+    };
+    const end = () => { for (const k of keys) if (k.cap.emissive) k.cap.emissiveIntensity = 0; this._syncLamps(); };
     if (this._reduced) {
       // no movement: a faint steady glow for the same time
-      for (const l of lamps) l.material.emissiveIntensity = peak * 0.4;
-      this._tween('lamp-hint', 0, 1, total, () => {}, { ease: linear, done: () => this._syncLamps() });
+      for (const k of keys) set(k, 0.4);
+      this._tween('lamp-hint', 0, 1, total, () => {}, { ease: linear, done: end });
       return;
     }
     this._tween('lamp-hint', 0, total, total, (ms) => {
-      lamps.forEach((l, i) => {
+      keys.forEach((k, i) => {
         const t = (ms - delay - i * stagger) / period;
-        l.material.emissiveIntensity = t > 0 && t < cycles ? peak * Math.pow(Math.sin(Math.PI * (t % 1)), 2) : 0;
+        set(k, t > 0 && t < cycles ? Math.pow(Math.sin(Math.PI * (t % 1)), 2) : 0);
       });
-    }, { ease: linear, done: () => this._syncLamps() });
+    }, { ease: linear, done: end });
   }
 
   _syncLamps() {
