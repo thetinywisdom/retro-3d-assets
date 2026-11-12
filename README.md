@@ -28,7 +28,7 @@ One straight-on camera. Tapping a TV moves in to it and its page becomes usable 
 | `arrange` | How the shelf contents are set out: `browsed` (default), `piled`, `display` or `tidy`. Each is a short script in `src/arrange.js`; add your own there |
 | `scene` | `floor` removes the shelf and its contents and stands the TVs on the floor |
 | `lighting` | `dark`: the room is black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV). `dim`: the same with a little room light left on |
-| `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is green; `backlight="#ff3355"` picks a colour |
+| `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is a dim green; `backlight="#ff3355"` picks a colour |
 | `consoles` | With `scene="floor"`: lays the PS one, controller, Game Boy Advance, PS Vita and PSP Go face up on the floor in front of the TVs, handheld screens lit |
 | `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |

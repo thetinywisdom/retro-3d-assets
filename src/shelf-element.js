@@ -101,6 +101,35 @@ const STYLE = /* css */ `
 :host(.nogl) { height: auto; }
 `;
 
+/** Near-black concrete: blotchy, with faint trowel marks, plus panel seams and tie holes on walls. */
+function concrete(repeat, wall = false) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#1b1b1c'; g.fillRect(0, 0, 512, 512);
+  let s = wall ? 41 : 17;
+  const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 260; i++) {
+    const x = rnd() * 512, y = rnd() * 512, r = 20 + rnd() * 90, v = rnd() < 0.5 ? 0 : 60;
+    const grad = g.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, `rgba(${v},${v},${v},${0.05 + rnd() * 0.08})`); grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
+    g.fillStyle = grad;
+    for (const [ox, oy] of [[0, 0], [512, 0], [-512, 0], [0, 512], [0, -512]]) g.fillRect(x - r + ox, y - r + oy, r * 2, r * 2);
+  }
+  for (let i = 0; i < 5000; i++) { const v = rnd() < 0.5 ? 0 : 90; g.fillStyle = `rgba(${v},${v},${v},${rnd() * 0.12})`; g.fillRect(rnd() * 512, rnd() * 512, 1 + rnd() * 1.5, 1 + rnd() * 1.5); }
+  if (wall) {
+    g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(0, 0, 512, 2); g.fillRect(0, 0, 2, 512);
+    g.fillStyle = 'rgba(70,70,70,0.25)'; g.fillRect(0, 2, 512, 1); g.fillRect(2, 0, 1, 512);
+    for (const [x, y] of [[64, 96], [448, 96], [64, 416], [448, 416]]) { g.fillStyle = 'rgba(0,0,0,0.6)'; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.fill(); }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat, wall ? repeat * (5000 / 9000) : repeat);
+  t.anisotropy = 8;
+  return t;
+}
+
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
@@ -284,14 +313,16 @@ export class RetroShelfElement extends Base {
     if (floorOnly || dark) {
       // a floor to catch the glow; slightly glossy so the screens smear across it
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000).rotateX(-Math.PI / 2),
-        new THREE.MeshStandardMaterial({ color: dark ? 0x77746e : 0x2a2826, roughness: dark ? 0.62 : 0.5, metalness: 0 }));
+        new THREE.MeshStandardMaterial(dark
+          ? { color: 0x8a8a8a, map: concrete(60000 / 1400), roughness: 0.5, metalness: 0 }      // dark sealed concrete
+          : { color: 0x2a2826, roughness: 0.5, metalness: 0 }));
       floor.position.set(0, -0.5, 0);
       floor.raycast = () => {};
       this._furniture.add(floor);
     }
     const back = this.getAttribute('backlight');
     if (this.hasAttribute('wall') || back !== null) {
-      const wall = new THREE.Mesh(new THREE.PlaneGeometry(9000, 5000), new THREE.MeshStandardMaterial({ color: 0x4a4844, roughness: 0.9 }));
+      const wall = new THREE.Mesh(new THREE.PlaneGeometry(9000, 5000), new THREE.MeshStandardMaterial({ color: 0x9a9a9a, map: concrete(9000 / 1400, true), roughness: 0.88 }));
       wall.position.set(0, 2500, -760);
       wall.raycast = () => {};
       this._furniture.add(wall);
@@ -331,10 +362,10 @@ export class RetroShelfElement extends Base {
     this._bounds = { w: Math.max(-left, right) * 2, h: top };
     if (back !== null) {
       // coloured light hidden behind the sets, washing up the wall and round their edges
-      const color = new THREE.Color(back || '#2dff7a');
+      const color = new THREE.Color(back || '#10a045');
       const half = this._bounds.w / 2;
       for (const [x, y, k] of [[-half * 0.55, 160, 1], [half * 0.55, 160, 1], [0, top * 0.75, 0.7]]) {
-        const lamp = new THREE.PointLight(color, 270000 * k, 0, 2);
+        const lamp = new THREE.PointLight(color, 300000 * k, 0, 2);
         lamp.position.set(x, y, -560);
         this._furniture.add(lamp);
       }
