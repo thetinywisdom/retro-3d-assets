@@ -3,6 +3,7 @@
 Interactive 3D retro hardware as web components, in one file (`dist/retro-3d.js`, about 200 KB gzipped, three.js included).
 
 - **`<sony-pvm>`**: one Sony CRT with a real HTML page on its tube and working controls. Four models.
+- **`<retro-pager>`**: a navigation dock drawn as a 3D desk pager, with an LCD that says what each key does. Drives a `<retro-shelf>`.
 - **`<retro-shelf>`**: all four CRTs stacked on a shelf unit holding PS1 cases, Game Boy Advance boxes, PS Vita and PSP cases, books, a PS one with its DualShock, a Game Boy Advance, a PS Vita and a PSP Go.
 
 ## `<retro-shelf>`
@@ -43,13 +44,38 @@ TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-52
 
 `<retro-item>` attributes: `type` (`ps1`, `gba`, `vita`, `psp`, `book`), `title`, `subtitle`, `color`, `cover` (image for the front), `href` and `link-text` (button on the card), and for books `thickness` and `height` in mm. Its content is the card text. Japanese titles are set vertically on the spine. Books thicker than 27 mm are drawn as cloth hardbacks and thinner ones as paperbacks; `binding="hard"` or `binding="paper"` overrides that. Items that do not fit on the shelf are skipped with a console warning.
 
-Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, and every `pvm-*` event from the TVs with `detail.tv` added.
+Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, `shelf-hover` `{ tv }` (the TV under the mouse, or `null`), `shelf-hint` `{ text }` (what the next tap does), and every `pvm-*` event from the TVs with `detail.tv` added.
 
-Methods: `openReader(id)`, `closeReader()`; `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
+Methods: `openReader(id)` (also switches pages while one is open), `closeReader()`, `page(id)` (that TV's page element, wherever it is), `hint` (the current hint text); `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
 
 Parts for styling: `card`, `back`, `fill` (the Read button), `reader`, `reader-close`, `hint`.
 
 The consoles use the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5). Their body outlines are traced from straight-on reference images (`src/props/outlines.js`), and button, screen and label positions were measured from perspective-corrected photos scaled by each LCD's known size. Backs and undersides are plain. Case sizes (mm): PS1 jewel case 142 × 125 × 10.4, GBA carton 125 × 125 × 23, PS Vita case 105 × 135 × 12, PSP case 99 × 168 × 14. The platform names printed on the cases are plain lettering, not the real logos.
+
+## `<retro-pager>`
+
+A navigation dock in the shape of a 1990s pager, drawn in 3D on its own small canvas: a backlit LCD, one rubber key per TV and round keys for Back, Sound and Info. It is a generic shape, not a copy of a real model.
+
+```html
+<retro-pager for="shelf" name="my-site">
+  <button type="button" data-tv="pvm-20m4e" data-label="Home" data-info="The front page">Home</button>
+  <button type="button" data-tv="kv-5200" data-label="Say hi" data-info="How to get in touch">Say hi</button>
+  <button type="button" data-action="back">Back</button>
+  <button type="button" data-action="sound">Sound</button>
+  <button type="button" data-action="info" data-info="About this site">Info</button>
+</retro-pager>
+```
+
+The children are the real buttons: they stay in the page, off screen, for keyboard and screen-reader users, and the pager draws a key for each. Pointing at a key (or tabbing to it) shows its `data-info` on the LCD; pointing at a TV in the shelf does the same for that TV's key. Otherwise the LCD shows the shelf's hint ("Tap a TV to look closer") and the time.
+
+| Key | Press |
+| --- | --- |
+| `data-tv="<model id>"` | Moves in to that TV; pressed again, opens its page full screen. While a page is open, switches straight to this TV's page. The key stays down while its TV is in view, and its dot takes the colour of the page |
+| `data-action="back"` | Closes the full-screen page, or moves back out to the room |
+| `data-action="sound"` | Toggles `muted` on the shelf |
+| `data-action="info"` | Shows its `data-info` on the LCD until the next key or TV |
+
+Other attributes: `for` (id of the `<retro-shelf>`; the first one on the page if left out), `name` (top line of the LCD; the host name by default), `data-label` (word on the key), `data-channel` (number on the key; 01, 02, … by default), `data-color` (key dot colour). The element is 128 px tall, or 176 px below 560 px wide, where the keys go on two rows; give it a position, for example `position: fixed; bottom: 0; left: 0; right: 0`. The pager itself takes pointer events; the empty space around it does not. Long LCD text scrolls (it is cut off instead with reduced motion). Event: `pager-press` `{ tv, action }`.
 
 ## `<sony-pvm>`
 

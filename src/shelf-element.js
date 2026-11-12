@@ -229,6 +229,7 @@ export class RetroShelfElement extends Base {
     w.addEventListener('pointermove', (e) => this._onMove(e));
     w.addEventListener('pointerup', (e) => this._onUp(e));
     w.addEventListener('pointercancel', () => { this._releaseButton(); this._drag = null; });
+    w.addEventListener('pointerleave', () => this._hover(null));
     w.addEventListener('scroll', () => { if (this._selected >= 0) this.close(); this.invalidate(); }, { passive: true });
   }
 
@@ -387,8 +388,9 @@ export class RetroShelfElement extends Base {
     this._room = dim ? 0.3 : dark ? 0.06 : 1;
     const spread = floorOnly && this.hasAttribute('consoles');
     this._floorPad = spread ? 330 : floorOnly ? 190 : 0;
-    this._hint.textContent = floorOnly ? 'Tap a TV to look closer' : 'Tap a TV, a game or a book';
-    this._hintHome = undefined;
+    this._hintHome = floorOnly ? 'Tap a TV to look closer' : 'Tap a TV, a game or a book';
+    this._hint.textContent = this._hintHome;
+    if (!this._focusKey) this._say(this._hintHome);
     this._pitch = floorOnly ? (spread ? 0.27 : 0.12) : 0;      // look down a little at things on the floor
     // two long levels, no dividers; narrower on a tall (phone) view
     const shelf = floorOnly ? { height: 0, width: 0, depth: 520, cells: [] } : buildShelf({ cols: 1, rows: 2, cellW: mode === 'wide' ? 980 : 860 });
@@ -694,8 +696,8 @@ export class RetroShelfElement extends Base {
     this._wall.classList.add('locked');
     this._back.hidden = false; this._readBtn.hidden = false;
     // say what the next tap does, briefly
-    this._hintHome ??= this._hint.textContent;
     this._hint.textContent = 'Tap the screen to read it full screen';
+    this._say(this._hint.textContent);
     this._hint.classList.remove('gone');
     clearTimeout(this._hintT);
     this._hintT = setTimeout(() => this._hint.classList.add('gone'), 3200);
@@ -715,6 +717,7 @@ export class RetroShelfElement extends Base {
     clearTimeout(this._hintT);
     this._hint.classList.add('gone');
     this._setFill(false, true);
+    this._say(this._hintHome);
     this.dispatchEvent(new CustomEvent('shelf-focus', { detail: { tv: null }, bubbles: true, composed: true }));
   }
 
@@ -743,13 +746,28 @@ export class RetroShelfElement extends Base {
    * same element (state, scroll position and any running media are kept).
    */
   openReader(id = this._focusKey) {
-    if (!id || this._reading) return;
-    if (id !== this._focusKey) this.focusTV(id);
+    if (!id || this._reading?.id === id) return;
     const page = this.querySelector(`[slot="${id}"]`);
     if (!page) return;
+    if (this._reading) {
+      // already reading another page: swap the pages in place, the camera follows behind
+      const r = this._reading;
+      clearTimeout(this._readT);
+      r.page.setAttribute('slot', r.id);
+      this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: r.id, open: false }, bubbles: true, composed: true }));
+      this._reading = null;
+      this.focusTV(id);
+      this._reading = { id, page };
+      this._paintReader(page);
+      page.setAttribute('slot', 'reader');
+      this._reader.querySelector('.reader-page').scrollTop = 0;
+      this._say('Reading. Press Esc or Back to return');
+      this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: id, open: true }, bubbles: true, composed: true }));
+      return;
+    }
+    if (id !== this._focusKey) this.focusTV(id);
     this._reading = { id, page };
-    const bg = getComputedStyle(page).backgroundColor;
-    this._reader.style.background = bg && !bg.endsWith(', 0)') && bg !== 'transparent' ? bg : '#0b0b0b';
+    this._paintReader(page);
     this._reader.hidden = false;
     this._setFill(true);                                        // push the camera in to the glass as the page fades up
     requestAnimationFrame(() => this._reader.classList.add('open'));
@@ -761,8 +779,26 @@ export class RetroShelfElement extends Base {
     }, this._reduced ? 0 : 260);
     this._back.hidden = true; this._readBtn.hidden = true;
     this._hint.classList.add('gone');
+    this._say('Reading. Press Esc or Back to return');
     this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: id, open: true }, bubbles: true, composed: true }));
   }
+
+  _paintReader(page) {
+    const bg = getComputedStyle(page).backgroundColor;
+    this._reader.style.background = bg && !bg.endsWith(', 0)') && bg !== 'transparent' ? bg : '#0b0b0b';
+  }
+
+  /** What the next tap does, in a few words (the same text as the hint). */
+  get hint() { return this._hintNow || ''; }
+
+  _say(text) {
+    if (text === this._hintNow) return;
+    this._hintNow = text;
+    this.dispatchEvent(new CustomEvent('shelf-hint', { detail: { text }, bubbles: true, composed: true }));
+  }
+
+  /** The page element shown on a TV, wherever it currently is. */
+  page(id) { return this._reading?.id === id ? this._reading.page : this.querySelector(`[slot="${id}"]`); }
 
   /** Close the full-screen page and return to the TV. */
   closeReader() {
@@ -773,7 +809,7 @@ export class RetroShelfElement extends Base {
     r.page.setAttribute('slot', r.id);
     this._reader.classList.remove('open');
     this._readT = setTimeout(() => { this._reader.hidden = true; }, this._reduced ? 0 : 300);
-    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = false; }
+    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = false; this._say('Tap the screen to read it full screen'); }
     this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: r.id, open: false }, bubbles: true, composed: true }));
   }
 
@@ -871,8 +907,15 @@ export class RetroShelfElement extends Base {
     if (!d && !this._inLiveScreen(e)) {
       const h = this._pick(e);
       this._wall.style.cursor = h.control || h.item !== undefined || (h.unit && h.unit !== this._focusKey) ? 'pointer' : h.screen ? 'zoom-in' : '';
+      this._hover(h.unit || null);
     }
     this.invalidate();
+  }
+
+  _hover(tv) {
+    if (tv === this._hovered) return;
+    this._hovered = tv;
+    this.dispatchEvent(new CustomEvent('shelf-hover', { detail: { tv }, bubbles: true, composed: true }));
   }
 
   _releaseButton() {
