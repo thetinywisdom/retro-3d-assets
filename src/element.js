@@ -21,6 +21,7 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const linear = (t) => t;
+const easeSine = (t) => (1 - Math.cos(Math.PI * t)) / 2;
 
 // ---------------------------------------------------------------------------
 // YouTube players on a channel follow the set's volume and mute.
@@ -741,26 +742,34 @@ export class SonyPVMElement extends Base {
   /** Indicator lamps follow their button's resting state. */
   /**
    * Light the keys with this role like a backlit keyboard: a soft glow round each key and the number
-   * cells above them lit faintly (the key that is on keeps its full lamp). Fades in and out.
+   * cells above them lit faintly (the key that is on keeps its full lamp). It fades in, then breathes
+   * slowly between `low` and `high` (eased), and fades out when turned off. Steady with reduced motion.
    * Only keys built with a backlight (the KV-5200's channel keys) have the glow.
    */
-  setBacklight(on = true, { role = 'channel', glow = 0.55, cells = 0.3, duration = 700 } = {}) {
+  setBacklight(on = true, { role = 'channel', low = 0.1, high = 0.3, cells = 0.22, period = 2400, duration = 700 } = {}) {
     if (!this._m) return;
-    this._bl ||= { v: 0, role, glow, cells };
-    Object.assign(this._bl, { role, glow, cells });
-    const to = on && this.state.power ? 1 : 0;
-    this._tween('backlight', this._bl.v, to, this._reduced ? 0 : duration, (v) => { this._bl.v = v; this._applyBacklight(); }, { ease: easeInOut });
+    this._bl ||= { v: 0, p: 0.5 };
+    Object.assign(this._bl, { role, low, high, cells });
+    const want = on && this.state.power;
+    this._bl.on = want;
+    this._tween('backlight', this._bl.v, want ? 1 : 0, this._reduced ? 0 : duration, (v) => { this._bl.v = v; this._applyBacklight(); }, { ease: easeInOut });
+    if (want && !this._reduced && !this._tweens.has('backlight-pulse')) {
+      const breathe = (up) => this._tween('backlight-pulse', up ? 0 : 1, up ? 1 : 0, period / 2, (x) => { this._bl.p = x; this._applyBacklight(); },
+        { ease: easeSine, done: () => { if (this._bl.on || this._bl.v > 0) breathe(!up); } });
+      breathe(true);
+    }
   }
 
   _applyBacklight() {
     const bl = this._bl;
     if (!bl || !this._m) return;
     const v = this.state.power ? bl.v : 0;
+    const level = this._reduced ? (bl.low + bl.high) / 2 : bl.low + (bl.high - bl.low) * bl.p;   // 10% .. 30%
     for (const c of this._meta.controls) {
       const rec = this._m.controls[c.id];
       if (c.role !== bl.role || !rec) continue;
-      if (rec.backlight) rec.backlight.material.opacity = bl.glow * v;
-      if (rec.lamp && this._buttonRest(c.id) !== 1) rec.lamp.material.emissiveIntensity = bl.cells * v;
+      if (rec.backlight) rec.backlight.material.opacity = level * v;
+      if (rec.lamp && this._buttonRest(c.id) !== 1) rec.lamp.material.emissiveIntensity = bl.cells * (level / bl.high) * v;
     }
     this.invalidate();
   }

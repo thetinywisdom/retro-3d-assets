@@ -220,7 +220,7 @@ pvm.setKnob('bright', 0.7);    // 0..1
 pvm.getKnob('bright');
 pvm.focusScreen(); pvm.unfocus();
 pvm.setView({ azimuth: 30, polar: 75, zoom: 1.2 }); pvm.resetView();
-pvm.setBacklight(true);       // light the channel keys like a backlit keyboard (KV-5200); false fades it out
+pvm.setBacklight(true);       // light the channel keys like a backlit keyboard (KV-5200), breathing 10-30%; false fades it out
 pvm.setTally('red'); pvm.setTally(null);
 pvm.setTallyLogo('logo.svg');  // URL, <img> or <canvas>; null clears it
 pvm.setBrand('MY NAME'); pvm.setBrandLogo('logo.svg');
