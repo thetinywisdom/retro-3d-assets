@@ -292,6 +292,73 @@ export function makeRoughnessTexture(size = 128) {
   return t;
 }
 
+/**
+ * One repeating speaker hole: a dark floor, a bevelled rim, and a tangent-space
+ * normal that slopes into the hole. UVs are in millimetres / pitch, so the
+ * tile repeats once per hole. `land` is the cabinet colour in sRGB 0–255.
+ */
+export function makeSpeakerGrille({ land = [196, 69, 24], size = 128 } = {}) {
+  const holeR = 0.3;
+  const bevel = 0.1;
+  const floor = holeR - bevel;
+  const holeCol = [16, 14, 13];
+  const albedoImg = new Uint8ClampedArray(size * size * 4);
+  const normalImg = new Uint8ClampedArray(size * size * 4);
+  const roughImg = new Uint8ClampedArray(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = (x + 0.5) / size - 0.5;
+      const v = (y + 0.5) / size - 0.5;
+      const d = Math.hypot(u, v);
+      const i = (y * size + x) * 4;
+      let depth = 0;
+      if (d <= floor) depth = 1;
+      else if (d < holeR) {
+        const k = (d - floor) / bevel;
+        const s = k * k * (3 - 2 * k);
+        depth = 1 - s;
+      }
+      for (let c = 0; c < 3; c++) {
+        albedoImg[i + c] = Math.round(land[c] * (1 - depth) + holeCol[c] * depth);
+      }
+      albedoImg[i + 3] = 255;
+      const rv = Math.round(150 * (1 - depth) + 236 * depth);
+      roughImg[i] = roughImg[i + 1] = roughImg[i + 2] = rv;
+      roughImg[i + 3] = 255;
+      let nx = 0, ny = 0, nz = 1;
+      if (d > floor && d < holeR) {
+        const k = (d - floor) / bevel;
+        const slope = 2.6 * (1 - k);
+        nx = -slope * u / d;
+        ny = -slope * v / d;
+        const len = Math.hypot(nx, ny, nz) || 1;
+        nx /= len; ny /= len; nz /= len;
+      }
+      normalImg[i] = Math.round((nx * 0.5 + 0.5) * 255);
+      normalImg[i + 1] = Math.round((ny * 0.5 + 0.5) * 255);
+      normalImg[i + 2] = Math.round((nz * 0.5 + 0.5) * 255);
+      normalImg[i + 3] = 255;
+    }
+  }
+  const toTex = (data, colorSpace, name) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const img = new ImageData(data, size, size);
+    canvas.getContext('2d').putImageData(img, 0, 0);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.name = name;
+    tex.colorSpace = colorSpace;
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 8;
+    return tex;
+  };
+  return {
+    albedo: toTex(albedoImg, THREE.SRGBColorSpace, 'speaker-albedo'),
+    normal: toTex(normalImg, THREE.NoColorSpace, 'speaker-normal'),
+    roughness: toTex(roughImg, THREE.NoColorSpace, 'speaker-roughness'),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Soft contact shadow under the unit
 // ---------------------------------------------------------------------------

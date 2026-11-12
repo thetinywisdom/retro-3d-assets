@@ -72,21 +72,15 @@ void main() {
   float win2 = softbox(R, normalize(vec3(0.80, 0.30, 0.52)), vec2(0.09, 0.45), 0.09);
   vec3 glare = (vec3(1.0, 0.98, 0.94) * win1 * 2.4 + vec3(0.82, 0.9, 1.0) * win2 * 1.0 + vec3(0.32)) * fres * uGlare;
 
-  // Switched-off tube: dark phosphor seen through glossy glass. The picture
-  // path below is unchanged — this only feeds the unpowered colour.
-  float facing = clamp(dot(N, V), 0.0, 1.0);
-  float rim = pow(1.0 - facing, 3.0);
+  // Switched-off tube: near-black neutral glass and one crisp highlight.
+  // The picture path below is unchanged — this only feeds the unpowered colour.
   vec3 Lk = normalize(vec3(-0.46, 0.62, 0.63));
   vec3 H = normalize(Lk + V);
-  float spec = pow(max(dot(N, H), 0.0), 280.0);
-  float broad = pow(max(dot(N, H), 0.0), 22.0);
-  float bowl = mix(0.62, 1.0, facing) * (1.0 - 0.28 * pow(clamp(length(q), 0.0, 1.15), 2.0));
-  vec3 phosphor = vec3(0.11, 0.145, 0.128) * bowl;
-  vec3 offCol = phosphor * mix(0.7 * uOutside, 1.0, inside)
-              + vec3(0.92, 0.96, 0.98) * spec * 1.25
-              + vec3(0.55, 0.62, 0.64) * broad * 0.16
-              + vec3(0.70, 0.78, 0.76) * rim * 0.85
-              + glare;
+  float spec = pow(max(dot(N, H), 0.0), 420.0);
+  vec3 phosphor = vec3(0.016, 0.018, 0.020);
+  vec3 offCol = phosphor * mix(0.8 * uOutside, 1.0, inside)
+              + vec3(0.96, 0.98, 1.0) * spec * 1.35
+              + glare * 0.35;
 
   // scanlines (fade out when too fine to resolve, keeping average brightness)
   float sv = (q.y * 0.5 + 0.5) * uLines;
@@ -121,7 +115,7 @@ void main() {
 /**
  * Dark phosphor card that sits just behind the glass. The web component's
  * shader overwrites it (the HTML picture still shows through the canvas).
- * In the GLB the glass is transmissive, so this is the inside of the tube.
+ * In the GLB the glass is opaque, so this card stays hidden behind it.
  */
 export function makePhosphorMesh(glassGeo) {
   const g = glassGeo.clone();
@@ -137,11 +131,11 @@ export function makePhosphorMesh(glassGeo) {
   g.computeVertexNormals();
   const mat = new THREE.MeshStandardMaterial({
     name: 'crt-phosphor',
-    color: 0x24312c,
+    color: 0x101214,
     roughness: 0.7,
     metalness: 0,
-    emissive: 0x16211d,
-    emissiveIntensity: 0.5,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
   });
   const mesh = new THREE.Mesh(g, mat);
   mesh.name = 'crt-phosphor';

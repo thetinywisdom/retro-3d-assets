@@ -13,21 +13,19 @@
     for (const [id, model] of Object.entries(MODELS)) {
       const m = model.build();
       m.root.remove(m.shadow);
-      // Deep tube glass for DCC tools. Opaque, very low roughness, full clearcoat:
-      // transmission looks grainy in EEVEE at modest sample counts and reads as
-      // frosted plastic. The phosphor card stays behind the glass for tools that
-      // do trace refraction. The web component keeps the CRT shader on this mesh.
+      // Unpowered tube: near-black, slightly cool, with a tight clearcoat highlight.
+      // The web component keeps the CRT shader on this same mesh.
       m.glass.material = new THREE.MeshPhysicalMaterial({
         name: 'crt-glass',
-        color: 0x1c2824,
+        color: 0x101214,
         metalness: 0,
-        roughness: 0.02,
+        roughness: 0.05,
         ior: 1.5,
         clearcoat: 1,
-        clearcoatRoughness: 0.015,
-        emissive: 0x10201b,
-        emissiveIntensity: 0.55,
-        reflectivity: 0.6,
+        clearcoatRoughness: 0.012,
+        emissive: 0x000000,
+        emissiveIntensity: 0,
+        reflectivity: 0.5,
         transparent: false,
       });
       m.root.traverse((o) => { if (o.material?.bumpMap) { o.material = o.material.clone(); o.material.bumpMap = null; } });

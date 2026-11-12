@@ -8,9 +8,9 @@
 import * as THREE from 'three';
 import {
   Kit, rr, ring, loft, plate, rbox, skipSides, straightFace, faceLocal, lay,
-  rectOutline, holeRect, holeCircle, holeFits, boxCavity, roundCavity,
+  rectOutline, holeRect, holeFits, boxCavity,
 } from '../kit.js';
-import { makeBrandTexture, makeDrawTexture } from '../labels.js';
+import { makeBrandTexture, makeDrawTexture, makeSpeakerGrille } from '../labels.js';
 
 const W = 218, D = 296, BASE_H = 13, SHELL_H = 171, H = BASE_H + SHELL_H;
 const FZ = D / 2, SHELL_BZ = FZ - 196, RIB_BZ = SHELL_BZ - 65, BZ = -D / 2;
@@ -39,9 +39,13 @@ export const META = {
 
 export function buildMonitor() {
   const k = new Kit(META.name);
-  // Soft orange. 0xe2bc9a is so pale that studio light lifts it to cream, and
-  // 0xf0a066 still rendered as pale peach. This is deep enough to stay apricot.
-  k.mat('shell', { color: 0xe07a3c, roughness: 0.42, bumpMap: k.grain, bumpScale: 0.2, roughnessMap: k.rough });
+  // Soft orange. The studio key washes a light albedo out to peach, so the
+  // paint is a deeper orange (matte, low specular) that stays warm once lit.
+  const ORANGE = 0xc44518;
+  k.mat('shell', {
+    color: ORANGE, roughness: 0.62, metalness: 0, specularIntensity: 0.18,
+    bumpMap: k.grain, bumpScale: 0.12, roughnessMap: k.rough,
+  }, THREE.MeshPhysicalMaterial);
   k.mat('bezel', { color: 0x34363b, roughness: 0.42 });
   k.mat('rib', { color: 0x69665c, roughness: 0.7, roughnessMap: k.rough });
   k.mat('window', { color: 0x0c0c0e, roughness: 0.25 });
@@ -50,8 +54,7 @@ export function buildMonitor() {
   // ---- soft-orange shell with rounded front edge -----------------------------
   const R = 5;
   const prof = (inset) => rr(W - 2 * inset, SHELL_H - 2 * inset, 15 - inset, 0, CY);
-  // Left side is a separate plate so the speaker grille can be real holes.
-  k.add('shell', loft([ring(prof(0), SHELL_BZ), ring(prof(0), FZ - R)], { skip: skipSides('left') }));
+  k.add('shell', loft([ring(prof(0), SHELL_BZ), ring(prof(0), FZ - R)]));
   const frontRings = [ring(prof(0), FZ - R)];
   for (let i = 1; i <= 4; i++) {
     const t = (i / 4) * (Math.PI / 2);
@@ -132,23 +135,32 @@ export function buildMonitor() {
     }
   });
 
-  // ---- left side: round speaker grille, holes through the shell -----------------
+  // ---- left side: speaker grille as a tiled normal + dark hole albedo ----------
+  // One disc, one repeating hole. The shell behind it is solid again.
   {
-    const desc = straightFace('left', { w: W, h: SHELL_H, r: 15, cy: CY, z0: SHELL_BZ, z1: FZ - R });
-    const holes = [];
-    const radius = 1.35;
-    for (let r = 0; r <= 8; r++) {
-      const n = r === 0 ? 1 : Math.round((2 * Math.PI * r * 5) / 5.4);
-      for (let i = 0; i < n; i++) {
-        const a = (i / n) * Math.PI * 2 + r * 0.31;
-        const world = new THREE.Vector3(desc.origin.x, 100 + Math.sin(a) * r * 5, 9 + Math.cos(a) * r * 5);
-        const p = faceLocal(desc, world);
-        if (!holeFits(desc, p.x, p.y, radius * 2, radius * 2, 0.4)) continue;
-        holes.push(holeCircle(radius, p.x, p.y, 8));
-        k.add('cavity', lay(roundCavity(radius, 4.2, 8), desc.face, desc.origin, p.x, p.y));
-      }
+    const pitch = 5.2;
+    const grille = makeSpeakerGrille({ land: [0xc4, 0x45, 0x18] });
+    k.mat('speaker', {
+      color: 0xffffff,
+      map: grille.albedo,
+      normalMap: grille.normal,
+      normalScale: new THREE.Vector2(1, 1),
+      roughnessMap: grille.roughness,
+      roughness: 1,
+      metalness: 0,
+    });
+    const disc = new THREE.CircleGeometry(44, 48);
+    const pos = disc.attributes.position;
+    const uv = disc.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      uv.setXY(i, pos.getX(i) / pitch + 0.5, pos.getY(i) / pitch + 0.5);
     }
-    k.add('shell', lay(plate(rectOutline(desc.spanX, desc.spanY), holes), desc.face, desc.origin));
+    disc.computeTangents();
+    const desc = straightFace('left', { w: W, h: SHELL_H, r: 15, cy: CY, z0: SHELL_BZ, z1: FZ - R });
+    const at = faceLocal(desc, new THREE.Vector3(desc.origin.x, 100, 9));
+    lay(disc, 'left', desc.origin, at.x, at.y);
+    disc.translate(-0.25, 0, 0);
+    k.add('speaker', disc);
   }
 
   // ---- top: control strip (reconstructed) and aerial stub -------------------------

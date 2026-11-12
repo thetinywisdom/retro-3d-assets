@@ -12728,13 +12728,57 @@ function Zu(e = 128) {
 	let l = new Ei(t);
 	return l.name = "paint-roughness", l.colorSpace = "", l.wrapS = l.wrapT = d, l.repeat.set(1 / 80, 1 / 80), l;
 }
-function Qu(e, t, n) {
+function Qu({ land: e = [
+	196,
+	69,
+	24
+], size: t = 128 } = {}) {
+	let n = .3, r = .1, i = .19999999999999998, a = [
+		16,
+		14,
+		13
+	], o = new Uint8ClampedArray(t * t * 4), s = new Uint8ClampedArray(t * t * 4), c = new Uint8ClampedArray(t * t * 4);
+	for (let l = 0; l < t; l++) for (let u = 0; u < t; u++) {
+		let d = (u + .5) / t - .5, f = (l + .5) / t - .5, p = Math.hypot(d, f), m = (l * t + u) * 4, h = 0;
+		if (p <= i) h = 1;
+		else if (p < n) {
+			let e = (p - i) / r;
+			h = 1 - e * e * (3 - 2 * e);
+		}
+		for (let t = 0; t < 3; t++) o[m + t] = Math.round(e[t] * (1 - h) + a[t] * h);
+		o[m + 3] = 255;
+		let g = Math.round(150 * (1 - h) + 236 * h);
+		c[m] = c[m + 1] = c[m + 2] = g, c[m + 3] = 255;
+		let _ = 0, v = 0, y = 1;
+		if (p > i && p < n) {
+			let e = 2.6 * (1 - (p - i) / r);
+			_ = -e * d / p, v = -e * f / p;
+			let t = Math.hypot(_, v, y) || 1;
+			_ /= t, v /= t, y /= t;
+		}
+		s[m] = Math.round((_ * .5 + .5) * 255), s[m + 1] = Math.round((v * .5 + .5) * 255), s[m + 2] = Math.round((y * .5 + .5) * 255), s[m + 3] = 255;
+	}
+	let l = (e, n, r) => {
+		let i = document.createElement("canvas");
+		i.width = i.height = t;
+		let a = new ImageData(e, t, t);
+		i.getContext("2d").putImageData(a, 0, 0);
+		let o = new Ei(i);
+		return o.name = r, o.colorSpace = n, o.wrapS = o.wrapT = d, o.anisotropy = 8, o;
+	};
+	return {
+		albedo: l(o, qe, "speaker-albedo"),
+		normal: l(s, "", "speaker-normal"),
+		roughness: l(c, "", "speaker-roughness")
+	};
+}
+function $u(e, t, n) {
 	let r = .5, i = document.createElement("canvas");
 	i.width = Math.round((e + n * 2) * r), i.height = Math.round((t + n * 2) * r);
 	let a = i.getContext("2d"), o = 4e3;
 	return a.shadowColor = "rgba(0,0,0,0.6)", a.shadowBlur = n * .55 * r, a.shadowOffsetX = o, a.fillStyle = "#000", a.fillRect(n * r - o, n * r, e * r, t * r), new Ei(i);
 }
-function $u(e, t, n) {
+function ed(e, t, n) {
 	let [r, i] = Wu(t, n, 32);
 	if (i.fillStyle = "#e9e7dc", i.fillRect(0, 0, t, n), e) {
 		let r = e.naturalWidth || e.videoWidth || e.width, a = e.naturalHeight || e.videoHeight || e.height, o = .8, s = Math.min((t - o * 2) / r, (n - o * 2) / a);
@@ -12742,13 +12786,13 @@ function $u(e, t, n) {
 	}
 	return Gu(r);
 }
-function ed(e, t, n, r) {
+function td(e, t, n, r) {
 	let [i, a] = Wu(e, t, n);
 	return r(a, Uu), Gu(i);
 }
 // src/crt.js
-var td = "\nvarying vec3 vPos;\nvarying vec3 vN;\nvoid main() {\n  vPos = position;\n  vN = normal;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}", nd = "\nprecision highp float;\nvarying vec3 vPos;\nvarying vec3 vN;\nuniform vec3 uCam;      // camera position in monitor space (mm)\nuniform vec4 uRect;     // picture rect: centre xy, half size\nuniform float uPlaneZ;  // z of the HTML plane\nuniform float uOn;      // 0 = tube off, 1 = picture showing\nuniform float uDegauss; // 0..1 decaying\nuniform float uTime;\nuniform float uLines;   // visible scanlines\nuniform float uFx;      // overlay strength\nuniform float uGlare;   // reflection strength\nuniform float uCorner;  // picture corner radius (mm)\nuniform float uOutside; // brightness of the face plate outside the picture\n\nfloat sdRoundRect(vec2 p, vec2 b, float r) {\n  vec2 d = abs(p) - b + r;\n  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - r;\n}\n\nfloat softbox(vec3 r, vec3 c, vec2 size, float soft) {\n  float dn = dot(r, c);\n  if (dn <= 0.0) return 0.0;\n  vec3 ux = normalize(cross(vec3(0.0, 1.0, 0.0), c));\n  vec3 uy = cross(c, ux);\n  vec2 p = vec2(dot(r, ux), dot(r, uy)) / dn;\n  vec2 e = smoothstep(size + soft, size - soft, abs(p));\n  return e.x * e.y;\n}\n\nvoid main() {\n  vec3 N = normalize(vN);\n  vec3 rd = normalize(vPos - uCam);\n  vec3 V = -rd;\n\n  // where this view ray lands on the HTML plane\n  float t = (uPlaneZ - uCam.z) / rd.z;\n  vec2 hit = uCam.xy + rd.xy * t;\n  vec2 p = hit - uRect.xy;\n  vec2 q = p / uRect.zw;\n  float sd = sdRoundRect(p, uRect.zw, uCorner);\n  float aa = max(fwidth(sd), 0.02);\n  float inside = 1.0 - smoothstep(-aa, aa, sd);\n\n  // room reflections on the glass\n  vec3 R = reflect(rd, N);\n  float fres = 0.045 + 0.955 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 5.0);\n  float win1 = softbox(R, normalize(vec3(-0.52, 0.50, 0.69)), vec2(0.20, 0.30), 0.07);\n  float win2 = softbox(R, normalize(vec3(0.80, 0.30, 0.52)), vec2(0.09, 0.45), 0.09);\n  vec3 glare = (vec3(1.0, 0.98, 0.94) * win1 * 2.4 + vec3(0.82, 0.9, 1.0) * win2 * 1.0 + vec3(0.32)) * fres * uGlare;\n\n  // Switched-off tube: dark phosphor seen through glossy glass. The picture\n  // path below is unchanged — this only feeds the unpowered colour.\n  float facing = clamp(dot(N, V), 0.0, 1.0);\n  float rim = pow(1.0 - facing, 3.0);\n  vec3 Lk = normalize(vec3(-0.46, 0.62, 0.63));\n  vec3 H = normalize(Lk + V);\n  float spec = pow(max(dot(N, H), 0.0), 280.0);\n  float broad = pow(max(dot(N, H), 0.0), 22.0);\n  float bowl = mix(0.62, 1.0, facing) * (1.0 - 0.28 * pow(clamp(length(q), 0.0, 1.15), 2.0));\n  vec3 phosphor = vec3(0.11, 0.145, 0.128) * bowl;\n  vec3 offCol = phosphor * mix(0.7 * uOutside, 1.0, inside)\n              + vec3(0.92, 0.96, 0.98) * spec * 1.25\n              + vec3(0.55, 0.62, 0.64) * broad * 0.16\n              + vec3(0.70, 0.78, 0.76) * rim * 0.85\n              + glare;\n\n  // scanlines (fade out when too fine to resolve, keeping average brightness)\n  float sv = (q.y * 0.5 + 0.5) * uLines;\n  float sVis = 1.0 - smoothstep(0.18, 0.5, fwidth(sv));\n  float scan = 0.24 * mix(0.5, 0.5 - 0.5 * cos(6.2831853 * sv), sVis);\n  // Trinitron aperture grille: vertical stripes, 0.5 mm pitch\n  float gv = p.x / 0.5;\n  float gVis = 1.0 - smoothstep(0.18, 0.5, fwidth(gv));\n  float grille = 0.10 * mix(0.5, 0.5 - 0.5 * cos(6.2831853 * gv), gVis);\n  // corner falloff\n  float vig = 0.34 * pow(clamp(length(q * vec2(0.84, 0.88)), 0.0, 1.3), 3.6);\n  float a = clamp((scan + grille + vig) * uFx + 0.03, 0.0, 0.92);\n\n  // degauss: rainbow blotches that swirl and die away\n  vec3 deg = vec3(0.0);\n  if (uDegauss > 0.001) {\n    vec2 dq = q + 0.10 * uDegauss * vec2(sin(uTime * 41.0 + q.y * 6.0), cos(uTime * 33.0 + q.x * 5.0));\n    deg = (0.5 + 0.5 * cos(6.2831853 * (dq.x * 1.2 + dq.y * 0.8 + vec3(0.0, 0.33, 0.67)) + uTime * 9.0))\n        * uDegauss * 0.5;\n  }\n\n  // faint glow spilling past the picture edge when lit\n  float halo = 0.035 * exp(-max(sd, 0.0) / 5.0) * (1.0 - inside);\n\n  vec3 outside = mix(offCol, vec3(0.014) + glare + vec3(0.55, 0.65, 1.0) * halo, uOn);\n  float k = inside * uOn;\n  vec3 rgb = mix(outside, glare + deg, k);\n  float alpha = mix(1.0, a, k);\n  gl_FragColor = vec4(rgb, alpha);\n}";
-function rd(e) {
+var nd = "\nvarying vec3 vPos;\nvarying vec3 vN;\nvoid main() {\n  vPos = position;\n  vN = normal;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}", rd = "\nprecision highp float;\nvarying vec3 vPos;\nvarying vec3 vN;\nuniform vec3 uCam;      // camera position in monitor space (mm)\nuniform vec4 uRect;     // picture rect: centre xy, half size\nuniform float uPlaneZ;  // z of the HTML plane\nuniform float uOn;      // 0 = tube off, 1 = picture showing\nuniform float uDegauss; // 0..1 decaying\nuniform float uTime;\nuniform float uLines;   // visible scanlines\nuniform float uFx;      // overlay strength\nuniform float uGlare;   // reflection strength\nuniform float uCorner;  // picture corner radius (mm)\nuniform float uOutside; // brightness of the face plate outside the picture\n\nfloat sdRoundRect(vec2 p, vec2 b, float r) {\n  vec2 d = abs(p) - b + r;\n  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - r;\n}\n\nfloat softbox(vec3 r, vec3 c, vec2 size, float soft) {\n  float dn = dot(r, c);\n  if (dn <= 0.0) return 0.0;\n  vec3 ux = normalize(cross(vec3(0.0, 1.0, 0.0), c));\n  vec3 uy = cross(c, ux);\n  vec2 p = vec2(dot(r, ux), dot(r, uy)) / dn;\n  vec2 e = smoothstep(size + soft, size - soft, abs(p));\n  return e.x * e.y;\n}\n\nvoid main() {\n  vec3 N = normalize(vN);\n  vec3 rd = normalize(vPos - uCam);\n  vec3 V = -rd;\n\n  // where this view ray lands on the HTML plane\n  float t = (uPlaneZ - uCam.z) / rd.z;\n  vec2 hit = uCam.xy + rd.xy * t;\n  vec2 p = hit - uRect.xy;\n  vec2 q = p / uRect.zw;\n  float sd = sdRoundRect(p, uRect.zw, uCorner);\n  float aa = max(fwidth(sd), 0.02);\n  float inside = 1.0 - smoothstep(-aa, aa, sd);\n\n  // room reflections on the glass\n  vec3 R = reflect(rd, N);\n  float fres = 0.045 + 0.955 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 5.0);\n  float win1 = softbox(R, normalize(vec3(-0.52, 0.50, 0.69)), vec2(0.20, 0.30), 0.07);\n  float win2 = softbox(R, normalize(vec3(0.80, 0.30, 0.52)), vec2(0.09, 0.45), 0.09);\n  vec3 glare = (vec3(1.0, 0.98, 0.94) * win1 * 2.4 + vec3(0.82, 0.9, 1.0) * win2 * 1.0 + vec3(0.32)) * fres * uGlare;\n\n  // Switched-off tube: near-black neutral glass and one crisp highlight.\n  // The picture path below is unchanged — this only feeds the unpowered colour.\n  vec3 Lk = normalize(vec3(-0.46, 0.62, 0.63));\n  vec3 H = normalize(Lk + V);\n  float spec = pow(max(dot(N, H), 0.0), 420.0);\n  vec3 phosphor = vec3(0.016, 0.018, 0.020);\n  vec3 offCol = phosphor * mix(0.8 * uOutside, 1.0, inside)\n              + vec3(0.96, 0.98, 1.0) * spec * 1.35\n              + glare * 0.35;\n\n  // scanlines (fade out when too fine to resolve, keeping average brightness)\n  float sv = (q.y * 0.5 + 0.5) * uLines;\n  float sVis = 1.0 - smoothstep(0.18, 0.5, fwidth(sv));\n  float scan = 0.24 * mix(0.5, 0.5 - 0.5 * cos(6.2831853 * sv), sVis);\n  // Trinitron aperture grille: vertical stripes, 0.5 mm pitch\n  float gv = p.x / 0.5;\n  float gVis = 1.0 - smoothstep(0.18, 0.5, fwidth(gv));\n  float grille = 0.10 * mix(0.5, 0.5 - 0.5 * cos(6.2831853 * gv), gVis);\n  // corner falloff\n  float vig = 0.34 * pow(clamp(length(q * vec2(0.84, 0.88)), 0.0, 1.3), 3.6);\n  float a = clamp((scan + grille + vig) * uFx + 0.03, 0.0, 0.92);\n\n  // degauss: rainbow blotches that swirl and die away\n  vec3 deg = vec3(0.0);\n  if (uDegauss > 0.001) {\n    vec2 dq = q + 0.10 * uDegauss * vec2(sin(uTime * 41.0 + q.y * 6.0), cos(uTime * 33.0 + q.x * 5.0));\n    deg = (0.5 + 0.5 * cos(6.2831853 * (dq.x * 1.2 + dq.y * 0.8 + vec3(0.0, 0.33, 0.67)) + uTime * 9.0))\n        * uDegauss * 0.5;\n  }\n\n  // faint glow spilling past the picture edge when lit\n  float halo = 0.035 * exp(-max(sd, 0.0) / 5.0) * (1.0 - inside);\n\n  vec3 outside = mix(offCol, vec3(0.014) + glare + vec3(0.55, 0.65, 1.0) * halo, uOn);\n  float k = inside * uOn;\n  vec3 rgb = mix(outside, glare + deg, k);\n  float alpha = mix(1.0, a, k);\n  gl_FragColor = vec4(rgb, alpha);\n}";
+function id(e) {
 	let t = e.clone(), n = t.attributes.position, r = 0, i = 0;
 	for (let e = 0; e < n.count; e++) r += n.getX(e), i += n.getY(e);
 	r /= n.count, i /= n.count;
@@ -12759,15 +12803,15 @@ function rd(e) {
 	n.needsUpdate = !0, t.computeVertexNormals();
 	let a = new J(t, new Y({
 		name: "crt-phosphor",
-		color: 2371884,
+		color: 1053204,
 		roughness: .7,
 		metalness: 0,
-		emissive: 1450269,
-		emissiveIntensity: .5
+		emissive: 0,
+		emissiveIntensity: 0
 	}));
 	return a.name = "crt-phosphor", a.raycast = () => {}, a;
 }
-function id({ rect: e, planeZ: t, lines: n = 240, corner: r = 5, outside: i = 1 }) {
+function ad({ rect: e, planeZ: t, lines: n = 240, corner: r = 5, outside: i = 1 }) {
 	return new lo({
 		name: "crt-glass",
 		uniforms: {
@@ -12783,8 +12827,8 @@ function id({ rect: e, planeZ: t, lines: n = 240, corner: r = 5, outside: i = 1 
 			uCorner: { value: r },
 			uOutside: { value: i }
 		},
-		vertexShader: td,
-		fragmentShader: nd,
+		vertexShader: nd,
+		fragmentShader: rd,
 		blending: 0,
 		toneMapped: !1
 	});
@@ -12820,7 +12864,7 @@ function Q(e, t, n, r = 0, i = 0) {
 	}
 	return c;
 }
-function ad(e, t, n, r = 32) {
+function od(e, t, n, r = 32) {
 	let i = [];
 	for (let a = 0; a < r; a++) {
 		let o = a / r * Math.PI * 2;
@@ -12829,7 +12873,7 @@ function ad(e, t, n, r = 32) {
 	return i;
 }
 var $ = (e, t) => e.map((e) => new W(e.x, e.y, t));
-function od(e, { skip: t = null } = {}) {
+function sd(e, { skip: t = null } = {}) {
 	let n = e[0].length, r = e.length, i = n + 1, a = [], o = [], s = [], c = 0;
 	for (let t = 0; t < r; t++) {
 		t > 0 && (c += e[t][0].distanceTo(e[t - 1][0]));
@@ -12853,28 +12897,28 @@ function od(e, { skip: t = null } = {}) {
 	}
 	return l;
 }
-function sd(e, t = [], n = 0) {
+function cd(e, t = [], n = 0) {
 	let r = new ua(e);
 	for (let e of t) r.holes.push(new la(e));
 	let i = new Za(r), a = i.attributes.position, o = i.attributes.uv;
 	for (let e = 0; e < a.count; e++) o.setXY(e, a.getX(e), a.getY(e));
 	return n && i.translate(0, 0, n), i;
 }
-function cd(e, t, n, r, i) {
-	return Vu([od([
+function ld(e, t, n, r, i) {
+	return Vu([sd([
 		$(Q(e, t, r), 0),
 		$(Q(e, t, r), n - i),
 		$(Q(e - 2 * i, t - 2 * i, r - i), n)
-	]), sd(Q(e - 2 * i, t - 2 * i, r - i), [], n)]);
+	]), cd(Q(e - 2 * i, t - 2 * i, r - i), [], n)]);
 }
-function ld(e, t, n, r = e) {
+function ud(e, t, n, r = e) {
 	return {
-		walls: od([$(e, t), $(r, t - n)]),
-		floor: sd(r, [], t - n)
+		walls: sd([$(e, t), $(r, t - n)]),
+		floor: cd(r, [], t - n)
 	};
 }
-var ud = (e, t, n, r) => e.rotateX(-Math.PI / 2).translate(t, n, r);
-function dd(e) {
+var dd = (e, t, n, r) => e.rotateX(-Math.PI / 2).translate(t, n, r);
+function fd(e) {
 	let t = {
 		top: 0,
 		left: 1,
@@ -12884,11 +12928,11 @@ function dd(e) {
 	if (t === void 0) throw Error(`kit: no straight side "${e}"`);
 	return t * 6 + 5;
 }
-function fd(...e) {
-	let t = new Set(e.map(dd));
+function pd(...e) {
+	let t = new Set(e.map(fd));
 	return (e) => t.has(e);
 }
-var pd = {
+var md = {
 	right: [
 		new W(0, 0, -1),
 		new W(0, 1, 0),
@@ -12910,7 +12954,7 @@ var pd = {
 		new W(0, -1, 0)
 	]
 };
-function md(e, { w: t, h: n, r, cx: i = 0, cy: a = 0, z0: o, z1: s }) {
+function hd(e, { w: t, h: n, r, cx: i = 0, cy: a = 0, z0: o, z1: s }) {
 	let c = (o + s) / 2, l = s - o;
 	if (e === "right" || e === "left") {
 		let o = i + (e === "right" ? 1 : -1) * t / 2, s = a - n / 2 + r, u = a + n / 2 - r;
@@ -12929,18 +12973,18 @@ function md(e, { w: t, h: n, r, cx: i = 0, cy: a = 0, z0: o, z1: s }) {
 		spanY: l
 	};
 }
-function hd(e, t) {
-	let [n, r] = pd[e.face], i = new W(t.x, t.y, t.z).sub(e.origin);
+function gd(e, t) {
+	let [n, r] = md[e.face], i = new W(t.x, t.y, t.z).sub(e.origin);
 	return {
 		x: i.dot(n),
 		y: i.dot(r)
 	};
 }
-function gd(e, t, n, r = 0, i = 0) {
-	let [a, o, s] = pd[t], c = new cn().makeBasis(a, o, s);
+function _d(e, t, n, r = 0, i = 0) {
+	let [a, o, s] = md[t], c = new cn().makeBasis(a, o, s);
 	return c.setPosition(n.x + a.x * r + o.x * i, n.y + a.y * r + o.y * i, n.z + a.z * r + o.z * i), e.applyMatrix4(c), e;
 }
-function _d(e, t) {
+function vd(e, t) {
 	let n = e / 2, r = t / 2;
 	return [
 		new U(-n, -r),
@@ -12949,7 +12993,7 @@ function _d(e, t) {
 		new U(-n, r)
 	];
 }
-function vd(e, t, n = 0, r = 0) {
+function yd(e, t, n = 0, r = 0) {
 	let i = e / 2, a = t / 2;
 	return [
 		new U(n - i, r - a),
@@ -12957,14 +13001,6 @@ function vd(e, t, n = 0, r = 0) {
 		new U(n + i, r + a),
 		new U(n + i, r - a)
 	];
-}
-function yd(e, t, n, r = 8) {
-	let i = [];
-	for (let a = 0; a < r; a++) {
-		let o = -(a / r) * Math.PI * 2;
-		i.push(new U(t + Math.cos(o) * e, n + Math.sin(o) * e));
-	}
-	return i;
 }
 function bd(e, t, n, r, i, a = .5) {
 	return Math.abs(t) + r / 2 <= e.spanX / 2 - a && Math.abs(n) + i / 2 <= e.spanY / 2 - a;
@@ -13027,33 +13063,14 @@ function xd(e, t, n) {
 		4,
 		7
 	], s = new Lr();
-	return s.setAttribute("position", new q(a, 3)), s.setIndex(o), s.computeVertexNormals(), Cd(s), s;
+	return s.setAttribute("position", new q(a, 3)), s.setIndex(o), s.computeVertexNormals(), Sd(s), s;
 }
-function Sd(e, t, n = 8) {
-	let r = [];
-	for (let i = 0; i < 2; i++) {
-		let a = i === 0 ? 0 : -t;
-		for (let t = 0; t < n; t++) {
-			let i = t / n * Math.PI * 2;
-			r.push(Math.cos(i) * e, Math.sin(i) * e, a);
-		}
-	}
-	let i = n * 2;
-	r.push(0, 0, -t);
-	let a = [];
-	for (let e = 0; e < n; e++) {
-		let t = (e + 1) % n;
-		a.push(e, t, t + n, e, t + n, e + n), a.push(i, e + n, t + n);
-	}
-	let o = new Lr();
-	return o.setAttribute("position", new q(r, 3)), o.setIndex(a), o.computeVertexNormals(), Cd(o), o;
-}
-function Cd(e) {
+function Sd(e) {
 	let t = e.attributes.position, n = new Float32Array(t.count * 2);
 	for (let e = 0; e < t.count; e++) n[e * 2] = t.getX(e), n[e * 2 + 1] = t.getY(e);
 	e.setAttribute("uv", new Cr(n, 2));
 }
-var wd = class {
+var Cd = class {
 	constructor(e) {
 		this.root = new In(), this.root.name = e, this.interactive = new In(), this.interactive.name = "controls", this.root.add(this.interactive), this.controls = {}, this.bucket = {}, this.grain = Xu(), this.grain.repeat.set(1 / 9, 1 / 9), this.rough = Zu(), this.M = {
 			black: new Y({
@@ -13118,7 +13135,7 @@ var wd = class {
 		return i.userData.lampOn = 2.2, i;
 	}
 	button({ id: e, pos: t, w: n, h: r, out: i = 3, travel: a = 1.5, len: o = 9, r: s = .7, c = .55, facing: l = "front", material: u, lamp: d = null }) {
-		let f = cd(n, r, o, s, c), p = new J(f, u), m = new W();
+		let f = ld(n, r, o, s, c), p = new J(f, u), m = new W();
 		return l === "top" ? (f.rotateX(-Math.PI / 2), p.position.set(t[0], t[1] + i - o, t[2]), m.set(0, -1, 0)) : (p.position.set(t[0], t[1], t[2] + i - o), m.set(0, 0, -1)), p.name = e, p.userData.control = e, this.interactive.add(p), this.controls[e] = {
 			id: e,
 			kind: "button",
@@ -13179,16 +13196,16 @@ var wd = class {
 			w: a,
 			h: o,
 			z: d - 2
-		}, this.crtMaterial = id({
+		}, this.crtMaterial = ad({
 			rect: this.picture,
 			planeZ: this.picture.z,
 			corner: l,
 			outside: u
-		}), this.glass = new J(f, this.crtMaterial), this.glass.name = "crt-glass", this.glass.userData.screen = !0, this.root.add(this.glass), this.root.add(rd(f)), this.picture;
+		}), this.glass = new J(f, this.crtMaterial), this.glass.name = "crt-glass", this.glass.userData.screen = !0, this.root.add(this.glass), this.root.add(id(f)), this.picture;
 	}
 	shadow(e, t, n = .3, r = 70) {
 		let i = new J(new Ya(e + r * 2, t + r * 2).rotateX(-Math.PI / 2), new Yr({
-			map: Qu(e, t, r),
+			map: $u(e, t, r),
 			transparent: !0,
 			depthWrite: !1,
 			toneMapped: !1
@@ -13215,12 +13232,12 @@ var wd = class {
 			...t
 		};
 	}
-}, Td = /* @__PURE__ */ t({
-	DIM: () => Ed,
-	LAYOUT: () => Ld,
-	META: () => Vd,
-	buildMonitor: () => Hd
-}), Ed = {
+}, wd = /* @__PURE__ */ t({
+	DIM: () => Td,
+	LAYOUT: () => Id,
+	META: () => Bd,
+	buildMonitor: () => Vd
+}), Td = {
 	W: 217,
 	H: 217,
 	D: 352.5,
@@ -13229,7 +13246,7 @@ var wd = class {
 	BEZEL_D: 30,
 	PICTURE_W: 158,
 	PICTURE_H: 118.5
-}, { W: Dd, D: Od, FOOT_H: kd, BODY_H: Ad, BEZEL_D: jd } = Ed, Md = kd + Ad, Nd = Od / 2, Pd = -Od / 2, Fd = Nd - jd, Id = kd + Ad / 2, Ld = {
+}, { W: Ed, D: Dd, FOOT_H: Od, BODY_H: kd, BEZEL_D: Ad } = Td, jd = Od + kd, Md = Dd / 2, Nd = -Dd / 2, Pd = Md - Ad, Fd = Od + kd / 2, Id = {
 	screen: {
 		fx: 108.5,
 		fy: 86,
@@ -13305,20 +13322,20 @@ var wd = class {
 		fx: 190.7,
 		fy: 189.2
 	}
-}, Rd = (e) => e - Dd / 2, zd = (e) => Md - e, Bd = (e, t, n = {}) => ({
+}, Ld = (e) => e - Ed / 2, Rd = (e) => jd - e, zd = (e, t, n = {}) => ({
 	id: e,
 	label: t,
 	kind: "button",
 	role: e,
 	latch: !0,
 	...n
-}), Vd = {
+}), Bd = {
 	id: "pvm-9042qm",
 	name: "Sony PVM-9042QM",
 	size: {
-		w: Dd,
-		h: Ed.H,
-		d: Od
+		w: Ed,
+		h: Td.H,
+		d: Dd
 	},
 	inputs: [
 		"line-a",
@@ -13329,15 +13346,15 @@ var wd = class {
 	inputOf: (e) => e.buttons["line-rgb"] ? e.buttons.ab ? "component" : "rgb" : e.buttons.ab ? "line-b" : "line-a",
 	noSignal: "black",
 	controls: [
-		Bd("power", "Power", { latch: !1 }),
-		Bd("ab", "A/B input selector"),
-		Bd("line-rgb", "LINE/RGB input selector"),
-		Bd("sync", "Sync internal/external"),
-		Bd("degauss", "Degauss", { latch: !1 }),
-		Bd("blue-only", "Blue only"),
-		Bd("underscan", "Under scan"),
-		Bd("hv-delay", "H/V delay"),
-		Bd("16-9", "16:9", { role: "wide" }),
+		zd("power", "Power", { latch: !1 }),
+		zd("ab", "A/B input selector"),
+		zd("line-rgb", "LINE/RGB input selector"),
+		zd("sync", "Sync internal/external"),
+		zd("degauss", "Degauss", { latch: !1 }),
+		zd("blue-only", "Blue only"),
+		zd("underscan", "Under scan"),
+		zd("hv-delay", "H/V delay"),
+		zd("16-9", "16:9", { role: "wide" }),
 		{
 			id: "aper",
 			label: "Aperture (sharpness)",
@@ -13376,7 +13393,7 @@ var wd = class {
 		}
 	]
 };
-function Hd({ tallyLogo: e = null } = {}) {
+function Vd({ tallyLogo: e = null } = {}) {
 	let t = new In();
 	t.name = "Sony PVM-9042QM";
 	let n = Xu();
@@ -13457,34 +13474,34 @@ function Hd({ tallyLogo: e = null } = {}) {
 		name: "knob",
 		color: 1315860,
 		roughness: .38
-	}), s = {}, c = (e, t) => (s[e] || (s[e] = [])).push(t), l = Dd - 1, u = Ad - 1, d = 3.5, f = Q(l, u, d, 0, Id), p = Id + u / 2;
-	c("cover", od([$(f, Pd), $(f, Fd)], { skip: fd("top", "left", "right") })), c("cover", sd(f, [], 0).rotateY(Math.PI).translate(0, 0, Pd)), c("panel", new Ya(Dd - 28, Ad - 30).rotateY(Math.PI).translate(0, Id, Pd - .06));
+	}), s = {}, c = (e, t) => (s[e] || (s[e] = [])).push(t), l = Ed - 1, u = kd - 1, d = 3.5, f = Q(l, u, d, 0, Fd), p = Fd + u / 2;
+	c("cover", sd([$(f, Nd), $(f, Pd)], { skip: pd("top", "left", "right") })), c("cover", cd(f, [], 0).rotateY(Math.PI).translate(0, 0, Nd)), c("panel", new Ya(Ed - 28, kd - 30).rotateY(Math.PI).translate(0, Fd, Nd - .06));
 	let m = {
 		w: 80,
 		d: 240,
-		zc: Pd + 170,
+		zc: Nd + 170,
 		depth: 7
 	}, h = {
 		w: l,
 		h: u,
 		r: d,
-		cy: Id,
-		z0: Pd,
-		z1: Fd
+		cy: Fd,
+		z0: Nd,
+		z1: Pd
 	};
-	c("cover", ud(od([
+	c("cover", dd(sd([
 		$(Q(m.w, m.d, 8), 0),
 		$(Q(m.w - 2.4, m.d - 2.4, 7), -1.1),
 		$(Q(m.w - 9, m.d - 9, 5), -m.depth)
-	]), 0, p, m.zc)), c("cover", ud(sd(Q(m.w - 9, m.d - 9, 5), [], -m.depth), 0, p, m.zc));
-	let g = p - m.depth, _ = [Pd + 86.5, Pd + 258.5];
-	for (let e of _) c("cover", ud(cd(27, 33, 5.6, 1.6, .9), 0, g, e));
-	c("strap", ud(cd(25, 140, 4.2, 1.2, .8), 0, g, Pd + 172.5));
+	]), 0, p, m.zc)), c("cover", dd(cd(Q(m.w - 9, m.d - 9, 5), [], -m.depth), 0, p, m.zc));
+	let g = p - m.depth, _ = [Nd + 86.5, Nd + 258.5];
+	for (let e of _) c("cover", dd(ld(27, 33, 5.6, 1.6, .9), 0, g, e));
+	c("strap", dd(ld(25, 140, 4.2, 1.2, .8), 0, g, Nd + 172.5));
 	let v = (e, t = 3.3) => {
 		let n = new Ni(t * .86, t, 1.1, 20).translate(0, .55, 0), r = Vu([new Ai(t * 1.2, .3, .75).translate(0, 1.1, 0), new Ai(.75, .3, t * 1.2).translate(0, 1.1, 0)]);
 		c("screw", n.applyMatrix4(e)), c("black", r.applyMatrix4(e));
 	};
-	v(new cn().makeTranslation(0, g + 5.6, Pd + 93)), v(new cn().makeTranslation(0, g + 5.6, Pd + 252));
+	v(new cn().makeTranslation(0, g + 5.6, Nd + 93)), v(new cn().makeTranslation(0, g + 5.6, Nd + 252));
 	let y = 1.7, b = 2.8, x = [
 		[12, 14],
 		[88, 14],
@@ -13492,7 +13509,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 		[240, 8]
 	];
 	{
-		let e = md("top", h), t = [], n = hd(e, new W(0, e.origin.y, m.zc));
+		let e = hd("top", h), t = [], n = gd(e, new W(0, e.origin.y, m.zc));
 		t.push(Q(m.w, m.d, 8, n.x, n.y).slice().reverse());
 		for (let n of [
 			-91.5,
@@ -13500,10 +13517,10 @@ function Hd({ tallyLogo: e = null } = {}) {
 			67.5,
 			91.5
 		]) for (let [r, i] of x) for (let a = 0; a < i; a++) {
-			let i = hd(e, new W(n, e.origin.y, Pd + r + a * 5.05));
-			bd(e, i.x, i.y, 16, y) && (t.push(vd(16, y, i.x, i.y)), c("cavity", gd(xd(16, y, b), e.face, e.origin, i.x, i.y)));
+			let i = gd(e, new W(n, e.origin.y, Nd + r + a * 5.05));
+			bd(e, i.x, i.y, 16, y) && (t.push(yd(16, y, i.x, i.y)), c("cavity", _d(xd(16, y, b), e.face, e.origin, i.x, i.y)));
 		}
-		c("cover", gd(sd(_d(e.spanX, e.spanY), t), e.face, e.origin));
+		c("cover", _d(cd(vd(e.spanX, e.spanY), t), e.face, e.origin));
 	}
 	let S = [
 		[47, 114],
@@ -13523,62 +13540,62 @@ function Hd({ tallyLogo: e = null } = {}) {
 		[281, 198]
 	];
 	for (let e of ["left", "right"]) {
-		let t = e === "right" ? 1 : -1, n = md(e, h), r = [];
+		let t = e === "right" ? 1 : -1, n = hd(e, h), r = [];
 		for (let [e, t] of S) {
 			let i = Math.floor((t - e + 3) / 17.5), a = (t - e - (i - 1) * 3) / i;
 			for (let [t] of C) for (let o = 0; o < 4; o++) for (let s = 0; s < i; s++) {
-				let i = e + a / 2 + s * (a + 3), l = hd(n, new W(n.origin.x, Md - (t + 1.2 + o * 4.6), Nd - i));
-				bd(n, l.x, l.y, a, y, .35) && (r.push(vd(a, y, l.x, l.y)), c("cavity", gd(xd(a, y, b), n.face, n.origin, l.x, l.y)));
+				let i = e + a / 2 + s * (a + 3), l = gd(n, new W(n.origin.x, jd - (t + 1.2 + o * 4.6), Md - i));
+				bd(n, l.x, l.y, a, y, .35) && (r.push(yd(a, y, l.x, l.y)), c("cavity", _d(xd(a, y, b), n.face, n.origin, l.x, l.y)));
 			}
 		}
-		c("cover", gd(sd(_d(n.spanX, n.spanY), r), n.face, n.origin));
-		for (let [e, n] of w) v(new cn().makeRotationZ(-t * Math.PI / 2).setPosition(t * l / 2, Md - n, Nd - e), 3.6);
+		c("cover", _d(cd(vd(n.spanX, n.spanY), r), n.face, n.origin));
+		for (let [e, n] of w) v(new cn().makeRotationZ(-t * Math.PI / 2).setPosition(t * l / 2, jd - n, Md - e), 3.6);
 	}
-	for (let e of [-81.5, 81.5]) for (let t of [Nd - 60, Nd - 323]) c("rubber", Vu([od([
+	for (let e of [-81.5, 81.5]) for (let t of [Md - 60, Md - 323]) c("rubber", Vu([sd([
 		$(Q(25, 17, 3), 0),
 		$(Q(22, 14, 3), 7.8),
 		$(Q(20, 12, 2.4), 9)
-	]), sd(Q(20, 12, 2.4), [], 9)]).rotateX(Math.PI / 2).translate(e, kd + .4, t));
-	let T = 2.6, E = (e) => Q(Dd - 2 * e, Ad - 2 * e, 4.2 - e, 0, Id), D = [$(E(0), Fd), $(E(0), Nd - T)];
+	]), cd(Q(20, 12, 2.4), [], 9)]).rotateX(Math.PI / 2).translate(e, Od + .4, t));
+	let T = 2.6, E = (e) => Q(Ed - 2 * e, kd - 2 * e, 4.2 - e, 0, Fd), D = [$(E(0), Pd), $(E(0), Md - T)];
 	for (let e = 1; e <= 4; e++) {
 		let t = e / 4 * (Math.PI / 2);
-		D.push($(E(T * (1 - Math.cos(t))), Nd - T + T * Math.sin(t)));
+		D.push($(E(T * (1 - Math.cos(t))), Md - T + T * Math.sin(t)));
 	}
-	c("bezel", od(D)), c("bezel", sd(E(0), [f.map((e) => new U(-e.x, e.y))]).rotateY(Math.PI).translate(0, 0, Fd));
-	let O = Ld.screen, k = Ld.tally, A = Ld.panel, j = Rd(O.fx), M = zd(O.fy), N = Q(O.w + 1.6, O.h + 1.6, 5.8, j, M), ee = Q(k.w, k.h, 1.2, Rd(k.fx), zd(k.fy)), P = Rd(A.fx0 + A.w / 2), te = zd(A.fy0 + A.h / 2), ne = Q(A.w, A.h, 1.5, P, te);
-	c("bezel", sd(E(T), [
+	c("bezel", sd(D)), c("bezel", cd(E(0), [f.map((e) => new U(-e.x, e.y))]).rotateY(Math.PI).translate(0, 0, Pd));
+	let O = Id.screen, k = Id.tally, A = Id.panel, j = Ld(O.fx), M = Rd(O.fy), N = Q(O.w + 1.6, O.h + 1.6, 5.8, j, M), ee = Q(k.w, k.h, 1.2, Ld(k.fx), Rd(k.fy)), P = Ld(A.fx0 + A.w / 2), te = Rd(A.fy0 + A.h / 2), ne = Q(A.w, A.h, 1.5, P, te);
+	c("bezel", cd(E(T), [
 		N,
 		ee,
 		ne
-	], Nd)), c("bezel", od([$(N, Nd), $(Q(O.w, O.h, 5, j, M), Nd - .9)])), c("funnel", od([$(Q(O.w, O.h, 5, j, M), Nd - .9), $(Q(166, 126, 7, j, M), Nd - 19)])), c("black", od([$(Q(166, 126, 7, j, M), Nd - 19), $(Q(163, 123, 6, j, M), Nd - 19 - 2)]));
+	], Md)), c("bezel", sd([$(N, Md), $(Q(O.w, O.h, 5, j, M), Md - .9)])), c("funnel", sd([$(Q(O.w, O.h, 5, j, M), Md - .9), $(Q(166, 126, 7, j, M), Md - 19)])), c("black", sd([$(Q(166, 126, 7, j, M), Md - 19), $(Q(163, 123, 6, j, M), Md - 19 - 2)]));
 	let re = {
 		w: k.w - 3,
 		h: k.h - 3
-	}, ie = Q(k.w - 1.5, k.h - 1.5, 1, Rd(k.fx), zd(k.fy));
-	c("bezel", od([$(ee, Nd), $(ie, Nd - 1.4)])), c("black", od([$(ie, Nd - 1.4), $(Q(re.w, re.h, .7, Rd(k.fx), zd(k.fy)), Nd - 8)]));
+	}, ie = Q(k.w - 1.5, k.h - 1.5, 1, Ld(k.fx), Rd(k.fy));
+	c("bezel", sd([$(ee, Md), $(ie, Md - 1.4)])), c("black", sd([$(ie, Md - 1.4), $(Q(re.w, re.h, .7, Ld(k.fx), Rd(k.fy)), Md - 8)]));
 	let ae = new Y({
 		name: "tally",
 		color: 13684938,
 		roughness: .55,
 		emissive: 16777215,
 		emissiveIntensity: 0,
-		map: $u(e, re.w, re.h)
+		map: ed(e, re.w, re.h)
 	});
 	ae.emissiveMap = ae.map;
 	let oe = new J(new Ya(re.w, re.h), ae);
-	oe.position.set(Rd(k.fx), zd(k.fy), Nd - 8 + .2), oe.name = "tally", oe.userData.size = re, t.add(oe);
-	let se = Nd - 1.2;
-	c("bezel", od([$(ne, Nd), $(ne, se)]));
+	oe.position.set(Ld(k.fx), Rd(k.fy), Md - 8 + .2), oe.name = "tally", oe.userData.size = re, t.add(oe);
+	let se = Md - 1.2;
+	c("bezel", sd([$(ne, Md), $(ne, se)]));
 	let ce = [], F = (e) => {
 		ce.push(e);
-		let t = ld(e, se, 3);
+		let t = ud(e, se, 3);
 		c("black", t.walls), c("black", t.floor);
 	}, le = {}, ue = new In();
 	ue.name = "controls", t.add(ue);
 	let de = (e, t, n, r, i, o, s) => {
-		F(Q(r + 1.5, i + 1.5, .8, Rd(t), zd(n)));
-		let c = new J(cd(r, i, 9, .7, .55), a());
-		c.position.set(Rd(t), zd(n), se + o - 9), c.name = e, c.userData.control = e, ue.add(c), le[e] = {
+		F(Q(r + 1.5, i + 1.5, .8, Ld(t), Rd(n)));
+		let c = new J(ld(r, i, 9, .7, .55), a());
+		c.position.set(Ld(t), Rd(n), se + o - 9), c.name = e, c.userData.control = e, ue.add(c), le[e] = {
 			id: e,
 			kind: "button",
 			mesh: c,
@@ -13587,12 +13604,12 @@ function Hd({ tallyLogo: e = null } = {}) {
 			travel: s
 		};
 	};
-	Ld.buttons.forEach((e, t) => e.forEach((e, n) => {
-		de(e, Ld.buttonCols[n], Ld.buttonRows[t], 6.5, 6.7, 3.6, 1.7);
-	})), de("power", Ld.power.fx, Ld.power.fy, 7.5, 10.5, 5.2, 2.4);
-	for (let e of Ld.trimCols) {
-		F(Q(6.4, 22, 3.2, Rd(e), zd(Ld.trimRows[1])));
-		for (let t of Ld.trimRows) c("trimmer", new Ni(2, 2, 1.6, 18).rotateX(Math.PI / 2).translate(Rd(e), zd(t), se - 3 + .8)), c("black", new Ai(3, .55, .3).translate(Rd(e), zd(t), se - 3 + 1.6));
+	Id.buttons.forEach((e, t) => e.forEach((e, n) => {
+		de(e, Id.buttonCols[n], Id.buttonRows[t], 6.5, 6.7, 3.6, 1.7);
+	})), de("power", Id.power.fx, Id.power.fy, 7.5, 10.5, 5.2, 2.4);
+	for (let e of Id.trimCols) {
+		F(Q(6.4, 22, 3.2, Ld(e), Rd(Id.trimRows[1])));
+		for (let t of Id.trimRows) c("trimmer", new Ni(2, 2, 1.6, 18).rotateX(Math.PI / 2).translate(Ld(e), Rd(t), se - 3 + .8)), c("black", new Ai(3, .55, .3).translate(Ld(e), Rd(t), se - 3 + 1.6));
 	}
 	let fe = 9.6, pe = [
 		[5.25, 0],
@@ -13601,10 +13618,10 @@ function Hd({ tallyLogo: e = null } = {}) {
 		[4.3, fe],
 		[0, fe]
 	].map(([e, t]) => new U(e, t));
-	for (let e of Ld.knobs) {
-		F(ad(6.3, Rd(e.fx), zd(e.fy)));
+	for (let e of Id.knobs) {
+		F(od(6.3, Ld(e.fx), Rd(e.fy)));
 		let t = new In();
-		t.position.set(Rd(e.fx), zd(e.fy), se - 3), t.name = e.id;
+		t.position.set(Ld(e.fx), Rd(e.fy), se - 3), t.name = e.id;
 		let n = o(), r = new J(new Ja(pe, 36).rotateX(Math.PI / 2), n);
 		r.userData.control = e.id;
 		let i = new J(new Ai(.95, 3.3, .12).translate(0, 2.65, 9.66), new Yr({ color: 15263970 }));
@@ -13623,7 +13640,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 		emissive: 3800922,
 		emissiveIntensity: 0
 	}), he = new J(new $a(1.05, 16, 10), me);
-	he.scale.z = .7, he.position.set(Rd(Ld.led.fx), zd(Ld.led.fy), se), he.name = "power-led", t.add(he), c("panel", sd(ne, ce, se));
+	he.scale.z = .7, he.position.set(Ld(Id.led.fx), Rd(Id.led.fy), se), he.name = "power-led", t.add(he), c("panel", cd(ne, ce, se));
 	let ge = (e, n, r, i, a, o, s = {}) => {
 		let c = new Y({
 			map: e,
@@ -13634,12 +13651,12 @@ function Hd({ tallyLogo: e = null } = {}) {
 		}), l = new J(new Ya(n, r), c);
 		return l.position.set(i, a, o), l.raycast = () => {}, l.renderOrder = 2, t.add(l), l;
 	};
-	ge(Ku(Ld), A.w, A.h, P, te, se + .04).name = "legends";
-	let _e = Ld.sony, ve = Ld.trinitron, ye = ge(qu({
+	ge(Ku(Id), A.w, A.h, P, te, se + .04).name = "legends";
+	let _e = Id.sony, ve = Id.trinitron, ye = ge(qu({
 		w: _e.w,
 		h: _e.h,
 		style: "chrome"
-	}), _e.w + 1.2, _e.h + 1.2, Rd(_e.fx), zd(_e.fy), Nd + .05, {
+	}), _e.w + 1.2, _e.h + 1.2, Ld(_e.fx), Rd(_e.fy), Md + .05, {
 		metalness: .35,
 		roughness: .3,
 		alphaTest: .4,
@@ -13647,7 +13664,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 		depthWrite: !0,
 		emissive: 5592405
 	});
-	ye.name = "brand-badge", ge(Yu(ve.w, ve.h), ve.w, ve.h, Rd(ve.fx), zd(ve.fy), Nd + .04).name = "trinitron";
+	ye.name = "brand-badge", ge(Yu(ve.w, ve.h), ve.w, ve.h, Ld(ve.fx), Rd(ve.fy), Md + .04).name = "trinitron";
 	let be = (() => {
 		let e = 12.5, t = new ca(), n = (e, t) => new W(0, e, t);
 		return t.add(new ra(n(0, -1), n(0, 5.5))), t.add(new aa(n(0, 5.5), n(0, e), n(-7, e))), t.add(new ra(n(-7, e), n(-23, e))), t.add(new aa(n(-23, e), n(-30, e), n(-30, 5.5))), t.add(new ra(n(-30, 5.5), n(-30, -1))), {
@@ -13661,7 +13678,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 			new Ni(4.4, 4.8, 1.8, 28).rotateX(Math.PI / 2).translate(0, 0, .9),
 			new Ni(4.4, 4.8, 1.8, 28).rotateX(Math.PI / 2).translate(0, -be.L, .9)
 		]);
-		t.rotateY(e * .2).translate(e * 99.2, zd(166), Nd), c("handle", t);
+		t.rotateY(e * .2).translate(e * 99.2, Rd(166), Md), c("handle", t);
 	}
 	let xe = new In();
 	xe.name = "body";
@@ -13670,7 +13687,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 		n.name = e, xe.add(n);
 	}
 	t.add(xe);
-	let Se = Nd - 19 - 2.6 + (163 / 2) ** 2 / 1120, Ce = new Ya(171, 131, 40, 20);
+	let Se = Md - 19 - 2.6 + (163 / 2) ** 2 / 1120, Ce = new Ya(171, 131, 40, 20);
 	{
 		let e = Ce.attributes.position;
 		for (let t = 0; t < e.count; t++) {
@@ -13682,16 +13699,16 @@ function Hd({ tallyLogo: e = null } = {}) {
 	let we = {
 		cx: j,
 		cy: M,
-		w: Ed.PICTURE_W,
-		h: Ed.PICTURE_H,
+		w: Td.PICTURE_W,
+		h: Td.PICTURE_H,
 		z: Se - 2
-	}, Te = id({
+	}, Te = ad({
 		rect: we,
 		planeZ: we.z
 	}), Ee = new J(Ce, Te);
-	Ee.name = "crt-glass", Ee.userData.screen = !0, t.add(Ee), t.add(rd(Ce));
-	let De = new J(new Ya(Dd + 140, Od + 140).rotateX(-Math.PI / 2), new Yr({
-		map: Qu(Dd, Od, 70),
+	Ee.name = "crt-glass", Ee.userData.screen = !0, t.add(Ee), t.add(id(Ce));
+	let De = new J(new Ya(Ed + 140, Dd + 140).rotateX(-Math.PI / 2), new Yr({
+		map: $u(Ed, Dd, 70),
 		transparent: !0,
 		depthWrite: !1,
 		toneMapped: !1
@@ -13708,7 +13725,7 @@ function Hd({ tallyLogo: e = null } = {}) {
 		setPower: (e) => {
 			me.emissiveIntensity = e ? 2.4 : 0, me.color.setHex(e ? 3116863 : 1845788);
 		},
-		meta: Vd,
+		meta: Bd,
 		brand: {
 			mesh: ye,
 			w: _e.w,
@@ -13718,56 +13735,56 @@ function Hd({ tallyLogo: e = null } = {}) {
 	};
 }
 // src/models/pvm20m4e.js
-var Ud = /* @__PURE__ */ t({
-	META: () => nf,
-	buildMonitor: () => rf
-}), Wd = 450, Gd = 458, Kd = 503, qd = 12, Jd = 446, Yd = Kd / 2, Xd = -503 / 2, Zd = 235, Qd = (e, t, n, r = {}) => ({
+var Hd = /* @__PURE__ */ t({
+	META: () => tf,
+	buildMonitor: () => nf
+}), Ud = 450, Wd = 458, Gd = 503, Kd = 12, qd = 446, Jd = Gd / 2, Yd = -503 / 2, Xd = 235, Zd = (e, t, n, r = {}) => ({
 	id: e,
 	label: t,
 	kind: "button",
 	role: e,
 	x: n,
 	...r
-}), $d = [
-	Qd("line-a", "Line A input", -196, {
+}), Qd = [
+	Zd("line-a", "Line A input", -196, {
 		radio: "input",
 		legend: "LINE A"
 	}),
-	Qd("line-b", "Line B input", -180, {
+	Zd("line-b", "Line B input", -180, {
 		radio: "input",
 		legend: "LINE B"
 	}),
-	Qd("rgb", "RGB input", -164, {
+	Zd("rgb", "RGB input", -164, {
 		radio: "input",
 		legend: "RGB"
 	}),
-	Qd("sync", "External sync", -144, {
+	Zd("sync", "External sync", -144, {
 		latch: !0,
 		legend: "EXT SYNC"
 	}),
-	Qd("16-9", "16:9", -120, {
+	Zd("16-9", "16:9", -120, {
 		latch: !0,
 		role: "wide",
 		legend: "16:9"
 	}),
-	Qd("hv-delay", "H/V delay", -104, {
+	Zd("hv-delay", "H/V delay", -104, {
 		latch: !0,
 		legend: "H/V DELAY"
 	}),
-	Qd("underscan", "Under scan", -88, {
+	Zd("underscan", "Under scan", -88, {
 		latch: !0,
 		legend: "UNDERSCAN"
 	}),
-	Qd("blue-only", "Blue only", -72, {
+	Zd("blue-only", "Blue only", -72, {
 		latch: !0,
 		legend: "BLUE ONLY"
 	}),
-	Qd("degauss", "Degauss", -52, { legend: "DEGAUSS" }),
-	Qd("menu", "Menu", -26, { legend: "MENU" }),
-	Qd("up", "Menu up", -10, { legend: "▲" }),
-	Qd("down", "Menu down", 6, { legend: "▼" }),
-	Qd("enter", "Menu enter", 22, { legend: "ENTER" })
-], ef = [
+	Zd("degauss", "Degauss", -52, { legend: "DEGAUSS" }),
+	Zd("menu", "Menu", -26, { legend: "MENU" }),
+	Zd("up", "Menu up", -10, { legend: "▲" }),
+	Zd("down", "Menu down", 6, { legend: "▼" }),
+	Zd("enter", "Menu enter", 22, { legend: "ENTER" })
+], $d = [
 	[
 		"aper",
 		"APERTURE",
@@ -13805,13 +13822,13 @@ var Ud = /* @__PURE__ */ t({
 	kind: "knob",
 	role: e,
 	x: 52 + r * 23
-})), tf = 198, nf = {
+})), ef = 198, tf = {
 	id: "pvm-20m4e",
 	name: "Sony PVM-20M4E",
 	size: {
-		w: Wd,
-		h: Gd,
-		d: Kd
+		w: Ud,
+		h: Wd,
+		d: Gd
 	},
 	inputs: [
 		"line-a",
@@ -13827,12 +13844,12 @@ var Ud = /* @__PURE__ */ t({
 			kind: "button",
 			role: "power"
 		},
-		...$d,
-		...ef
+		...Qd,
+		...$d
 	]
 };
-function rf({ tallyLogo: e = null } = {}) {
-	let t = new wd(nf.name);
+function nf({ tallyLogo: e = null } = {}) {
+	let t = new Cd(tf.name);
 	t.mat("case", {
 		color: 11118752,
 		roughness: .7,
@@ -13855,14 +13872,14 @@ function rf({ tallyLogo: e = null } = {}) {
 		name: "knob",
 		color: 2763305,
 		roughness: .42
-	}), i = (e) => Q(Wd - 2 * e, Jd - 2 * e, 7 - e, 0, Zd);
-	t.add("case", od([$(i(0), Xd), $(i(0), 248.5)], { skip: fd("top", "left", "right") }));
+	}), i = (e) => Q(Ud - 2 * e, qd - 2 * e, 7 - e, 0, Xd);
+	t.add("case", sd([$(i(0), Yd), $(i(0), 248.5)], { skip: pd("top", "left", "right") }));
 	let a = [$(i(0), 248.5)];
 	for (let e = 1; e <= 4; e++) {
 		let t = e / 4 * (Math.PI / 2);
 		a.push($(i(3 * (1 - Math.cos(t))), 248.5 + 3 * Math.sin(t)));
 	}
-	t.add("case", od(a)), t.add("case", sd(i(0), [], 0).rotateY(Math.PI).translate(0, 0, Xd)), t.add("panel", new Ya(400, 396).rotateY(Math.PI).translate(0, Zd, -251.56));
+	t.add("case", sd(a)), t.add("case", cd(i(0), [], 0).rotateY(Math.PI).translate(0, 0, Yd)), t.add("panel", new Ya(400, 396).rotateY(Math.PI).translate(0, Xd, -251.56));
 	let o = {
 		w: 406,
 		h: 312,
@@ -13876,16 +13893,16 @@ function rf({ tallyLogo: e = null } = {}) {
 		h: 8,
 		cy: 445
 	}, d = Q(u.w, u.h, 1, 0, u.cy);
-	t.add("case", sd(i(3), [
+	t.add("case", cd(i(3), [
 		s,
 		l,
 		d
-	], Yd));
+	], Jd));
 	let f = {
 		w: 392,
 		h: 298
 	};
-	t.add("case", od([$(s, Yd), $(Q(o.w, o.h, 10, 0, o.cy), 250.5)])), t.add("funnel", od([$(Q(o.w, o.h, 10, 0, o.cy), 250.5), $(Q(f.w + 4, f.h + 4, 14, 0, o.cy), 236.5)])), t.add("black", od([$(Q(f.w + 4, f.h + 4, 14, 0, o.cy), 236.5), $(Q(f.w, f.h, 13, 0, o.cy), 234)])), t.crt({
+	t.add("case", sd([$(s, Jd), $(Q(o.w, o.h, 10, 0, o.cy), 250.5)])), t.add("funnel", sd([$(Q(o.w, o.h, 10, 0, o.cy), 250.5), $(Q(f.w + 4, f.h + 4, 14, 0, o.cy), 236.5)])), t.add("black", sd([$(Q(f.w + 4, f.h + 4, 14, 0, o.cy), 236.5), $(Q(f.w, f.h, 13, 0, o.cy), 234)])), t.crt({
 		cx: 0,
 		cy: o.cy,
 		edgeZ: 233.3,
@@ -13901,14 +13918,14 @@ function rf({ tallyLogo: e = null } = {}) {
 		w: u.w - 2,
 		h: u.h - 2
 	}, m = Q(u.w - 1.2, u.h - 1.2, .7, 0, u.cy);
-	t.add("case", od([$(d, Yd), $(m, 250.3)])), t.add("black", od([$(m, 250.3), $(Q(p.w, p.h, .5, 0, u.cy), 245.5)]));
+	t.add("case", sd([$(d, Jd), $(m, 250.3)])), t.add("black", sd([$(m, 250.3), $(Q(p.w, p.h, .5, 0, u.cy), 245.5)]));
 	let h = new Y({
 		name: "tally",
 		color: 14277076,
 		roughness: .45,
 		emissive: 16777215,
 		emissiveIntensity: 0,
-		map: $u(e, p.w, p.h)
+		map: ed(e, p.w, p.h)
 	});
 	h.emissiveMap = h.map;
 	let g = t.mesh(new Ya(p.w, p.h).translate(0, u.cy, 245.65), h, "tally");
@@ -13923,19 +13940,19 @@ function rf({ tallyLogo: e = null } = {}) {
 		alphaTest: .4,
 		transparent: !1,
 		depthWrite: !0
-	}), _.mesh.name = "brand-badge", t.decal(ed(120, 12, 12, (e, t) => {
+	}), _.mesh.name = "brand-badge", t.decal(td(120, 12, 12, (e, t) => {
 		e.fillStyle = "#3a3a37", e.textAlign = "left", e.font = `900 5px ${t}`, e.fillText("HR", 2, 8.2), e.font = `900 7.4px "Arial Black", ${t}`, e.fillText("Trinitron", 13, 8.6);
-	}), 120, 12, -143, 98, 251.54), t.decal(ed(60, 8, 16, (e, t) => {
+	}), 120, 12, -143, 98, 251.54), t.decal(td(60, 8, 16, (e, t) => {
 		e.fillStyle = "#3a3a37", e.textAlign = "right", e.font = `600 4.4px ${t}`, e.fillText("PVM-20M4E", 59, 5.8);
 	}), 60, 8, 176, 98, 251.54);
 	let v = c.cy - 2;
-	t.add("case", od([$(l, Yd), $(l, 250)]));
+	t.add("case", sd([$(l, Jd), $(l, 250)]));
 	let y = [], b = (e, n = 3) => {
 		y.push(e);
-		let r = ld(e, 250, n);
+		let r = ud(e, 250, n);
 		t.add("black", r.walls), t.add("black", r.floor);
 	};
-	for (let e of $d) {
+	for (let e of Qd) {
 		b(Q(12.4, 8.4, 1, e.x, v));
 		let r = e.latch || e.radio ? t.lamp(new Mi(1.25, 14).translate(e.x, v + 9.5, 250.05), 4587366, "lamp-" + e.id) : null;
 		r && (r.raycast = () => {}), t.button({
@@ -13956,7 +13973,7 @@ function rf({ tallyLogo: e = null } = {}) {
 			lamp: r
 		});
 	}
-	for (let e of ef) b(ad(8.6, e.x, v - 1)), t.knob({
+	for (let e of $d) b(od(8.6, e.x, v - 1)), t.knob({
 		id: e.id,
 		pos: [
 			e.x,
@@ -13967,10 +13984,10 @@ function rf({ tallyLogo: e = null } = {}) {
 		len: 11,
 		material: r()
 	});
-	b(Q(14, 20, 1.2, tf, v - 1)), t.button({
+	b(Q(14, 20, 1.2, ef, v - 1)), t.button({
 		id: "power",
 		pos: [
-			tf,
+			ef,
 			v - 1,
 			250
 		],
@@ -13984,14 +14001,14 @@ function rf({ tallyLogo: e = null } = {}) {
 		material: n()
 	});
 	let x = t.lamp(new $a(1.5, 14, 10).scale(1, 1, .6).translate(185, v + 12, 250), 4587366, "power-led");
-	t.add("panel", sd(l, y, 250)), t.decal(ed(c.w, c.h, 14, (e, t) => {
+	t.add("panel", cd(l, y, 250)), t.decal(td(c.w, c.h, 14, (e, t) => {
 		let n = (e) => e + c.w / 2, r = (e) => c.cy + c.h / 2 - e, i = "#070706", a = (n, r, a, o) => {
 			e.font = `700 ${o}px ${t}`, e.lineWidth = Math.max(.28, o * .07), e.strokeStyle = i, e.fillStyle = i, e.strokeText(n, r, a), e.fillText(n, r, a);
 		};
 		e.textAlign = "center", e.lineJoin = "round";
-		for (let e of $d) e.legend.split(" ").forEach((t, i) => a(t, n(e.x), r(v - 9 - i * 3.8), 3.45));
-		for (let e of ef) a(e.legend, n(e.x), r(v + 12.8), 4.05);
-		a("POWER", n(tf), r(v + 15.2), 4.15), e.strokeStyle = i, e.lineWidth = .5, e.font = `700 3.5px ${t}`, e.fillStyle = i;
+		for (let e of Qd) e.legend.split(" ").forEach((t, i) => a(t, n(e.x), r(v - 9 - i * 3.8), 3.45));
+		for (let e of $d) a(e.legend, n(e.x), r(v + 12.8), 4.05);
+		a("POWER", n(ef), r(v + 15.2), 4.15), e.strokeStyle = i, e.lineWidth = .5, e.font = `700 3.5px ${t}`, e.fillStyle = i;
 		for (let [t, i, a] of [[
 			-196,
 			-164,
@@ -14003,24 +14020,24 @@ function rf({ tallyLogo: e = null } = {}) {
 		]]) e.beginPath(), e.moveTo(n(t - 5), r(v + 16.6)), e.lineTo(n(i + 5), r(v + 16.6)), e.stroke(), e.fillText(a, n((t + i) / 2), r(v + 18.6));
 	}), c.w, c.h, 0, c.cy, 250.04).name = "legends";
 	let S = {
-		w: Wd,
-		h: Jd,
+		w: Ud,
+		h: qd,
 		r: 7,
-		cy: Zd,
-		z0: Xd,
+		cy: Xd,
+		z0: Yd,
 		z1: 248.5
 	}, C = (e, n) => {
-		let r = md(e, S), i = [];
-		n(r, i), t.add("case", gd(sd(_d(r.spanX, r.spanY), i), r.face, r.origin));
+		let r = hd(e, S), i = [];
+		n(r, i), t.add("case", _d(cd(vd(r.spanX, r.spanY), i), r.face, r.origin));
 	};
 	for (let e of ["left", "right"]) C(e, (e, n) => {
-		let r = hd(e, new W(e.origin.x, 306.36, 30)), i = ld(Q(130, 40, 14), 0, 20);
-		t.add("grip", gd(i.walls, e.face, e.origin, r.x, r.y)), t.add("cavity", gd(i.floor, e.face, e.origin, r.x, r.y));
+		let r = gd(e, new W(e.origin.x, 306.36, 30)), i = ud(Q(130, 40, 14), 0, 20);
+		t.add("grip", _d(i.walls, e.face, e.origin, r.x, r.y)), t.add("cavity", _d(i.floor, e.face, e.origin, r.x, r.y));
 		let a = new Ni(5.1, 5.1, 136, 24, 1, !1).rotateZ(Math.PI / 2);
-		a.translate(0, 0, -9.5), t.add("grip", gd(a, e.face, e.origin, r.x, r.y)), n.push(Q(130, 40, 14, r.x, r.y).slice().reverse());
+		a.translate(0, 0, -9.5), t.add("grip", _d(a, e.face, e.origin, r.x, r.y)), n.push(Q(130, 40, 14, r.x, r.y).slice().reverse());
 		for (let r of [-60, -150]) for (let i = 0; i < 14; i++) {
-			let a = hd(e, new W(e.origin.x, 72 + i * 7, r));
-			bd(e, a.x, a.y, 70, 2.6) && (n.push(vd(70, 2.6, a.x, a.y)), t.add("cavity", gd(xd(70, 2.6, 3.6), e.face, e.origin, a.x, a.y)));
+			let a = gd(e, new W(e.origin.x, 72 + i * 7, r));
+			bd(e, a.x, a.y, 70, 2.6) && (n.push(yd(70, 2.6, a.x, a.y)), t.add("cavity", _d(xd(70, 2.6, 3.6), e.face, e.origin, a.x, a.y)));
 		}
 	});
 	C("top", (e, n) => {
@@ -14029,12 +14046,12 @@ function rf({ tallyLogo: e = null } = {}) {
 			0,
 			140
 		]) for (let i = 0; i < 26; i++) {
-			let a = hd(e, new W(r, e.origin.y, -211.5 + i * 7.5));
-			bd(e, a.x, a.y, 110, 2.8) && (n.push(vd(110, 2.8, a.x, a.y)), t.add("cavity", gd(xd(110, 2.8, 4), e.face, e.origin, a.x, a.y)));
+			let a = gd(e, new W(r, e.origin.y, -211.5 + i * 7.5));
+			bd(e, a.x, a.y, 110, 2.8) && (n.push(yd(110, 2.8, a.x, a.y)), t.add("cavity", _d(xd(110, 2.8, 4), e.face, e.origin, a.x, a.y)));
 		}
 	});
-	for (let e of [-180, 180]) for (let n of [191.5, -181.5]) t.add("rubber", new Ni(15, 13, qd, 20).translate(e, qd / 2, n));
-	return t.shadow(Wd, Kd), t.finish(nf, {
+	for (let e of [-180, 180]) for (let n of [191.5, -181.5]) t.add("rubber", new Ni(15, 13, Kd, 20).translate(e, Kd / 2, n));
+	return t.shadow(Ud, Gd), t.finish(tf, {
 		brand: _,
 		tally: g,
 		setPower: (e) => {
@@ -14043,10 +14060,10 @@ function rf({ tallyLogo: e = null } = {}) {
 	});
 }
 // src/models/kv5200.js
-var af = /* @__PURE__ */ t({
-	META: () => _f,
-	buildMonitor: () => vf
-}), of = 162, sf = 330, cf = 205, lf = 48, uf = 65, df = sf / 2, ff = 124, pf = -120, mf = 150, hf = [
+var rf = /* @__PURE__ */ t({
+	META: () => gf,
+	buildMonitor: () => _f
+}), af = 162, of = 330, sf = 205, cf = 48, lf = 65, uf = of / 2, df = 124, ff = -120, pf = 150, mf = [
 	"2",
 	"3",
 	"4",
@@ -14061,15 +14078,15 @@ var af = /* @__PURE__ */ t({
 	"13",
 	"u1",
 	"u2"
-], gf = (e) => e.startsWith("u") ? `UHF preset ${e[1]}` : `Channel ${e}`, _f = {
+], hf = (e) => e.startsWith("u") ? `UHF preset ${e[1]}` : `Channel ${e}`, gf = {
 	id: "kv-5200",
 	name: "Sony KV-5200",
 	size: {
-		w: of,
+		w: af,
 		h: 235,
-		d: sf
+		d: of
 	},
-	inputs: hf.map((e) => "ch-" + e),
+	inputs: mf.map((e) => "ch-" + e),
 	inputOf: (e) => e.radio.channel,
 	noSignal: "noise",
 	barsLabel: "CH 2",
@@ -14080,9 +14097,9 @@ var af = /* @__PURE__ */ t({
 			kind: "button",
 			role: "power"
 		},
-		...hf.map((e) => ({
+		...mf.map((e) => ({
 			id: "ch-" + e,
-			label: gf(e),
+			label: hf(e),
 			kind: "button",
 			role: "channel",
 			radio: "channel"
@@ -14096,8 +14113,8 @@ var af = /* @__PURE__ */ t({
 		}
 	]
 };
-function vf() {
-	let e = new wd(_f.name);
+function _f() {
+	let e = new Cd(gf.name);
 	e.mat("silver", {
 		color: 12038308,
 		roughness: .42,
@@ -14122,16 +14139,16 @@ function vf() {
 		name: "key",
 		color: 1118481,
 		roughness: .3
-	}), n = (e) => e.map((e) => new W(e.x, e.y, ff + (e.y - uf) / 140 * 41)), r = Q(of, 140, 9, 0, 135), i = Q(152, 130, 6, 0, 135);
-	e.add("silver", od([$(r, pf), n(r)], { skip: fd("top") })), e.add("silver", od([n(r), n(i)]));
+	}), n = (e) => e.map((e) => new W(e.x, e.y, df + (e.y - lf) / 140 * 41)), r = Q(af, 140, 9, 0, 135), i = Q(152, 130, 6, 0, 135);
+	e.add("silver", sd([$(r, ff), n(r)], { skip: pd("top") })), e.add("silver", sd([n(r), n(i)]));
 	let a = Q(150, 128, 5, 0, 135);
-	e.add("hood", od([n(i), $(a, 112)]));
+	e.add("hood", sd([n(i), $(a, 112)]));
 	let o = {
 		w: 129,
 		h: 113,
 		cy: 125.5
 	};
-	e.add("gloss", sd(a, [Q(o.w, o.h, 4, 0, o.cy)], 112)), e.crt({
+	e.add("gloss", cd(a, [Q(o.w, o.h, 4, 0, o.cy)], 112)), e.crt({
 		cx: 0,
 		cy: o.cy,
 		edgeZ: 111,
@@ -14155,10 +14172,10 @@ function vf() {
 		depthWrite: !0,
 		emissive: 6710886
 	}), s.mesh.name = "brand-badge";
-	let c = Q(mf, lf, 5, 0, 41);
-	e.add("silver", od([$(c, pf), $(c, 126)]));
-	let l = (e) => -75 + e, u = (e) => uf - e, d = Q(141.2, 37.4, 1.5, 0, u(22.9)), f = 124.4;
-	e.add("silver", sd(c, [d], 126)), e.add("silver", od([$(d, 126), $(d, f)])), e.add("hood", sd(d, [], f));
+	let c = Q(pf, cf, 5, 0, 41);
+	e.add("silver", sd([$(c, ff), $(c, 126)]));
+	let l = (e) => -75 + e, u = (e) => lf - e, d = Q(141.2, 37.4, 1.5, 0, u(22.9)), f = 124.4;
+	e.add("silver", cd(c, [d], 126)), e.add("silver", sd([$(d, 126), $(d, f)])), e.add("hood", cd(d, [], f));
 	let p = 11.7, m = 12.75, h = [{
 		cell: 8.8,
 		key: 16.9
@@ -14166,7 +14183,7 @@ function vf() {
 		cell: 24.6,
 		key: 32.8
 	}], g = new $a(.85, 12, 8);
-	hf.forEach((n, r) => {
+	mf.forEach((n, r) => {
 		let i = h[Math.floor(r / 7)], a = l(m + r % 7 * p), o = e.lamp(new Ya(10.9, 5).translate(a, u(i.cell), 124.43), n.startsWith("u") ? 6750037 : 16767392, "lamp-ch-" + n);
 		o.userData.lampOn = 1.4, o.raycast = () => {};
 		let s = e.button({
@@ -14194,7 +14211,7 @@ function vf() {
 		w: 32.2,
 		h: 21.2
 	};
-	e.add("gloss", cd(_.w, _.h, 1.6, .8, .4).translate(_.x, _.y, f));
+	e.add("gloss", ld(_.w, _.h, 1.6, .8, .4).translate(_.x, _.y, f));
 	let v = {
 		x: l(132.4),
 		y: u(17.15),
@@ -14218,7 +14235,7 @@ function vf() {
 	}), b = new J(new Ya(v.w - 1, v.h - 1), new Yr({
 		transparent: !0,
 		depthWrite: !1,
-		map: ed(v.w - 1, v.h - 1, 32, (e, t) => {
+		map: td(v.w - 1, v.h - 1, 32, (e, t) => {
 			e.fillStyle = "#e4e4de", e.textAlign = "center", e.font = `700 2.6px ${t}`, e.fillText("POWER", 9.5, 8.2), e.font = `600 1.25px ${t}`, e.fillStyle = "#8d8d88", e.fillText("▁ ON", 5.2, 15.6), e.fillText("▔ OFF", 13.6, 15.6);
 		})
 	}));
@@ -14235,11 +14252,11 @@ function vf() {
 		mesh: S,
 		range: x.range
 	});
-	let C = u(22.9), w = e.decal(ed(141.2, 37.4, 16, (e, t) => {
+	let C = u(22.9), w = e.decal(td(141.2, 37.4, 16, (e, t) => {
 		let n = (e) => e - 4.4, r = (e) => e - 4.2;
 		e.fillStyle = "rgba(70,70,70,0.55)";
 		for (let t of h) e.fillRect(n(7.15), r(t.cell - 2.6), p * 7 - .5, 5.2);
-		e.fillStyle = "#9a9a96", e.textAlign = "center", e.font = `500 4.3px ${t}`, hf.forEach((t, i) => {
+		e.fillStyle = "#9a9a96", e.textAlign = "center", e.font = `500 4.3px ${t}`, mf.forEach((t, i) => {
 			let a = h[Math.floor(i / 7)];
 			e.fillText(t.startsWith("u") ? "✳" : t, n(m + i % 7 * p), r(a.cell + 1.55));
 		});
@@ -14252,54 +14269,54 @@ function vf() {
 			e.fillStyle = t, e.beginPath(), e.ellipse(i + n, r(11.2), 3.4, 1.15, 0, 0, Math.PI * 2), e.fill();
 		}), e.fillStyle = "#e9e9e4", e.font = `600 3.3px ${t}`, e.save(), e.translate(i, r(16.6)), e.scale(1.42, 1), e.fillText("TRINITRON", 0, 0), e.restore(), e.fillStyle = "#d5d5cf", e.font = `600 1.55px ${t}`, e.fillText("MIN", n(99.5), r(31.4)), e.fillText("MAX", n(132.5), r(31.4)), e.font = `600 2.1px ${t}`, e.fillText("VOLUME", n(116), r(31.4));
 	}), 141.2, 37.4, 0, C, 124.46000000000001);
-	w.name = "legends", w.position.z = 126.06, e.add("rear", new Ai(128, 19, 271).translate(0, 19 / 2, -31 / 2)), e.decal(ed(128, 15, 14, (e, t) => {
+	w.name = "legends", w.position.z = 126.06, e.add("rear", new Ai(128, 19, 271).translate(0, 19 / 2, -31 / 2)), e.decal(td(128, 15, 14, (e, t) => {
 		e.fillStyle = "#b8b8b2", e.textAlign = "left", e.font = `600 2.1px ${t}`, e.fillText("START", 37.5, 6.3), e.fillText("RECHARGE", 37.5, 9), e.fillText("CHARGING", 59, 7.7), e.strokeStyle = "#3a3a3a", e.lineWidth = .25, e.strokeRect(100, 3.6, 16, 6.6), e.textAlign = "center", e.font = `700 2.2px ${t}`, e.fillText("KV-5200", 108, 7.7);
 	}), 128, 15, 0, 8, 120.05), e.add("rubber", new Mi(1.1, 14).translate(-30.5, 9.3, 120.04)), e.add("rubber", new Mi(1.1, 14).translate(-8.5, 8.7, 120.04));
 	let T = Q(160, 184, 9, 0, 111), E = Q(138, 154, 9, 0, 111);
-	e.add("rear", od([$(E, -165), $(T, pf)])), e.add("rear", sd(E, [], 0).rotateY(Math.PI).translate(0, 0, -165)), e.add("rear", sd(T, [], -119.5));
-	let D = cf;
+	e.add("rear", sd([$(E, -165), $(T, ff)])), e.add("rear", cd(E, [], 0).rotateY(Math.PI).translate(0, 0, -165)), e.add("rear", cd(T, [], -119.5));
+	let D = sf;
 	e.add("hood", new Ya(27, 190).rotateX(-Math.PI / 2).translate(0, 205.06, -27));
 	for (let t of [-112, 58]) e.add("silver", new Ai(25, 52, 18).translate(0, 231, t));
-	e.add("silver", cd(25, 188, 11, 1.5, 1).rotateX(-Math.PI / 2).translate(0, 246, -27)), e.add("hood", new Ya(15, 180).rotateX(-Math.PI / 2).translate(0, 257.06, -27)), e.add("chrome", new Ni(3, 3, 172, 16).rotateX(Math.PI / 2).translate(0, 260.4, -31)), e.add("chrome", new $a(4.2, 14, 10).translate(0, 260.6, -118)), e.add("orange", new Ni(3.7, 3.7, 9, 16).rotateX(Math.PI / 2).translate(0, 260.4, 59.5)), e.add("silver", cd(23, 12, 1.4, 1, .5).rotateX(-Math.PI / 2).translate(0, D, 76)), e.decal(ed(23, 12, 20, (e, t) => {
+	e.add("silver", ld(25, 188, 11, 1.5, 1).rotateX(-Math.PI / 2).translate(0, 246, -27)), e.add("hood", new Ya(15, 180).rotateX(-Math.PI / 2).translate(0, 257.06, -27)), e.add("chrome", new Ni(3, 3, 172, 16).rotateX(Math.PI / 2).translate(0, 260.4, -31)), e.add("chrome", new $a(4.2, 14, 10).translate(0, 260.6, -118)), e.add("orange", new Ni(3.7, 3.7, 9, 16).rotateX(Math.PI / 2).translate(0, 260.4, 59.5)), e.add("silver", ld(23, 12, 1.4, 1, .5).rotateX(-Math.PI / 2).translate(0, D, 76)), e.decal(td(23, 12, 20, (e, t) => {
 		e.fillStyle = "#6f6a61", e.textAlign = "center", e.font = `700 3.4px ${t}`, e.fillText("PUSH", 11.5, 7.3);
 	}), 23, 12, 0, 206.46, 76).rotation.x = -Math.PI / 2;
 	{
-		let t = md("top", {
-			w: of,
+		let t = hd("top", {
+			w: af,
 			h: 140,
 			r: 9,
 			cx: 0,
 			cy: 135,
-			z0: pf,
-			z1: df
+			z0: ff,
+			z1: uf
 		}), n = [];
 		for (let r of [-1, 1]) for (let i of [-96, -109]) for (let a = 0; a < 22; a++) {
-			let o = hd(t, new W(r * 19 + r * a * 2.6, t.origin.y, i));
-			bd(t, o.x, o.y, 1.25, 9, .35) && (n.push(vd(1.25, 9, o.x, o.y)), e.add("cavity", gd(xd(1.25, 9, 2.8), t.face, t.origin, o.x, o.y)));
+			let o = gd(t, new W(r * 19 + r * a * 2.6, t.origin.y, i));
+			bd(t, o.x, o.y, 1.25, 9, .35) && (n.push(yd(1.25, 9, o.x, o.y)), e.add("cavity", _d(xd(1.25, 9, 2.8), t.face, t.origin, o.x, o.y)));
 		}
-		e.add("silver", gd(sd(_d(t.spanX, t.spanY), n), t.face, t.origin));
+		e.add("silver", _d(cd(vd(t.spanX, t.spanY), n), t.face, t.origin));
 	}
-	let O = e.decal(ed(140, 40, 10, (e, t) => {
+	let O = e.decal(td(140, 40, 10, (e, t) => {
 		e.strokeStyle = "rgba(20,20,20,0.75)", e.lineWidth = .5, e.strokeRect(4, 12, 132, 26), e.fillStyle = "#8f897e", e.fillRect(64, 6.5, 13, 5.5), e.strokeStyle = "rgba(40,40,40,0.5)", e.lineWidth = .3;
 		for (let t = 0; t < 5; t++) e.beginPath(), e.moveTo(66.5 + t * 2, 7.3), e.lineTo(66.5 + t * 2, 11.2), e.stroke();
 		e.fillStyle = "#4c4840", e.textAlign = "right", e.font = `700 2.6px ${t}`, e.fillText("OPEN ▸", 61, 10.6);
 	}), 140, 40, 75.06, 38, -3);
-	return O.rotation.y = Math.PI / 2, e.shadow(mf, 310), e.finish(_f, { brand: s });
+	return O.rotation.y = Math.PI / 2, e.shadow(pf, 310), e.finish(gf, { brand: s });
 }
 // src/models/kv9pr1.js
-var yf = /* @__PURE__ */ t({
-	META: () => Mf,
-	buildMonitor: () => Nf
-}), bf = 218, xf = 296, Sf = 13, Cf = 171, wf = 184, Tf = xf / 2, Ef = -48, Df = -113, Of = -148, kf = 98.5, Af = Array.from({ length: 12 }, (e, t) => "ch-" + (t + 1)), jf = "\"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", \"Noto Sans CJK JP\", Meiryo, sans-serif", Mf = {
+var vf = /* @__PURE__ */ t({
+	META: () => jf,
+	buildMonitor: () => Mf
+}), yf = 218, bf = 296, xf = 13, Sf = 171, Cf = 184, wf = bf / 2, Tf = -48, Ef = -113, Df = -148, Of = 98.5, kf = Array.from({ length: 12 }, (e, t) => "ch-" + (t + 1)), Af = "\"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", \"Noto Sans CJK JP\", Meiryo, sans-serif", jf = {
 	id: "kv-9pr1",
 	name: "Sony KV-9PR1",
 	size: {
-		w: bf,
-		h: wf,
-		d: xf
+		w: yf,
+		h: Cf,
+		d: bf
 	},
-	inputs: Af,
-	inputOf: (e) => e.radio.channel || Af[0],
+	inputs: kf,
+	inputOf: (e) => e.radio.channel || kf[0],
 	noSignal: "noise",
 	barsLabel: "CH 1",
 	values: { volume: .5 },
@@ -14343,15 +14360,17 @@ var yf = /* @__PURE__ */ t({
 		}
 	]
 };
-function Nf() {
-	let e = new wd(Mf.name);
+function Mf() {
+	let e = new Cd(jf.name);
 	e.mat("shell", {
-		color: 14711356,
-		roughness: .42,
+		color: 12862744,
+		roughness: .62,
+		metalness: 0,
+		specularIntensity: .18,
 		bumpMap: e.grain,
-		bumpScale: .2,
+		bumpScale: .12,
 		roughnessMap: e.rough
-	}), e.mat("bezel", {
+	}, fo), e.mat("bezel", {
 		color: 3421755,
 		roughness: .42
 	}), e.mat("rib", {
@@ -14366,33 +14385,33 @@ function Nf() {
 		name: "key",
 		color: 10396303,
 		roughness: .5
-	}), n = (e) => Q(bf - 2 * e, Cf - 2 * e, 15 - e, 0, kf);
-	e.add("shell", od([$(n(0), Ef), $(n(0), 143)], { skip: fd("left") }));
+	}), n = (e) => Q(yf - 2 * e, Sf - 2 * e, 15 - e, 0, Of);
+	e.add("shell", sd([$(n(0), Tf), $(n(0), 143)]));
 	let r = [$(n(0), 143)];
 	for (let e = 1; e <= 4; e++) {
 		let t = e / 4 * (Math.PI / 2);
 		r.push($(n(5 * (1 - Math.cos(t))), 143 + 5 * Math.sin(t)));
 	}
-	e.add("shell", od(r));
+	e.add("shell", sd(r));
 	let i = {
 		w: 206,
 		h: 158,
 		cy: 94.5
 	}, a = Q(i.w, i.h, 10, 0, i.cy);
-	e.add("shell", sd(n(5), [a], Tf));
+	e.add("shell", cd(n(5), [a], wf));
 	let o = {
 		w: 180,
 		h: 127,
 		cy: i.cy - i.h / 2 + 12 + 63.5
 	}, s = 148.8;
-	e.add("bezel", od([$(a, Tf), $(a, s)]));
+	e.add("bezel", sd([$(a, wf), $(a, s)]));
 	let c = Q(o.w, o.h, 4, 0, o.cy);
-	e.add("bezel", sd(a, [c], s));
+	e.add("bezel", cd(a, [c], s));
 	let l = {
 		w: 170,
 		h: 121
 	};
-	e.add("bezel", od([$(c, s), $(Q(l.w + 2, l.h + 2, 6, 0, o.cy), 140.8)])), e.add("black", od([$(Q(l.w + 2, l.h + 2, 6, 0, o.cy), 140.8), $(Q(l.w, l.h, 6, 0, o.cy), 139.3)])), e.crt({
+	e.add("bezel", sd([$(c, s), $(Q(l.w + 2, l.h + 2, 6, 0, o.cy), 140.8)])), e.add("black", sd([$(Q(l.w + 2, l.h + 2, 6, 0, o.cy), 140.8), $(Q(l.w, l.h, 6, 0, o.cy), 139.3)])), e.crt({
 		cx: 0,
 		cy: o.cy,
 		edgeZ: 138.8,
@@ -14414,7 +14433,7 @@ function Nf() {
 		transparent: !1,
 		depthWrite: !0,
 		emissive: 5592405
-	}), u.mesh.name = "brand-badge", e.add("shell", new Ai(132, 17, 170).translate(0, 17 / 2, 55)), e.decal(ed(132, Sf, 18, (e, t) => {
+	}), u.mesh.name = "brand-badge", e.add("shell", new Ai(132, 17, 170).translate(0, 17 / 2, 55)), e.decal(td(132, xf, 18, (e, t) => {
 		[
 			["#e8463a", 9],
 			["#58b947", 13.6],
@@ -14422,35 +14441,35 @@ function Nf() {
 		].forEach(([t, n]) => {
 			e.fillStyle = t, e.beginPath(), e.arc(n, 8.6, 1.9, 0, Math.PI * 2), e.fill();
 		}), e.fillStyle = "#3d5a8a", e.textAlign = "left", e.font = `600 3.1px ${t}`, e.fillText("TRINITRON", 21.6, 9.75);
-	}), 132, Sf, 0, Sf / 2, 140.05);
+	}), 132, xf, 0, xf / 2, 140.05);
 	let d = {
 		x: 39,
 		y: 6.4,
 		w: 32,
 		h: 8.8
 	};
-	e.add("window", cd(d.w, d.h, .6, .8, .2).translate(d.x, d.y, 140)), e.decal(ed(d.w, d.h, 24, (e) => {
-		e.fillStyle = "#d6d6d2", e.textAlign = "left", e.font = `500 2.3px ${jf}`, e.fillText("スタンバイ", 9, 3.7), e.fillText("スリープ", 9, 7.3);
+	e.add("window", ld(d.w, d.h, .6, .8, .2).translate(d.x, d.y, 140)), e.decal(td(d.w, d.h, 24, (e) => {
+		e.fillStyle = "#d6d6d2", e.textAlign = "left", e.font = `500 2.3px ${Af}`, e.fillText("スタンバイ", 9, 3.7), e.fillText("スリープ", 9, 7.3);
 	}), d.w, d.h, d.x, d.y, 140.66);
 	let f = (e) => new Ya(3.2, 1.3).translate(d.x - 11, d.y + e, 140.67), p = e.lamp(f(1.75), 16726570, "lamp-standby"), m = e.lamp(f(-1.85), 16753978, "lamp-sleep");
 	for (let e of [p, m]) e.material.color.setHex(7039846), e.raycast = () => {};
-	let h = Q(214, 167, 13, 0, kf);
-	e.add("rib", od([$(h, Df), $(h, Ef)], { skip: fd("top", "left", "right") })), e.add("rib", sd(h, [], 0).rotateY(Math.PI).translate(0, 0, Df));
+	let h = Q(214, 167, 13, 0, Of);
+	e.add("rib", sd([$(h, Ef), $(h, Tf)], { skip: pd("top", "left", "right") })), e.add("rib", cd(h, [], 0).rotateY(Math.PI).translate(0, 0, Ef));
 	let g = Q(188, 127, 10, 0, 106.5);
-	e.add("rib", od([$(g, Of), $(g, Df)])), e.add("rib", sd(g, [], 0).rotateY(Math.PI).translate(0, 0, Of)), e.add("rib", new Ai(150, 17, 46).translate(0, 17 / 2, -81));
+	e.add("rib", sd([$(g, Df), $(g, Ef)])), e.add("rib", cd(g, [], 0).rotateY(Math.PI).translate(0, 0, Df)), e.add("rib", new Ai(150, 17, 46).translate(0, 17 / 2, -81));
 	let _ = -161 / 2, v = {
 		w: 214,
 		h: 167,
 		r: 13,
-		cy: kf,
-		z0: Df,
-		z1: Ef
+		cy: Of,
+		z0: Ef,
+		z1: Tf
 	}, y = (t, n) => {
-		let r = md(t, v), i = [];
-		n(r, i), e.add("rib", gd(sd(_d(r.spanX, r.spanY), i), r.face, r.origin));
+		let r = hd(t, v), i = [];
+		n(r, i), e.add("rib", _d(cd(vd(r.spanX, r.spanY), i), r.face, r.origin));
 	}, b = (t, n, r, i, a) => {
-		let o = hd(t, r);
-		bd(t, o.x, o.y, i, a, .3) && (n.push(vd(i, a, o.x, o.y)), e.add("cavity", gd(xd(i, a, 2.4), t.face, t.origin, o.x, o.y)));
+		let o = gd(t, r);
+		bd(t, o.x, o.y, i, a, .3) && (n.push(yd(i, a, o.x, o.y)), e.add("cavity", _d(xd(i, a, 2.4), t.face, t.origin, o.x, o.y)));
 	};
 	for (let e of ["left", "right"]) y(e, (e, t) => {
 		for (let n = 0; n < 30; n++) b(e, t, new W(e.origin.x, 31 + n * 4.7, _), 64, 1.3);
@@ -14459,22 +14478,32 @@ function Nf() {
 		for (let n = 0; n < 39; n++) b(e, t, new W(-89.3 + n * 4.7, e.origin.y, _), 1.3, 64);
 	});
 	{
-		let t = md("left", {
-			w: bf,
-			h: Cf,
+		let t = 5.2, n = Qu({ land: [
+			196,
+			69,
+			24
+		] });
+		e.mat("speaker", {
+			color: 16777215,
+			map: n.albedo,
+			normalMap: n.normal,
+			normalScale: new U(1, 1),
+			roughnessMap: n.roughness,
+			roughness: 1,
+			metalness: 0
+		});
+		let r = new Mi(44, 48), i = r.attributes.position, a = r.attributes.uv;
+		for (let e = 0; e < i.count; e++) a.setXY(e, i.getX(e) / t + .5, i.getY(e) / t + .5);
+		r.computeTangents();
+		let o = hd("left", {
+			w: yf,
+			h: Sf,
 			r: 15,
-			cy: kf,
-			z0: Ef,
+			cy: Of,
+			z0: Tf,
 			z1: 143
-		}), n = [], r = 1.35;
-		for (let i = 0; i <= 8; i++) {
-			let a = i === 0 ? 1 : Math.round(2 * Math.PI * i * 5 / 5.4);
-			for (let o = 0; o < a; o++) {
-				let s = o / a * Math.PI * 2 + i * .31, c = hd(t, new W(t.origin.x, 100 + Math.sin(s) * i * 5, 9 + Math.cos(s) * i * 5));
-				bd(t, c.x, c.y, r * 2, r * 2, .4) && (n.push(yd(r, c.x, c.y, 8)), e.add("cavity", gd(Sd(r, 4.2, 8), t.face, t.origin, c.x, c.y)));
-			}
-		}
-		e.add("shell", gd(sd(_d(t.spanX, t.spanY), n), t.face, t.origin));
+		}), s = gd(o, new W(o.origin.x, 100, 9));
+		_d(r, "left", o.origin, s.x, s.y), r.translate(-.25, 0, 0), e.add("speaker", r);
 	}
 	let x = {
 		x: 52,
@@ -14543,9 +14572,9 @@ function Nf() {
 		facing: "top",
 		material: t(),
 		lamp: m
-	}), e.decal(ed(x.w, 9, 20, (e) => {
-		e.fillStyle = "#e9e6dc", e.textAlign = "center", e.font = `600 2.6px ${jf}`, e.fillText("電源", 12, 6), e.fillText("▼ チャンネル ▲", 40, 6), e.fillText("－ 音量 ＋", 70, 6), e.fillText("スリープ", 89, 6);
-	}), x.w, 9, x.x, 184.09, x.z + 9.5).rotation.x = -Math.PI / 2, e.add("rib", new Ni(3.4, 4, 20, 16).translate(-74, 194, -22)), e.add("chrome", new Ni(2.2, 2.2, 6, 12).translate(-74, 206, -22)), e.shadow(188, 276), e.finish(Mf, {
+	}), e.decal(td(x.w, 9, 20, (e) => {
+		e.fillStyle = "#e9e6dc", e.textAlign = "center", e.font = `600 2.6px ${Af}`, e.fillText("電源", 12, 6), e.fillText("▼ チャンネル ▲", 40, 6), e.fillText("－ 音量 ＋", 70, 6), e.fillText("スリープ", 89, 6);
+	}), x.w, 9, x.x, 184.09, x.z + 9.5).rotation.x = -Math.PI / 2, e.add("rib", new Ni(3.4, 4, 20, 16).translate(-74, 194, -22)), e.add("chrome", new Ni(2.2, 2.2, 6, 12).translate(-74, 206, -22)), e.shadow(188, 276), e.finish(jf, {
 		brand: u,
 		setPower: (e) => {
 			p.material.emissiveIntensity = e ? 0 : 2.2;
@@ -14553,15 +14582,15 @@ function Nf() {
 	});
 }
 // src/models/index.js
-var Pf = (e) => ({
+var Nf = (e) => ({
 	META: e.META,
 	build: e.buildMonitor
-}), Ff = {
-	"pvm-9042qm": Pf(Td),
-	"pvm-20m4e": Pf(Ud),
-	"kv-5200": Pf(af),
-	"kv-9pr1": Pf(yf)
-}, If = "pvm-9042qm", Lf = class {
+}), Pf = {
+	"pvm-9042qm": Nf(wd),
+	"pvm-20m4e": Nf(Hd),
+	"kv-5200": Nf(rf),
+	"kv-9pr1": Nf(vf)
+}, Ff = "pvm-9042qm", If = class {
 	constructor() {
 		this.muted = !1, this.ctx = null;
 	}
@@ -14622,9 +14651,9 @@ var Pf = (e) => ({
 		let i = e.createGain();
 		i.gain.setValueAtTime(.55, t), i.gain.exponentialRampToValueAtTime(.001, t + 1.3), n.connect(r).connect(i).connect(this.master), n.start(t), n.stop(t + 1.35);
 	}
-}, Rf = Lt.degToRad(150), zf = (e, t, n) => Math.min(n, Math.max(t, e)), Bf = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, Vf = (e) => 1 - (1 - e) ** 3, Hf = (e) => e, Uf = "\n:host { display: block; position: relative; width: 100%; height: 480px; }\n:host([hidden]) { display: none; }\n.stage { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.stage.dragging { cursor: grabbing; }\n.css { position: absolute; inset: 0; z-index: 0; }\ncanvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; pointer-events: none; }\n\n.screen { width: 640px; height: 480px; background: #000; overflow: hidden; color: #e9e9e4;\n  font: 16px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; text-align: left; }\n.beam, .roll, .raster, .picture { position: absolute; inset: 0; }\n.beam { opacity: 0; }\n.beam.on { opacity: 1; animation: pvm-on 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }\n.beam.off { animation: pvm-off 0.5s ease-in both; }\n.beam.instant { animation-duration: 1ms; }\n@keyframes pvm-on {\n  0% { opacity: 0; transform: scale(1, 0.004); filter: brightness(6); }\n  20% { opacity: 1; transform: scale(1, 0.004); filter: brightness(6); }\n  55% { transform: scale(1, 1); filter: brightness(2.2); }\n  100% { opacity: 1; transform: none; filter: none; }\n}\n@keyframes pvm-off {\n  0% { opacity: 1; transform: none; filter: none; }\n  45% { opacity: 1; transform: scale(1, 0.004); filter: brightness(8); }\n  85% { opacity: 1; transform: scale(0.004, 0.004); filter: brightness(12); }\n  100% { opacity: 0; transform: scale(0.004, 0.004); }\n}\n.roll.rolling { animation: pvm-roll 1.25s linear infinite; }\n@keyframes pvm-roll {\n  from { transform: translateY(-100%) skewX(-3deg); }\n  to { transform: translateY(100%) skewX(-3deg); }\n}\n.raster { transition: transform 0.22s ease-out; overflow: hidden; }\n.picture { background: #000; overflow: hidden; }\n.input { position: absolute; inset: 0; overflow: auto; display: none; }\n.input.active { display: block; }\n.input iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }\n.blue { position: absolute; inset: 0; background: #00f; mix-blend-mode: multiply; pointer-events: none; display: none; }\n.screen.blue-only .blue { display: block; }\n\n.noise { position: absolute; inset: -64px; display: none; background-size: 192px 192px; image-rendering: pixelated; animation: pvm-noise 0.32s steps(4) infinite; }\n.noise.active { display: block; }\n@keyframes pvm-noise { 0% { transform: translate(0, 0); } 25% { transform: translate(-37px, 23px); } 50% { transform: translate(29px, -41px); } 75% { transform: translate(-19px, -13px); } 100% { transform: translate(0, 0); } }\n.bars { position: absolute; inset: 0; display: none; flex-direction: column; }\n.bars.active { display: flex; }\n.bars i { display: block; }\n.bars i:nth-child(1) { flex: 67; background: linear-gradient(90deg, #c0c0c0 0 14.286%, #c0c000 0 28.571%, #00c0c0 0 42.857%, #00c000 0 57.143%, #c000c0 0 71.429%, #c00000 0 85.714%, #0000c0 0); }\n.bars i:nth-child(2) { flex: 8; background: linear-gradient(90deg, #0000c0 0 14.286%, #131313 0 28.571%, #c000c0 0 42.857%, #131313 0 57.143%, #00c0c0 0 71.429%, #131313 0 85.714%, #c0c0c0 0); }\n.bars i:nth-child(3) { flex: 25; background: linear-gradient(90deg, #00214c 0 17.86%, #fff 0 35.71%, #32006a 0 53.57%, #131313 0 71.43%, #090909 0 76.19%, #131313 0 80.95%, #1d1d1d 0 85.71%, #131313 0); }\n.bars b { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%); background: #000; color: #f2f2f2;\n  font: 600 22px/1 ui-monospace, \"SF Mono\", Menlo, Consolas, monospace; letter-spacing: 0.12em; padding: 10px 16px; }\n\n.back { position: absolute; z-index: 3; top: 14px; left: 14px; padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2;\n  font: 500 13px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.back:hover { background: rgba(40, 40, 40, 0.85); }\n.back:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.back[hidden] { display: none; }\n.hint { position: absolute; z-index: 2; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 13px;\n  border-radius: 999px; background: rgba(18, 18, 18, 0.6); color: #ededed; white-space: nowrap; pointer-events: none;\n  font: 500 12px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; transition: opacity 0.5s; }\n.hint.gone, :host([no-hint]) .hint { opacity: 0; }\n.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }\n\n/* no-WebGL fallback: just show the content in a plain frame */\n.stage.nogl { cursor: default; display: grid; place-items: center; }\n.stage.nogl canvas, .stage.nogl .hint, .stage.nogl .css { display: none; }\n.stage.nogl .screen { position: relative; max-width: 100%; border: 14px solid #62605c; border-radius: 10px; box-sizing: content-box; }\n@media (prefers-reduced-motion: reduce) {\n  .beam.on, .beam.off { animation-duration: 1ms; }\n  .roll.rolling, .noise { animation: none; }\n  .raster { transition: none; }\n}\n", Wf = typeof HTMLElement < "u" ? HTMLElement : class {}, Gf = null;
-function Kf() {
-	if (Gf) return Gf;
+}, Lf = Lt.degToRad(150), Rf = (e, t, n) => Math.min(n, Math.max(t, e)), zf = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, Bf = (e) => 1 - (1 - e) ** 3, Vf = (e) => e, Hf = "\n:host { display: block; position: relative; width: 100%; height: 480px; }\n:host([hidden]) { display: none; }\n.stage { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.stage.dragging { cursor: grabbing; }\n.css { position: absolute; inset: 0; z-index: 0; }\ncanvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; pointer-events: none; }\n\n.screen { width: 640px; height: 480px; background: #000; overflow: hidden; color: #e9e9e4;\n  font: 16px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; text-align: left; }\n.beam, .roll, .raster, .picture { position: absolute; inset: 0; }\n.beam { opacity: 0; }\n.beam.on { opacity: 1; animation: pvm-on 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }\n.beam.off { animation: pvm-off 0.5s ease-in both; }\n.beam.instant { animation-duration: 1ms; }\n@keyframes pvm-on {\n  0% { opacity: 0; transform: scale(1, 0.004); filter: brightness(6); }\n  20% { opacity: 1; transform: scale(1, 0.004); filter: brightness(6); }\n  55% { transform: scale(1, 1); filter: brightness(2.2); }\n  100% { opacity: 1; transform: none; filter: none; }\n}\n@keyframes pvm-off {\n  0% { opacity: 1; transform: none; filter: none; }\n  45% { opacity: 1; transform: scale(1, 0.004); filter: brightness(8); }\n  85% { opacity: 1; transform: scale(0.004, 0.004); filter: brightness(12); }\n  100% { opacity: 0; transform: scale(0.004, 0.004); }\n}\n.roll.rolling { animation: pvm-roll 1.25s linear infinite; }\n@keyframes pvm-roll {\n  from { transform: translateY(-100%) skewX(-3deg); }\n  to { transform: translateY(100%) skewX(-3deg); }\n}\n.raster { transition: transform 0.22s ease-out; overflow: hidden; }\n.picture { background: #000; overflow: hidden; }\n.input { position: absolute; inset: 0; overflow: auto; display: none; }\n.input.active { display: block; }\n.input iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }\n.blue { position: absolute; inset: 0; background: #00f; mix-blend-mode: multiply; pointer-events: none; display: none; }\n.screen.blue-only .blue { display: block; }\n\n.noise { position: absolute; inset: -64px; display: none; background-size: 192px 192px; image-rendering: pixelated; animation: pvm-noise 0.32s steps(4) infinite; }\n.noise.active { display: block; }\n@keyframes pvm-noise { 0% { transform: translate(0, 0); } 25% { transform: translate(-37px, 23px); } 50% { transform: translate(29px, -41px); } 75% { transform: translate(-19px, -13px); } 100% { transform: translate(0, 0); } }\n.bars { position: absolute; inset: 0; display: none; flex-direction: column; }\n.bars.active { display: flex; }\n.bars i { display: block; }\n.bars i:nth-child(1) { flex: 67; background: linear-gradient(90deg, #c0c0c0 0 14.286%, #c0c000 0 28.571%, #00c0c0 0 42.857%, #00c000 0 57.143%, #c000c0 0 71.429%, #c00000 0 85.714%, #0000c0 0); }\n.bars i:nth-child(2) { flex: 8; background: linear-gradient(90deg, #0000c0 0 14.286%, #131313 0 28.571%, #c000c0 0 42.857%, #131313 0 57.143%, #00c0c0 0 71.429%, #131313 0 85.714%, #c0c0c0 0); }\n.bars i:nth-child(3) { flex: 25; background: linear-gradient(90deg, #00214c 0 17.86%, #fff 0 35.71%, #32006a 0 53.57%, #131313 0 71.43%, #090909 0 76.19%, #131313 0 80.95%, #1d1d1d 0 85.71%, #131313 0); }\n.bars b { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%); background: #000; color: #f2f2f2;\n  font: 600 22px/1 ui-monospace, \"SF Mono\", Menlo, Consolas, monospace; letter-spacing: 0.12em; padding: 10px 16px; }\n\n.back { position: absolute; z-index: 3; top: 14px; left: 14px; padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2;\n  font: 500 13px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.back:hover { background: rgba(40, 40, 40, 0.85); }\n.back:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.back[hidden] { display: none; }\n.hint { position: absolute; z-index: 2; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 13px;\n  border-radius: 999px; background: rgba(18, 18, 18, 0.6); color: #ededed; white-space: nowrap; pointer-events: none;\n  font: 500 12px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; transition: opacity 0.5s; }\n.hint.gone, :host([no-hint]) .hint { opacity: 0; }\n.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }\n\n/* no-WebGL fallback: just show the content in a plain frame */\n.stage.nogl { cursor: default; display: grid; place-items: center; }\n.stage.nogl canvas, .stage.nogl .hint, .stage.nogl .css { display: none; }\n.stage.nogl .screen { position: relative; max-width: 100%; border: 14px solid #62605c; border-radius: 10px; box-sizing: content-box; }\n@media (prefers-reduced-motion: reduce) {\n  .beam.on, .beam.off { animation-duration: 1ms; }\n  .roll.rolling, .noise { animation: none; }\n  .raster { transition: none; }\n}\n", Uf = typeof HTMLElement < "u" ? HTMLElement : class {}, Wf = null;
+function Gf() {
+	if (Wf) return Wf;
 	let e = document.createElement("canvas");
 	e.width = e.height = 96;
 	let t = e.getContext("2d"), n = t.createImageData(96, 96);
@@ -14632,9 +14661,9 @@ function Kf() {
 		let t = Math.random() * 255;
 		n.data[e] = t * .92, n.data[e + 1] = t * .97, n.data[e + 2] = Math.min(255, t * 1.08), n.data[e + 3] = 255;
 	}
-	return t.putImageData(n, 0, 0), Gf = e.toDataURL();
+	return t.putImageData(n, 0, 0), Wf = e.toDataURL();
 }
-var qf = class extends Wf {
+var Kf = class extends Uf {
 	static get observedAttributes() {
 		return [
 			"model",
@@ -14658,7 +14687,7 @@ var qf = class extends Wf {
 			buttons: {},
 			values: {},
 			radio: {}
-		}, this._modelId = If, this._meta = Ff[If].META, this._ctl = {}, this._sound = new Lf(), this._tweens = /* @__PURE__ */ new Map(), this._pointers = /* @__PURE__ */ new Map(), this._res = [640, 480], this._focusF = 0, this._orbit = {
+		}, this._modelId = Ff, this._meta = Pf[Ff].META, this._ctl = {}, this._sound = new If(), this._tweens = /* @__PURE__ */ new Map(), this._pointers = /* @__PURE__ */ new Map(), this._res = [640, 480], this._focusF = 0, this._orbit = {
 			goal: {
 				az: .42,
 				pol: 1.36,
@@ -14677,7 +14706,7 @@ var qf = class extends Wf {
 	}
 	_buildDom() {
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Uf}</style>
+		e.innerHTML = `<style>${Hf}</style>
       <div class="stage" part="stage">
         <div class="css"></div>
         <canvas aria-hidden="true"></canvas>
@@ -14802,7 +14831,7 @@ var qf = class extends Wf {
 		this._m && (this._m.root.remove(this._screenObj), this._scene.remove(this._m.root), this._m.root.traverse((e) => {
 			e.geometry?.dispose();
 			for (let t of [].concat(e.material || [])) t.map?.dispose(), t.dispose();
-		})), this._tweens.clear(), this._hoverId = null, this._m = Ff[this._modelId].build(), this._scene.add(this._m.root);
+		})), this._tweens.clear(), this._hoverId = null, this._m = Pf[this._modelId].build(), this._scene.add(this._m.root);
 		let e = this._m.picture;
 		this._screenObj.position.set(e.cx, e.cy, e.z), this._m.root.add(this._screenObj), this._applyResolution();
 		let t = this._m.crtMaterial.uniforms;
@@ -14811,10 +14840,10 @@ var qf = class extends Wf {
 		this._syncLamps(), this._host ? this._m.shadow && (this._m.shadow.visible = !1) : this.isConnected && this._resize();
 	}
 	_setModel(e) {
-		let t = e && Ff[e.toLowerCase()] ? e.toLowerCase() : If;
-		if (e && !Ff[e.toLowerCase()] && console.warn(`sony-pvm: unknown model "${e}". Available: ${Object.keys(Ff).join(", ")}`), t === this._modelId) return;
+		let t = e && Pf[e.toLowerCase()] ? e.toLowerCase() : Ff;
+		if (e && !Pf[e.toLowerCase()] && console.warn(`sony-pvm: unknown model "${e}". Available: ${Object.keys(Pf).join(", ")}`), t === this._modelId) return;
 		let n = this.state.power;
-		this.state.focused && this.unfocus(), this._focusF = 0, this._modelId = t, this._meta = Ff[t].META, this._resetState(), this._renderer && (this._mountModel(), this.state.power = n, this._applyPower(!0)), this._applyPicture();
+		this.state.focused && this.unfocus(), this._focusF = 0, this._modelId = t, this._meta = Pf[t].META, this._resetState(), this._renderer && (this._mountModel(), this.state.power = n, this._applyPower(!0)), this._applyPicture();
 	}
 	get model() {
 		return this._modelId;
@@ -14837,7 +14866,7 @@ var qf = class extends Wf {
 	invalidate() {
 		this._host ? this._host.invalidate() : !this._raf && this._ready && this.isConnected && (this._raf = requestAnimationFrame(this._frame));
 	}
-	_tween(e, t, n, r, i, { ease: a = Vf, delay: o = 0, done: s } = {}) {
+	_tween(e, t, n, r, i, { ease: a = Bf, delay: o = 0, done: s } = {}) {
 		r <= 0 && o <= 0 ? (this._tweens.delete(e), i(n), s?.()) : this._tweens.set(e, {
 			start: performance.now() + o,
 			from: t,
@@ -14937,7 +14966,7 @@ var qf = class extends Wf {
 			y: e.clientY
 		}), this._pinch && this._pointers.size === 2) {
 			let [e, t] = [...this._pointers.values()], n = Math.hypot(e.x - t.x, e.y - t.y);
-			this._orbit.goal.zoom = zf(this._pinch.zoom * (n / this._pinch.d), .55, 2.2), this.invalidate();
+			this._orbit.goal.zoom = Rf(this._pinch.zoom * (n / this._pinch.d), .55, 2.2), this.invalidate();
 			return;
 		}
 		let t = this._drag;
@@ -14946,7 +14975,7 @@ var qf = class extends Wf {
 			let n = e.clientX - t.x, r = e.clientY - t.y;
 			t.x = e.clientX, t.y = e.clientY, t.moved += Math.abs(n) + Math.abs(r);
 			let i = this._orbit.goal;
-			i.az = zf(i.az - n * .005, -2.2, 2.2), i.pol = zf(i.pol - r * .004, .45, 1.64), this.invalidate();
+			i.az = Rf(i.az - n * .005, -2.2, 2.2), i.pol = Rf(i.pol - r * .004, .45, 1.64), this.invalidate();
 		} else t.type === "knob" && this.setKnob(t.id, t.v + (e.clientX - t.x - (e.clientY - t.y)) * .005);
 	}
 	_onUp(e, t = !1) {
@@ -14964,7 +14993,7 @@ var qf = class extends Wf {
 	_onWheel(e) {
 		if (this._inScreen(e) || !this._ready) return;
 		let t = this._pick(e), n = t?.control && this._m.controls[t.control];
-		n?.kind === "knob" || n?.kind === "slider" ? (e.preventDefault(), this.setKnob(n.id, this.getKnob(n.id) - Math.sign(e.deltaY) * .04)) : this.hasAttribute("wheel-zoom") && !this.state.focused && (e.preventDefault(), this._orbit.goal.zoom = zf(this._orbit.goal.zoom * Math.exp(-e.deltaY * .0012), .55, 2.2), this.invalidate());
+		n?.kind === "knob" || n?.kind === "slider" ? (e.preventDefault(), this.setKnob(n.id, this.getKnob(n.id) - Math.sign(e.deltaY) * .04)) : this.hasAttribute("wheel-zoom") && !this.state.focused && (e.preventDefault(), this._orbit.goal.zoom = Rf(this._orbit.goal.zoom * Math.exp(-e.deltaY * .0012), .55, 2.2), this.invalidate());
 	}
 	_setHover(e) {
 		let t = e?.control || null;
@@ -15029,7 +15058,7 @@ var qf = class extends Wf {
 		} else if (t.role === "channel-up" || t.role === "channel-down") {
 			let e = this._meta.inputs, r = e.indexOf(this.input);
 			n.radio.channel = e[(r + (t.role === "channel-up" ? 1 : e.length - 1)) % e.length];
-		} else t.role === "volume-up" || t.role === "volume-down" ? (n.values.volume = zf(this._val("volume") + (t.role === "volume-up" ? .08 : -.08), 0, 1), this._emit("pvm-knob", {
+		} else t.role === "volume-up" || t.role === "volume-down" ? (n.values.volume = Rf(this._val("volume") + (t.role === "volume-up" ? .08 : -.08), 0, 1), this._emit("pvm-knob", {
 			id: "volume",
 			value: n.values.volume
 		})) : t.latch && (n.buttons[e] = !n.buttons[e]);
@@ -15053,7 +15082,7 @@ var qf = class extends Wf {
 	setKnob(e, t) {
 		let n = this._ctl[e];
 		if (!n || n.kind === "button") throw Error(`sony-pvm: unknown knob "${e}"`);
-		let r = zf(+t || 0, 0, 1);
+		let r = Rf(+t || 0, 0, 1);
 		r !== this.state.values[n.role] && (this.state.values[n.role] = r, this._a11y[e].value = Math.round(r * 100), this._poseValue(e), this._applyPicture(), this._emit("pvm-knob", {
 			id: e,
 			value: r
@@ -15066,7 +15095,7 @@ var qf = class extends Wf {
 		let t = this._m?.controls[e];
 		if (!t) return;
 		let n = this.state.values[this._ctl[e].role];
-		t.kind === "knob" ? t.group.rotation.z = (.5 - n) * 2 * Rf : t.mesh.position.x = t.home.x + t.range * n, this.invalidate();
+		t.kind === "knob" ? t.group.rotation.z = (.5 - n) * 2 * Lf : t.mesh.position.x = t.home.x + t.range * n, this.invalidate();
 	}
 	get input() {
 		return this._meta.inputOf(this.state);
@@ -15094,16 +15123,16 @@ var qf = class extends Wf {
 		let r = this._m.crtMaterial.uniforms, i = e || this._reduced;
 		t ? this._tween("tube", r.uOn.value, 1, i ? 0 : 380, (e) => r.uOn.value = e, {
 			delay: i ? 0 : 150,
-			ease: Hf
+			ease: Vf
 		}) : this._tween("tube", r.uOn.value, 0, i ? 0 : 650, (e) => r.uOn.value = e, {
 			delay: i ? 0 : 480,
-			ease: Hf
+			ease: Vf
 		});
 	}
 	degauss() {
 		if (this._emit("pvm-degauss", {}), !this.state.power || (this._sound.degauss(), !this._m)) return;
 		let e = this._m.crtMaterial.uniforms;
-		if (this._tween("degauss", 1, 0, 1500, (t) => e.uDegauss.value = t * t, { ease: Hf }), !this._reduced && this._roll.animate) {
+		if (this._tween("degauss", 1, 0, 1500, (t) => e.uDegauss.value = t * t, { ease: Vf }), !this._reduced && this._roll.animate) {
 			let e = [];
 			for (let t = 0; t <= 18; t++) {
 				let n = (1 - t / 18) ** 2;
@@ -15127,7 +15156,7 @@ var qf = class extends Wf {
 		for (let e of r) this._inputs[e].classList.toggle("active", e === a && o);
 		this._bars.classList.toggle("active", a === i && !o), this._bars.lastElementChild.textContent = this._meta.barsLabel || i.replace("-", " ").toUpperCase();
 		let s = !o && a !== i && this._meta.noSignal === "noise";
-		s && !this._noise.style.backgroundImage && (this._noise.style.backgroundImage = `url(${Kf()})`), this._noise.classList.toggle("active", s);
+		s && !this._noise.style.backgroundImage && (this._noise.style.backgroundImage = `url(${Gf()})`), this._noise.classList.toggle("active", s);
 		let c = [];
 		n("bright") !== .5 && c.push(`brightness(${(.35 + 1.3 * n("bright")).toFixed(3)})`), n("contr") !== .5 && c.push(`contrast(${(.4 + 1.2 * n("contr")).toFixed(3)})`), n("chroma") !== .5 && c.push(`saturate(${(2 * n("chroma")).toFixed(3)})`), n("phase") !== .5 && c.push(`hue-rotate(${((n("phase") - .5) * 120).toFixed(1)}deg)`), n("aper") < .5 && c.push(`blur(${((.5 - n("aper")) * 2.4).toFixed(2)}px)`), this._picture.style.filter = c.join(" ");
 		let l = 1, u = 1, d = "";
@@ -15147,7 +15176,7 @@ var qf = class extends Wf {
 	}
 	_setResolution(e) {
 		let t = /^(\d+)\s*[x×]\s*(\d+)$/i.exec(e || "");
-		this._res = t ? [zf(+t[1], 160, 4096), zf(+t[2], 120, 4096)] : [640, 480], this._applyResolution();
+		this._res = t ? [Rf(+t[1], 160, 4096), Rf(+t[2], 120, 4096)] : [640, 480], this._applyResolution();
 	}
 	_applyResolution() {
 		let [e, t] = this._res;
@@ -15163,11 +15192,11 @@ var qf = class extends Wf {
 		let t = this._m.crtMaterial.uniforms, n = t.uGlare.value, r = e ? .3 : 1;
 		this._tween("focus", this._focusF, e, this._reduced ? 0 : 950, (i) => {
 			this._focusF = i, t.uGlare.value = n + (r - n) * (e ? i : 1 - i);
-		}, { ease: Bf });
+		}, { ease: zf });
 	}
 	setView({ azimuth: e, polar: t, zoom: n } = {}) {
 		let r = this._orbit.goal;
-		e !== void 0 && (r.az = zf(Lt.degToRad(e), -2.2, 2.2)), t !== void 0 && (r.pol = zf(Lt.degToRad(t), .45, 1.64)), n !== void 0 && (r.zoom = zf(n, .55, 2.2)), this.invalidate();
+		e !== void 0 && (r.az = Rf(Lt.degToRad(e), -2.2, 2.2)), t !== void 0 && (r.pol = Rf(Lt.degToRad(t), .45, 1.64)), n !== void 0 && (r.zoom = Rf(n, .55, 2.2)), this.invalidate();
 	}
 	resetView() {
 		Object.assign(this._orbit.goal, this._home), this.invalidate();
@@ -15204,7 +15233,7 @@ var qf = class extends Wf {
 		let t = await this._loadImage(e, "tally logo"), n = this._m?.tally;
 		if (!n || t === void 0 || this._logoSrc !== e) return;
 		let r = n.material.map;
-		n.material.map = n.material.emissiveMap = $u(t, n.userData.size.w, n.userData.size.h), r?.dispose(), n.material.needsUpdate = !0, this.invalidate();
+		n.material.map = n.material.emissiveMap = ed(t, n.userData.size.w, n.userData.size.h), r?.dispose(), n.material.needsUpdate = !0, this.invalidate();
 	}
 	_paintBrand(e) {
 		let t = this._m?.brand;
@@ -15250,7 +15279,7 @@ var qf = class extends Wf {
 			composed: !0
 		}));
 	}
-}, Jf = {
+}, qf = {
 	ps1: {
 		t: 10.4,
 		h: 125,
@@ -15281,18 +15310,18 @@ var qf = class extends Wf {
 		d: 150,
 		name: "Book"
 	}
-}, Yf = "\"Barlow Semi Condensed\", \"Arial Narrow\", \"Helvetica Neue\", Arial, \"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", sans-serif", Xf = /[぀-ヿ㐀-鿿＀-￯]/;
-function Zf(e) {
+}, Jf = "\"Barlow Semi Condensed\", \"Arial Narrow\", \"Helvetica Neue\", Arial, \"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", sans-serif", Yf = /[぀-ヿ㐀-鿿＀-￯]/;
+function Xf(e) {
 	let t = 2166136261;
 	for (let n of e) t = Math.imul(t ^ n.codePointAt(0), 16777619);
 	return (t >>> 0) / 4294967296;
 }
-function Qf(e) {
+function Zf(e) {
 	let t = new K(e);
 	return .2126 * t.r + .7152 * t.g + .0722 * t.b;
 }
-var $f = (e) => Qf(e) > .45 ? "#16140f" : "#f4f1ea";
-function ep(e, t, n, r) {
+var Qf = (e) => Zf(e) > .45 ? "#16140f" : "#f4f1ea";
+function $f(e, t, n, r) {
 	let i = document.createElement("canvas");
 	i.width = Math.max(8, Math.round(e * n)), i.height = Math.max(8, Math.round(t * n));
 	let a = i.getContext("2d");
@@ -15300,21 +15329,21 @@ function ep(e, t, n, r) {
 	let o = new Ei(i);
 	return o.colorSpace = qe, o.anisotropy = 8, o;
 }
-function tp(e, t, n, r, i, a, o, s = 700) {
+function ep(e, t, n, r, i, a, o, s = 700) {
 	if (!t) return;
-	if (e.fillStyle = o, e.textBaseline = "middle", Xf.test(t)) {
+	if (e.fillStyle = o, e.textBaseline = "middle", Yf.test(t)) {
 		let o = [...t], c = Math.min(a, (i - r) / o.length);
-		e.font = `${s} ${c}px ${Yf}`, e.textAlign = "center", o.forEach((t, i) => e.fillText(t, n, r + c * (i + .55)));
+		e.font = `${s} ${c}px ${Jf}`, e.textAlign = "center", o.forEach((t, i) => e.fillText(t, n, r + c * (i + .55)));
 		return;
 	}
-	e.save(), e.translate(n, r), e.rotate(Math.PI / 2), e.font = `${s} ${a}px ${Yf}`, e.textAlign = "left";
+	e.save(), e.translate(n, r), e.rotate(Math.PI / 2), e.font = `${s} ${a}px ${Jf}`, e.textAlign = "left";
 	let c = e.measureText(t).width, l = i - r;
 	c > l && e.scale(l / c, 1), e.fillText(t, 0, 0), e.restore();
 }
-function np(e, t, n, r, i, a, o = 700, s = 1.08) {
+function tp(e, t, n, r, i, a, o = 700, s = 1.08) {
 	let c = t.split(/\s+/), l = a, u;
 	for (;;) {
-		e.font = `${o} ${l}px ${Yf}`, u = [];
+		e.font = `${o} ${l}px ${Jf}`, u = [];
 		let t = "";
 		for (let n of c) {
 			let r = t ? t + " " + n : n;
@@ -15325,7 +15354,7 @@ function np(e, t, n, r, i, a, o = 700, s = 1.08) {
 	}
 	return u.forEach((t, i) => e.fillText(t, n, r + i * l * s)), r + u.length * l * s;
 }
-var rp = {
+var np = {
 	ps1: {
 		spine: "#101012",
 		edge: "#cfd2d6",
@@ -15357,20 +15386,20 @@ var rp = {
 		bandH: 0
 	}
 };
-function ip(e) {
-	let { t, h: n } = e, r = rp[e.type];
-	return ep(t, n, Math.min(10, 2048 / n), (i) => {
+function rp(e) {
+	let { t, h: n } = e, r = np[e.type];
+	return $f(t, n, Math.min(10, 2048 / n), (i) => {
 		let a = r.spine || e.color;
 		i.fillStyle = a, i.fillRect(0, 0, t, n);
 		let o = 5;
-		r.band && (i.fillStyle = r.band(e.color), i.fillRect(0, 0, t, n * r.bandH), o = n * r.bandH + 4), e.type === "book" && (i.fillStyle = $f(a), i.globalAlpha = .5, i.fillRect(t * .18, 9, t * .64, .7), i.fillRect(t * .18, n - 9.7, t * .64, .7), i.globalAlpha = 1, o = 14);
+		r.band && (i.fillStyle = r.band(e.color), i.fillRect(0, 0, t, n * r.bandH), o = n * r.bandH + 4), e.type === "book" && (i.fillStyle = Qf(a), i.globalAlpha = .5, i.fillRect(t * .18, 9, t * .64, .7), i.fillRect(t * .18, n - 9.7, t * .64, .7), i.globalAlpha = 1, o = 14);
 		let s = Math.min(t * .62, e.type === "book" ? 13 : 9), c = e.subtitle ? n - 34 : n - 8;
-		tp(i, e.title, t / 2, o, c, s, $f(a)), e.subtitle && (i.globalAlpha = .72, tp(i, e.subtitle, t / 2, n - 30, n - 6, s * .62, $f(a), 500), i.globalAlpha = 1);
+		ep(i, e.title, t / 2, o, c, s, Qf(a)), e.subtitle && (i.globalAlpha = .72, ep(i, e.subtitle, t / 2, n - 30, n - 6, s * .62, Qf(a), 500), i.globalAlpha = 1);
 	});
 }
-function ap(e) {
-	let { d: t, h: n } = e, r = rp[e.type];
-	return ep(t, n, Math.min(6, 1024 / n), (i) => {
+function ip(e) {
+	let { d: t, h: n } = e, r = np[e.type];
+	return $f(t, n, Math.min(6, 1024 / n), (i) => {
 		i.fillStyle = e.color, i.fillRect(0, 0, t, n);
 		let a = 0, o = 0;
 		e.type === "ps1" ? (i.fillStyle = "#101012", i.fillRect(0, 0, t * .105, n), a = t * .105) : r.band && (i.fillStyle = r.band(e.color), i.fillRect(0, 0, t, n * r.bandH), o = n * r.bandH);
@@ -15380,20 +15409,20 @@ function ap(e) {
 			i.save(), i.beginPath(), i.rect(a, o, s, c), i.clip(), i.drawImage(e.image, a + (s - t * r) / 2, o + (c - n * r) / 2, t * r, n * r), i.restore();
 			return;
 		}
-		let l = $f(e.color), u = s * .1;
+		let l = Qf(e.color), u = s * .1;
 		i.fillStyle = l, i.globalAlpha = .14, i.beginPath(), i.arc(a + s * .72, o + c * .7, s * .42, 0, Math.PI * 2), i.fill(), i.globalAlpha = 1, i.textAlign = "left", i.textBaseline = "top";
-		let d = np(i, e.title.toUpperCase(), a + u, o + u, s - u * 2, s * .17);
-		e.subtitle && (i.globalAlpha = .75, np(i, e.subtitle, a + u, d + s * .03, s - u * 2, s * .075, 500), i.globalAlpha = 1), i.fillRect(a + u, o + c - u - 1.2, s * .22, 1.2);
+		let d = tp(i, e.title.toUpperCase(), a + u, o + u, s - u * 2, s * .17);
+		e.subtitle && (i.globalAlpha = .75, tp(i, e.subtitle, a + u, d + s * .03, s - u * 2, s * .075, 500), i.globalAlpha = 1), i.fillRect(a + u, o + c - u - 1.2, s * .22, 1.2);
 	});
 }
-function op(e) {
-	let t = Jf[e.type] || Jf.book, n = {
+function ap(e) {
+	let t = qf[e.type] || qf.book, n = {
 		subtitle: "",
 		...e,
-		type: Jf[e.type] ? e.type : "book"
+		type: qf[e.type] ? e.type : "book"
 	};
 	n.title = (n.title || "Untitled").trim();
-	let r = Zf(n.title + n.type), i = [
+	let r = Xf(n.title + n.type), i = [
 		"#ffd23f",
 		"#ff7a59",
 		"#7fd1c7",
@@ -15405,12 +15434,12 @@ function op(e) {
 		"#d9534f",
 		"#2f4858"
 	];
-	n.color || (n.color = i[Math.floor(r * i.length)]), n.d = t.d, n.t = +n.t || (n.type === "book" ? 18 + Math.round(Zf(n.title) * 20) : t.t), n.h = +n.h || (n.type === "book" ? 172 + Math.round(Zf(n.title + "h") * 40) : t.h);
-	let a = rp[n.type], o = a.edge || new K(n.color).multiplyScalar(.7).getStyle(), s = (e, t = .6) => new Y({
+	n.color || (n.color = i[Math.floor(r * i.length)]), n.d = t.d, n.t = +n.t || (n.type === "book" ? 18 + Math.round(Xf(n.title) * 20) : t.t), n.h = +n.h || (n.type === "book" ? 172 + Math.round(Xf(n.title + "h") * 40) : t.h);
+	let a = np[n.type], o = a.edge || new K(n.color).multiplyScalar(.7).getStyle(), s = (e, t = .6) => new Y({
 		color: e,
 		roughness: t
 	}), c = s(n.color, .45), l = s(n.type === "book" ? n.color : a.spine || n.color, .45), u = s(o, .5), d = new Y({
-		map: ip(n),
+		map: rp(n),
 		roughness: n.type === "book" ? .7 : .3
 	}), f = new J(new Ai(n.t, n.h, n.d), [
 		c,
@@ -15421,10 +15450,10 @@ function op(e) {
 		u
 	]);
 	return f.name = `${n.type}: ${n.title}`, f.userData.spec = n, f.userData.ensureCover = () => {
-		c.map || (c.map = ap(n), c.color.set(16777215), c.needsUpdate = !0);
+		c.map || (c.map = ip(n), c.color.set(16777215), c.needsUpdate = !0);
 	}, f;
 }
-function sp() {
+function op() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 256;
 	let t = e.getContext("2d");
@@ -15438,12 +15467,12 @@ function sp() {
 	let i = new Ei(e);
 	return i.colorSpace = qe, i.wrapS = i.wrapT = d, i;
 }
-function cp({ cols: e = 3, rows: t = 2, cellW: n = 470, cellH: r = 228, depth: i = 520, t: a = 22, plinth: o = 50 } = {}) {
+function sp({ cols: e = 3, rows: t = 2, cellW: n = 470, cellH: r = 228, depth: i = 520, t: a = 22, plinth: o = 50 } = {}) {
 	let s = new In();
 	s.name = "shelf";
 	let c = new Y({
 		name: "wood",
-		map: sp(),
+		map: op(),
 		roughness: .62
 	}), l = new Y({
 		name: "shelf-back",
@@ -15476,8 +15505,8 @@ function cp({ cols: e = 3, rows: t = 2, cellW: n = 470, cellH: r = 228, depth: i
 	};
 }
 // src/props/consoles.js
-var lp = "Rockwell, \"Roboto Slab\", Georgia, \"Times New Roman\", serif";
-function up(e, t, n, r = 0, i = 0, a = 7) {
+var cp = "Rockwell, \"Roboto Slab\", Georgia, \"Times New Roman\", serif";
+function lp(e, t, n, r = 0, i = 0, a = 7) {
 	let o = e / 2, s = t / 2, c = [
 		[
 			o,
@@ -15508,41 +15537,41 @@ function up(e, t, n, r = 0, i = 0, a = 7) {
 		}
 	}), l;
 }
-function dp(e, t) {
+function up(e, t) {
 	let n = e.length;
 	return e.map((r, i) => {
 		let a = e[(i + n - 1) % n], o = e[(i + 1) % n], s = o.y - a.y, c = -(o.x - a.x), l = Math.hypot(s, c) || 1;
 		return new U(r.x - s / l * t, r.y - c / l * t);
 	});
 }
-function fp(e, t, n, r = 1.5) {
+function dp(e, t, n, r = 1.5) {
 	let i = Math.min(r, (n - t) * .9), a = [$(e, t), $(e, n - i)];
 	for (let t = 1; t <= 3; t++) {
 		let r = t / 3 * (Math.PI / 2);
-		a.push($(dp(e, i * (1 - Math.cos(r))), n - i + i * Math.sin(r)));
+		a.push($(up(e, i * (1 - Math.cos(r))), n - i + i * Math.sin(r)));
 	}
-	return Vu([od(a), sd(dp(e, i), [], n)]);
+	return Vu([sd(a), cd(up(e, i), [], n)]);
 }
-var pp = (e) => e.rotateX(-Math.PI / 2), mp = (e, t, n, r, i, a = .5, o = 28) => fp(ad(e, t, n, o), r, i, a), hp = (e, t, n, r, i, a, o = .4) => fp(Q(e, t, Math.min(e, t) / 2, n, r), i, a, o);
-function gp(e, t, n, r, i, a, o, s = 16) {
-	return e.decal(ed(t, n, s, (e, r) => {
+var fp = (e) => e.rotateX(-Math.PI / 2), pp = (e, t, n, r, i, a = .5, o = 28) => dp(od(e, t, n, o), r, i, a), mp = (e, t, n, r, i, a, o = .4) => dp(Q(e, t, Math.min(e, t) / 2, n, r), i, a, o);
+function hp(e, t, n, r, i, a, o, s = 16) {
+	return e.decal(td(t, n, s, (e, r) => {
 		e.translate(t / 2, n / 2), e.textAlign = "center", e.textBaseline = "middle", o(e, r);
 	}), t, n, r, i, a);
 }
-var _p = (e, t, n, r, i, a) => {
+var gp = (e, t, n, r, i, a) => {
 	e.font = i, e.fillStyle = a, e.fillText(t, n, -r);
 };
-function vp(e, t, n, r, i, a, o = .45) {
+function _p(e, t, n, r, i, a, o = .45) {
 	e.lineWidth = o, e.lineJoin = "round";
 	let [s, c, l, u] = a;
 	e.strokeStyle = s, e.beginPath(), e.moveTo(t, -(n + r) - i), e.lineTo(t + i, -(n + r) + i * .75), e.lineTo(t - i, -(n + r) + i * .75), e.closePath(), e.stroke(), e.strokeStyle = c, e.beginPath(), e.arc(t + r, -n, i * .9, 0, Math.PI * 2), e.stroke(), e.strokeStyle = l, e.beginPath(), e.moveTo(t - i * .8, -(n - r) - i * .8), e.lineTo(t + i * .8, -(n - r) + i * .8), e.moveTo(t + i * .8, -(n - r) - i * .8), e.lineTo(t - i * .8, -(n - r) + i * .8), e.stroke(), e.strokeStyle = u, e.strokeRect(t - r - i * .8, -n - i * .8, i * 1.6, i * 1.6);
 }
-function yp(e, t) {
+function vp(e, t) {
 	let { root: n } = e.finish({});
 	return n.name = t, n.userData.prop = t, n;
 }
-function bp() {
-	let e = new wd("PS one");
+function yp() {
+	let e = new Cd("PS one");
 	e.mat("shell", {
 		color: 13882060,
 		roughness: .55
@@ -15556,25 +15585,25 @@ function bp() {
 		color: 11974064,
 		roughness: .6
 	});
-	let t = up(193, 144, [
+	let t = lp(193, 144, [
 		26,
 		26,
 		30,
 		30
 	]);
-	e.add("shell", pp(fp(t, 0, 19, 5))), e.add("shell", pp(fp(dp(t, .6), 19.6, 35, 9))), e.add("seam", pp(od([$(dp(t, 1.2), 18.6), $(dp(t, 1.2), 20.2)]))), e.add("lid", pp(mp(64, 0, 4, 34, 37.6, 2.2, 56))), e.add("lid", pp(fp(Q(98, 42, 3, 0, 49.5), 34, 36.2, 1))), e.add("seam", new Xa(64, 64.9, 56).rotateX(-Math.PI / 2).translate(0, 35.05, -4));
-	for (let t of [-1, 1]) e.add("shell", pp(mp(17.5, t * 73, -47, 33, 35.8, 1.6, 36))), e.add("lid", pp(mp(14, t * 73, -47, 35, 37.6, 1, 36))), e.add("seam", new Xa(14, 14.6, 36).rotateX(-Math.PI / 2).translate(t * 73, 35.85, 47));
+	e.add("shell", fp(dp(t, 0, 19, 5))), e.add("shell", fp(dp(up(t, .6), 19.6, 35, 9))), e.add("seam", fp(sd([$(up(t, 1.2), 18.6), $(up(t, 1.2), 20.2)]))), e.add("lid", fp(pp(64, 0, 4, 34, 37.6, 2.2, 56))), e.add("lid", fp(dp(Q(98, 42, 3, 0, 49.5), 34, 36.2, 1))), e.add("seam", new Xa(64, 64.9, 56).rotateX(-Math.PI / 2).translate(0, 35.05, -4));
+	for (let t of [-1, 1]) e.add("shell", fp(pp(17.5, t * 73, -47, 33, 35.8, 1.6, 36))), e.add("lid", fp(pp(14, t * 73, -47, 35, 37.6, 1, 36))), e.add("seam", new Xa(14, 14.6, 36).rotateX(-Math.PI / 2).translate(t * 73, 35.85, 47));
 	e.add("seam", new Mi(17, 24, Math.PI, Math.PI).translate(0, 30.5, 69.6));
-	for (let t of [-1, 1]) e.add("port", new Ai(54, 8.6, 3).translate(t * 34, 23.6, 70.9)), e.add("port", hp(52, 9, t * 34, 12.6, 64, 72.4, .4));
-	gp(e, 150, 26, 0, 18.2, 72.46, (e, t) => {
+	for (let t of [-1, 1]) e.add("port", new Ai(54, 8.6, 3).translate(t * 34, 23.6, 70.9)), e.add("port", mp(52, 9, t * 34, 12.6, 64, 72.4, .4));
+	hp(e, 150, 26, 0, 18.2, 72.46, (e, t) => {
 		for (let n of [-1, 1]) {
-			_p(e, "MEMORY CARD", n * 34, 5.4, `600 2.6px ${t}`, "#7c7b76"), e.fillStyle = "#e4e3de";
+			gp(e, "MEMORY CARD", n * 34, 5.4, `600 2.6px ${t}`, "#7c7b76"), e.fillStyle = "#e4e3de";
 			for (let t = 0; t < 3; t++) e.fillRect(n * 34 - 23 + t * 16, 3, 14, 5.4);
 			e.fillStyle = "#8a8984";
 			for (let t = 0; t < 9; t++) e.fillRect(n * 34 - 20.6 + Math.floor(t / 3) * 16 + t % 3 * 3.6, 5.2, 1.3, 1.3);
 		}
-	}), gp(e, 150, 130, 0, 37.68, 0, (e, t) => {
-		_p(e, "SONY", 0, 42, `700 8.4px ${lp}`, "#77766f"), [
+	}), hp(e, 150, 130, 0, 37.68, 0, (e, t) => {
+		gp(e, "SONY", 0, 42, `700 8.4px ${cp}`, "#77766f"), [
 			[
 				"#d9382c",
 				-3.2,
@@ -15597,17 +15626,17 @@ function bp() {
 			]
 		].forEach(([t, n, r]) => {
 			e.fillStyle = t, e.fillRect(n - 1.6, -(-30 + r) - 1.5, 3.2, 3);
-		}), _p(e, "PS one", 0, -39, `600 6px ${t}`, "#6f6e68"), _p(e, "1", -40, -64, `500 4px ${t}`, "#a09f99"), _p(e, "2", 40, -64, `500 4px ${t}`, "#a09f99");
+		}), gp(e, "PS one", 0, -39, `600 6px ${t}`, "#6f6e68"), gp(e, "1", -40, -64, `500 4px ${t}`, "#a09f99"), gp(e, "2", 40, -64, `500 4px ${t}`, "#a09f99");
 	}).rotation.x = -Math.PI / 2;
 	for (let [t, n] of [[-1, (e, t) => {
-		_p(e, "I/⏻", 0, 2.4, `700 6.4px ${t}`, "#2f9b68"), _p(e, "RESET", 0, -4.4, `700 3px ${t}`, "#77766f");
+		gp(e, "I/⏻", 0, 2.4, `700 6.4px ${t}`, "#2f9b68"), gp(e, "RESET", 0, -4.4, `700 3px ${t}`, "#77766f");
 	}], [1, (e) => {
 		e.strokeStyle = "#3d86c9", e.lineWidth = 1, e.lineJoin = "round", e.beginPath(), e.moveTo(-4, 1), e.lineTo(0, -4.4), e.lineTo(4, 1), e.closePath(), e.stroke(), e.strokeRect(-4, 2.8, 8, 1.6);
-	}]]) gp(e, 24, 24, t * 73, 37.68, 47, n).rotation.x = -Math.PI / 2;
-	return yp(e, "ps-one");
+	}]]) hp(e, 24, 24, t * 73, 37.68, 47, n).rotation.x = -Math.PI / 2;
+	return vp(e, "ps-one");
 }
-function xp() {
-	let e = new wd("DualShock");
+function bp() {
+	let e = new Cd("DualShock");
 	e.mat("shell", {
 		color: 14342348,
 		roughness: .55
@@ -15617,8 +15646,8 @@ function xp() {
 	}), e.mat("cable", {
 		color: 12171443,
 		roughness: .7
-	}), e.add("shell", pp(fp(Q(104, 46, 12, 0, 14), 0, 25, 5)));
-	for (let t of [-1, 1]) e.add("shell", pp(mp(26, t * 49, 12, 0, 27, 6, 40))), e.add("shell", pp(mp(17, t * 22.5, -11, 0, 26, 5, 32))), e.add("key", pp(mp(11, t * 22.5, -11, 26, 31.5, 2.2, 28))), e.add("shell", new ji(16.5, 48, 10, 24).rotateX(Math.PI / 2).rotateY(t * .2).translate(t * 59, 13, 30)), e.add("shell", pp(fp(Q(30, 14, 5, t * 49, 39), 6, 22, 4))), e.add("key", pp(fp(Q(22, 6, 2.5, t * 49, 45.5), 12, 21, 2)));
+	}), e.add("shell", fp(dp(Q(104, 46, 12, 0, 14), 0, 25, 5)));
+	for (let t of [-1, 1]) e.add("shell", fp(pp(26, t * 49, 12, 0, 27, 6, 40))), e.add("shell", fp(pp(17, t * 22.5, -11, 0, 26, 5, 32))), e.add("key", fp(pp(11, t * 22.5, -11, 26, 31.5, 2.2, 28))), e.add("shell", new ji(16.5, 48, 10, 24).rotateX(Math.PI / 2).rotateY(t * .2).translate(t * 59, 13, 30)), e.add("shell", fp(dp(Q(30, 14, 5, t * 49, 39), 6, 22, 4))), e.add("key", fp(dp(Q(22, 6, 2.5, t * 49, 45.5), 12, 21, 2)));
 	for (let [t, n, r, i] of [
 		[
 			0,
@@ -15644,18 +15673,18 @@ function xp() {
 			10,
 			9
 		]
-	]) e.add("key", pp(fp(Q(r, i, 2, -49 + t, 12 + n), 26, 29.4, .9)));
+	]) e.add("key", fp(dp(Q(r, i, 2, -49 + t, 12 + n), 26, 29.4, .9)));
 	for (let [t, n] of [
 		[0, 11],
 		[11, 0],
 		[0, -11],
 		[-11, 0]
-	]) e.add("key", pp(mp(5.9, 49 + t, 12 + n, 26, 29.6, .9, 24)));
-	e.add("key", pp(fp(Q(8, 4.6, 1, -13, 12), 24, 26.2, .4))), e.add("key", pp(fp([
+	]) e.add("key", fp(pp(5.9, 49 + t, 12 + n, 26, 29.6, .9, 24)));
+	e.add("key", fp(dp(Q(8, 4.6, 1, -13, 12), 24, 26.2, .4))), e.add("key", fp(dp([
 		new U(9, 14.8),
 		new U(9, 9.2),
 		new U(18, 12)
-	], 24, 26.2, .3))), e.add("key", pp(fp(Q(8, 5.6, 1, 0, -4), 24, 26.2, .4)));
+	], 24, 26.2, .3))), e.add("key", fp(dp(Q(8, 5.6, 1, 0, -4), 24, 26.2, .4)));
 	let t = new Ui([
 		[
 			0,
@@ -15683,17 +15712,17 @@ function xp() {
 			-62
 		]
 	].map((e) => new W(...e)));
-	return e.add("cable", new eo(t, 36, 2.3, 8)), gp(e, 150, 70, 0, 25.06, -12, (e, t) => {
-		_p(e, "SONY", 0, 13.5, `700 6.6px ${lp}`, "#8a887f"), _p(e, "SELECT", -13, -5.4, `600 2.4px ${t}`, "#8a887f"), _p(e, "START", 13.5, -5.4, `600 2.4px ${t}`, "#8a887f"), _p(e, "ANALOG", 0, -10.4, `600 2.4px ${t}`, "#8a887f"), _p(e, "PS one", 0, .5, `600 3px ${t}`, "#8a887f");
-	}).rotation.x = -Math.PI / 2, gp(e, 40, 40, 49, 29.66, -12, (e) => vp(e, 0, 0, 11, 3, [
+	return e.add("cable", new eo(t, 36, 2.3, 8)), hp(e, 150, 70, 0, 25.06, -12, (e, t) => {
+		gp(e, "SONY", 0, 13.5, `700 6.6px ${cp}`, "#8a887f"), gp(e, "SELECT", -13, -5.4, `600 2.4px ${t}`, "#8a887f"), gp(e, "START", 13.5, -5.4, `600 2.4px ${t}`, "#8a887f"), gp(e, "ANALOG", 0, -10.4, `600 2.4px ${t}`, "#8a887f"), gp(e, "PS one", 0, .5, `600 3px ${t}`, "#8a887f");
+	}).rotation.x = -Math.PI / 2, hp(e, 40, 40, 49, 29.66, -12, (e) => _p(e, 0, 0, 11, 3, [
 		"#2fa07a",
 		"#d8553f",
 		"#6c8fd0",
 		"#d98ab0"
-	], .6)).rotation.x = -Math.PI / 2, yp(e, "dualshock");
+	], .6)).rotation.x = -Math.PI / 2, vp(e, "dualshock");
 }
-function Sp() {
-	let e = new wd("Game Boy Advance");
+function xp() {
+	let e = new Cd("Game Boy Advance");
 	e.mat("shell", {
 		color: 5523640,
 		roughness: .5
@@ -15710,13 +15739,13 @@ function Sp() {
 		color: 8093558,
 		roughness: .6
 	});
-	let t = 144.5, n = up(t, 82, [
+	let t = 144.5, n = lp(t, 82, [
 		17,
 		17,
 		33,
 		33
 	], 0, 41);
-	for (let t of [-1, 1]) e.add("key", fp(up(30, 20, t > 0 ? [
+	for (let t of [-1, 1]) e.add("key", dp(lp(30, 20, t > 0 ? [
 		12,
 		4,
 		3,
@@ -15727,33 +15756,33 @@ function Sp() {
 		6,
 		3
 	], t * 57.6, 72.4), 3, 14, 3));
-	e.add("shell", fp(n, 0, 20, 5));
+	e.add("shell", dp(n, 0, 20, 5));
 	let r = 44.5;
-	return e.add("dark", sd(up(90, 69, [
+	return e.add("dark", cd(lp(90, 69, [
 		10,
 		10,
 		19,
 		19
-	], 0, r), [], 20.03)), e.add("lens", fp(up(87, 66, [
+	], 0, r), [], 20.03)), e.add("lens", dp(lp(87, 66, [
 		9,
 		9,
 		18,
 		18
-	], 0, r), 20, 20.9, .5)), e.add("lcd", new Ya(61.2, 40.8).translate(0, 49.5, 20.95)), e.add("dark", sd(ad(12.5, -58, 54), [], 20.03)), e.add("key", fp(Q(21, 7, 1.2, -58, 54), 20, 22.6, .7)), e.add("key", fp(Q(7, 21, 1.2, -58, 54), 20, 22.6, .7)), e.add("key", mp(5.8, 64.5, 43.5, 20, 22.4, .9)), e.add("key", mp(5.8, 51.5, 37, 20, 22.4, .9)), e.add("key", mp(2.5, -48.5, 32.5, 20, 21.6, .6, 16)), e.add("key", mp(2.5, -51.5, 23.5, 20, 21.6, .6, 16)), [
+	], 0, r), 20, 20.9, .5)), e.add("lcd", new Ya(61.2, 40.8).translate(0, 49.5, 20.95)), e.add("dark", cd(od(12.5, -58, 54), [], 20.03)), e.add("key", dp(Q(21, 7, 1.2, -58, 54), 20, 22.6, .7)), e.add("key", dp(Q(7, 21, 1.2, -58, 54), 20, 22.6, .7)), e.add("key", pp(5.8, 64.5, 43.5, 20, 22.4, .9)), e.add("key", pp(5.8, 51.5, 37, 20, 22.4, .9)), e.add("key", pp(2.5, -48.5, 32.5, 20, 21.6, .6, 16)), e.add("key", pp(2.5, -51.5, 23.5, 20, 21.6, .6, 16)), [
 		9,
 		15,
 		19,
 		20,
 		19,
 		15
-	].forEach((t, n) => e.add("dark", sd(Q(t, 1.3, .6, 54 + (20 - t) / 2 - 1, 27 - n * 3.1), [], 20.04).rotateZ(-0))), e.add("dark", sd(ad(1.3, 53, 56), [], 20.04)), gp(e, t, 82, 0, 41, 20.98, (e, t) => {
-		e.save(), e.translate(0, 23.5), e.transform(1, 0, -.18, 1, 0, 0), _p(e, "GAME BOY", -9.5, 0, `900 4.3px ${t}`, "#d9d9de"), _p(e, "ADVANCE", 16, -.2, `700 3.6px ${t}`, "#d9d9de"), e.restore();
-	}), gp(e, t, 82, 0, 41, 20.06, (e, t) => {
-		_p(e, "START", -57.5, -7.5, `700 2.3px ${t}`, "#40358f"), _p(e, "SELECT", -61, -16.5, `700 2.3px ${t}`, "#40358f"), _p(e, "POWER", 61, 15, `700 2.1px ${t}`, "#40358f"), e.strokeStyle = "#463b9c", e.lineWidth = .5, e.beginPath(), e.ellipse(52, -33.5, 11, 3, 0, 0, Math.PI * 2), e.stroke(), _p(e, "Nintendo", 52, 33.4, `700 3.1px ${t}`, "#463b9c");
-	}), yp(e, "gba");
+	].forEach((t, n) => e.add("dark", cd(Q(t, 1.3, .6, 54 + (20 - t) / 2 - 1, 27 - n * 3.1), [], 20.04).rotateZ(-0))), e.add("dark", cd(od(1.3, 53, 56), [], 20.04)), hp(e, t, 82, 0, 41, 20.98, (e, t) => {
+		e.save(), e.translate(0, 23.5), e.transform(1, 0, -.18, 1, 0, 0), gp(e, "GAME BOY", -9.5, 0, `900 4.3px ${t}`, "#d9d9de"), gp(e, "ADVANCE", 16, -.2, `700 3.6px ${t}`, "#d9d9de"), e.restore();
+	}), hp(e, t, 82, 0, 41, 20.06, (e, t) => {
+		gp(e, "START", -57.5, -7.5, `700 2.3px ${t}`, "#40358f"), gp(e, "SELECT", -61, -16.5, `700 2.3px ${t}`, "#40358f"), gp(e, "POWER", 61, 15, `700 2.1px ${t}`, "#40358f"), e.strokeStyle = "#463b9c", e.lineWidth = .5, e.beginPath(), e.ellipse(52, -33.5, 11, 3, 0, 0, Math.PI * 2), e.stroke(), gp(e, "Nintendo", 52, 33.4, `700 3.1px ${t}`, "#463b9c");
+	}), vp(e, "gba");
 }
-function Cp() {
-	let e = new wd("PS Vita");
+function Sp() {
+	let e = new Cd("PS Vita");
 	e.mat("shell", {
 		color: 1315862,
 		roughness: .62
@@ -15768,7 +15797,7 @@ function Cp() {
 		roughness: .45
 	});
 	let t = 183.6, n = 85.1, r = n / 2, i = Q(t, n, 41.5, 0, r);
-	e.add("shell", fp(i, 0, 14, 4.5)), e.add("face", fp(Q(137, 81.69999999999999, 8, 0, r), 13.4, 15, .5)), e.add("lcd", new Ya(110.7, 62.3).translate(0, 43.05, 15.03));
+	e.add("shell", dp(i, 0, 14, 4.5)), e.add("face", dp(Q(137, 81.69999999999999, 8, 0, r), 13.4, 15, .5)), e.add("lcd", new Ya(110.7, 62.3).translate(0, 43.05, 15.03));
 	for (let [t, n, r, i] of [
 		[
 			0,
@@ -15794,36 +15823,36 @@ function Cp() {
 			8,
 			7
 		]
-	]) e.add("key", fp(Q(r, i, 1.6, -76.5 + t, 56.55 + n), 14, 15.8, .6));
+	]) e.add("key", dp(Q(r, i, 1.6, -76.5 + t, 56.55 + n), 14, 15.8, .6));
 	for (let t of [-1, 1]) {
 		let n = t * 71.5, i = r + (t < 0 ? -11 : -24);
-		e.add("face", sd(ad(9.4, n, i), [], 14.04)), e.add("key", mp(6.9, n, i, 14, 18.4, 1.4));
+		e.add("face", cd(od(9.4, n, i), [], 14.04)), e.add("key", pp(6.9, n, i, 14, 18.4, 1.4));
 	}
-	e.add("key", mp(4.2, -74, 15.049999999999997, 14, 15, .4, 20));
+	e.add("key", pp(4.2, -74, 15.049999999999997, 14, 15, .4, 20));
 	let a = 51.55;
 	for (let [t, n] of [
 		[0, 8.8],
 		[8.8, 0],
 		[0, -8.8],
 		[-8.8, 0]
-	]) e.add("key", mp(3.9, 78 + t, a + n, 14, 15.7, .6, 20));
-	e.add("key", mp(3.3, 62, 69.55, 14, 15, .4, 16));
-	for (let [t, n] of [[58, -36], [69, -33.5]]) e.add("key", hp(8.5, 5, t, r + n, 14, 15.1, .4));
+	]) e.add("key", pp(3.9, 78 + t, a + n, 14, 15.7, .6, 20));
+	e.add("key", pp(3.3, 62, 69.55, 14, 15, .4, 16));
+	for (let [t, n] of [[58, -36], [69, -33.5]]) e.add("key", mp(8.5, 5, t, r + n, 14, 15.1, .4));
 	for (let [t, n] of [[-87, r], [86.5, 29.549999999999997]]) for (let r = 0; r < 7; r++) {
 		let i = r / 6 * Math.PI * 2, a = r === 6 ? 0 : 2.4;
-		e.add("face", sd(ad(.55, t + Math.cos(i) * a, n + Math.sin(i) * a, 8), [], 14.05));
+		e.add("face", cd(od(.55, t + Math.cos(i) * a, n + Math.sin(i) * a, 8), [], 14.05));
 	}
-	return gp(e, t, n, 0, r, 15.05, (e, t) => {
-		_p(e, "SONY", -52, 37, `700 4.2px ${lp}`, "#c9c9cc"), e.save(), e.translate(0, 36.8), e.scale(1.25, 1), _p(e, "PS VITA", 0, 0, `300 6.4px ${t}`, "#c9c9cc"), e.restore();
-	}), gp(e, 30, 30, 78, a, 15.76, (e) => vp(e, 0, 0, 8.8, 1.9, [
+	return hp(e, t, n, 0, r, 15.05, (e, t) => {
+		gp(e, "SONY", -52, 37, `700 4.2px ${cp}`, "#c9c9cc"), e.save(), e.translate(0, 36.8), e.scale(1.25, 1), gp(e, "PS VITA", 0, 0, `300 6.4px ${t}`, "#c9c9cc"), e.restore();
+	}), hp(e, 30, 30, 78, a, 15.76, (e) => _p(e, 0, 0, 8.8, 1.9, [
 		"#b9b9bd",
 		"#b9b9bd",
 		"#b9b9bd",
 		"#b9b9bd"
-	], .4), 24), yp(e, "ps-vita");
+	], .4), 24), vp(e, "ps-vita");
 }
-function wp() {
-	let e = new wd("PSP Go");
+function Cp() {
+	let e = new Cd("PSP Go");
 	e.mat("silver", {
 		color: 11843001,
 		roughness: .38,
@@ -15842,9 +15871,9 @@ function wp() {
 		roughness: .45
 	});
 	let t = 69 / 2, n = Q(128, 69, 27, 0, t);
-	e.add("silver", fp(n, 0, 8.4, 3)), e.add("deck", fp(dp(n, 2.4), 7.8, 9, .5));
+	e.add("silver", dp(n, 0, 8.4, 3)), e.add("deck", dp(up(n, 2.4), 7.8, 9, .5));
 	let r = (t, n) => {
-		e.add("silver", new Xa(12.6, 14.8, 40).translate(t, n, 9.05)), e.add("deck", sd(ad(12.6, t, n, 32), [], 9.04));
+		e.add("silver", new Xa(12.6, 14.8, 40).translate(t, n, 9.05)), e.add("deck", cd(od(12.6, t, n, 32), [], 9.04));
 	};
 	r(-37, 21), r(37, 21);
 	for (let [t, n, r, i] of [
@@ -15872,51 +15901,51 @@ function wp() {
 			7.4,
 			6.4
 		]
-	]) e.add("key", fp(Q(r, i, 1.5, -37 + t, 21 + n), 9, 10.5, .5));
+	]) e.add("key", dp(Q(r, i, 1.5, -37 + t, 21 + n), 9, 10.5, .5));
 	for (let [t, n] of [
 		[0, 6.6],
 		[6.6, 0],
 		[0, -6.6],
 		[-6.6, 0]
-	]) e.add("key", mp(3.3, 37 + t, 21 + n, 9, 10.5, .5, 20));
-	e.add("face", sd(ad(8, -12.5, 11.5), [], 9.05)), e.add("key", mp(5.3, -12.5, 11.5, 9, 11.6, 1)), e.add("face", sd(ad(8.4, 12.5, 11.5), [], 9.05));
-	for (let t of [2.5, -2.5]) e.add("key", hp(12, 4.2, 12.5, 11.5 + t, 9, 10.2, .4));
-	gp(e, 128, 69, 0, t, 10.56, (e, t) => {
-		vp(e, 37, -13.5, 6.6, 1.5, [
+	]) e.add("key", pp(3.3, 37 + t, 21 + n, 9, 10.5, .5, 20));
+	e.add("face", cd(od(8, -12.5, 11.5), [], 9.05)), e.add("key", pp(5.3, -12.5, 11.5, 9, 11.6, 1)), e.add("face", cd(od(8.4, 12.5, 11.5), [], 9.05));
+	for (let t of [2.5, -2.5]) e.add("key", mp(12, 4.2, 12.5, 11.5 + t, 9, 10.2, .4));
+	hp(e, 128, 69, 0, t, 10.56, (e, t) => {
+		_p(e, 37, -13.5, 6.6, 1.5, [
 			"#c9c9cc",
 			"#c9c9cc",
 			"#c9c9cc",
 			"#c9c9cc"
-		], .35), _p(e, "SELECT", 12.5, -20.5, `600 1.9px ${t}`, "#c9c9cc"), _p(e, "START", 12.5, -25.5, `600 1.9px ${t}`, "#c9c9cc");
+		], .35), gp(e, "SELECT", 12.5, -20.5, `600 1.9px ${t}`, "#c9c9cc"), gp(e, "START", 12.5, -25.5, `600 1.9px ${t}`, "#c9c9cc");
 	}, 24);
 	let i = Q(128, 69, 27, 0, 73.5);
-	e.add("silver", od([$(dp(i, .4), 9.2), $(dp(i, .4), 10.6)])), e.add("face", fp(i, 10.4, 16.5, 2.2)), e.add("lcd", new Ya(84, 47.3).translate(0, 74.5, 16.53)), e.add("key", mp(5.2, -52, 52.5, 16.1, 17.2, .4, 20));
+	e.add("silver", sd([$(up(i, .4), 9.2), $(up(i, .4), 10.6)])), e.add("face", dp(i, 10.4, 16.5, 2.2)), e.add("lcd", new Ya(84, 47.3).translate(0, 74.5, 16.53)), e.add("key", pp(5.2, -52, 52.5, 16.1, 17.2, .4, 20));
 	for (let t of [-55, 55]) for (let [n, r] of [
 		[0, 1.6],
 		[1.6, 0],
 		[0, -1.6],
 		[-1.6, 0]
-	]) e.add("deck", sd(ad(.65, t + n, 80.5 + r, 8), [], 16.54));
-	return gp(e, 128, 69, 0, 73.5, 16.55, (e, t) => {
-		_p(e, "SONY", 0, 29.5, `700 3.9px ${lp}`, "#c9c9cc"), e.strokeStyle = "#d2d2d5", e.lineWidth = .75, e.lineCap = "square", e.lineJoin = "miter";
+	]) e.add("deck", cd(od(.65, t + n, 80.5 + r, 8), [], 16.54));
+	return hp(e, 128, 69, 0, 73.5, 16.55, (e, t) => {
+		gp(e, "SONY", 0, 29.5, `700 3.9px ${cp}`, "#c9c9cc"), e.strokeStyle = "#d2d2d5", e.lineWidth = .75, e.lineCap = "square", e.lineJoin = "miter";
 		let n = (t) => {
 			e.beginPath(), e.moveTo(t, 31.2), e.lineTo(t, 28.6), e.lineTo(t + 8, 28.6), e.lineTo(t + 8, 26), e.lineTo(t, 26), e.stroke();
 		};
 		n(-14.5), e.beginPath(), e.moveTo(4, 26), e.lineTo(-4, 26), e.lineTo(-4, 28.6), e.lineTo(4, 28.6), e.lineTo(4, 31.2), e.lineTo(-4, 31.2), e.stroke(), n(6.5);
-	}, 20), yp(e, "psp-go");
+	}, 20), vp(e, "psp-go");
 }
-var Tp = {
-	"ps-one": bp,
-	dualshock: xp,
-	gba: Sp,
-	"ps-vita": Cp,
-	"psp-go": wp
-}, Ep = [
+var wp = {
+	"ps-one": yp,
+	dualshock: bp,
+	gba: xp,
+	"ps-vita": Sp,
+	"psp-go": Cp
+}, Tp = [
 	"pvm-20m4e",
 	"pvm-9042qm",
 	"kv-9pr1",
 	"kv-5200"
-], Dp = -14, Op = {
+], Ep = -14, Dp = {
 	pyramid: {
 		"pvm-20m4e": { x: 0 },
 		"pvm-9042qm": {
@@ -15952,7 +15981,7 @@ var Tp = {
 			ry: 11
 		}
 	}
-}, kp = [
+}, Op = [
 	{ items: "ps1" },
 	{ props: ["ps-one", "dualshock"] },
 	{ items: "book" },
@@ -15968,11 +15997,11 @@ var Tp = {
 		items: "psp",
 		prop: "psp-go"
 	}
-], Ap = {
+], kp = {
 	gba: 145,
 	"ps-vita": 182,
 	"psp-go": 128
-}, jp = (e, t, n) => Math.min(n, Math.max(t, e)), Mp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, Np = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden] { display: none; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n", Pp = typeof HTMLElement < "u" ? HTMLElement : class {}, Fp = class extends Pp {
+}, Ap = (e, t, n) => Math.min(n, Math.max(t, e)), jp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, Mp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden] { display: none; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n", Np = typeof HTMLElement < "u" ? HTMLElement : class {}, Pp = class extends Np {
 	static get observedAttributes() {
 		return [
 			"stack",
@@ -15983,14 +16012,14 @@ var Tp = {
 		];
 	}
 	constructor() {
-		super(), this._units = {}, this._items = [], this._tweens = /* @__PURE__ */ new Map(), this._sound = new Lf(), this._f = 0, this._focus = null, this._focusKey = null, this._selected = -1, this._par = {
+		super(), this._units = {}, this._items = [], this._tweens = /* @__PURE__ */ new Map(), this._sound = new If(), this._f = 0, this._focus = null, this._focusKey = null, this._selected = -1, this._par = {
 			x: 0,
 			y: 0
 		}, this._frame = this._frame.bind(this), this._onKey = (e) => {
 			e.key === "Escape" && (this._selected >= 0 ? this.close() : this.unfocus());
 		};
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Uf}${Np}</style>
+		e.innerHTML = `<style>${Hf}${Mp}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas></div><div class="spacer"></div></div>
       <div class="ui">
         <button class="back" part="back" type="button" hidden>&larr; Back</button>
@@ -16067,10 +16096,10 @@ var Tp = {
 			reduced: this._reduced,
 			el: this
 		});
-		for (let e of Ep) {
+		for (let e of Tp) {
 			let t = new In();
 			t.userData.unit = e, this._world.add(t);
-			let n = new qf();
+			let n = new Kf();
 			n.setAttribute("model", e), n._attachHost(a(t), e), n._parent = t;
 			for (let t of [
 				"pvm-power",
@@ -16095,9 +16124,9 @@ var Tp = {
 		}));
 	}
 	_applyPowerAttr() {
-		let e = this.getAttribute("power"), t = e === null || e === "all" ? Ep : e.split(/[\s,]+/);
+		let e = this.getAttribute("power"), t = e === null || e === "all" ? Tp : e.split(/[\s,]+/);
 		this._sound.muted = !0;
-		for (let e of Ep) this._units[e].power = t.includes(e);
+		for (let e of Tp) this._units[e].power = t.includes(e);
 		this._sound.muted = this.hasAttribute("muted");
 	}
 	tv(e) {
@@ -16116,7 +16145,7 @@ var Tp = {
 	_rebuild() {
 		if (!this._ready) return;
 		this._selected >= 0 && this.close(!0), this._dispose(this._furniture);
-		let e = cp((this._builtMode = this._mode()) === "wide" ? {
+		let e = sp((this._builtMode = this._mode()) === "wide" ? {
 			cols: 3,
 			rows: 2,
 			cellW: 430
@@ -16127,18 +16156,18 @@ var Tp = {
 		});
 		this._furniture.add(e.group);
 		let t = new J(new Ya(e.width + 260, e.depth + 260).rotateX(-Math.PI / 2), new Yr({
-			map: Qu(e.width, e.depth, 130),
+			map: $u(e.width, e.depth, 130),
 			transparent: !0,
 			depthWrite: !1,
 			toneMapped: !1
 		}));
 		t.position.set(0, .5, -e.depth / 2), t.raycast = () => {}, this._furniture.add(t);
-		let n = Op[this.getAttribute("stack")] || Op.pyramid, r = {}, i = e.height, a = -e.width / 2, o = e.width / 2, s = (t) => {
+		let n = Dp[this.getAttribute("stack")] || Dp.pyramid, r = {}, i = e.height, a = -e.width / 2, o = e.width / 2, s = (t) => {
 			if (t in r) return r[t];
-			let c = n[t], l = Ff[t].META.size, u = c.on ? s(c.on) + Ff[c.on].META.size.h : e.height, d = this._units[t]._parent;
-			return d.position.set(c.x, u, Dp - l.d / 2), d.rotation.y = Lt.degToRad(c.ry || 0), d.updateMatrixWorld(!0), i = Math.max(i, u + (t === "kv-5200" ? 269 : l.h)), a = Math.min(a, c.x - l.w / 2), o = Math.max(o, c.x + l.w / 2), r[t] = u;
+			let c = n[t], l = Pf[t].META.size, u = c.on ? s(c.on) + Pf[c.on].META.size.h : e.height, d = this._units[t]._parent;
+			return d.position.set(c.x, u, Ep - l.d / 2), d.rotation.y = Lt.degToRad(c.ry || 0), d.updateMatrixWorld(!0), i = Math.max(i, u + (t === "kv-5200" ? 269 : l.h)), a = Math.min(a, c.x - l.w / 2), o = Math.max(o, c.x + l.w / 2), r[t] = u;
 		};
-		Ep.forEach(s), this._bounds = {
+		Tp.forEach(s), this._bounds = {
 			w: Math.max(-a, o) * 2,
 			h: i
 		}, this._items = [];
@@ -16152,23 +16181,23 @@ var Tp = {
 			t: e.getAttribute("thickness"),
 			h: e.getAttribute("height")
 		}));
-		kp.forEach((t, n) => {
+		Op.forEach((t, n) => {
 			let r = e.cells[n];
 			if (!r) return;
 			let i = (r.x0 + r.x1) / 2;
 			if (t.props) {
-				let e = Tp["ps-one"](), t = Tp.dualshock();
+				let e = wp["ps-one"](), t = wp.dualshock();
 				e.position.set(i - 85, r.y, -150), e.rotation.y = .12, t.position.set(i + 118, r.y, -84), t.rotation.y = -.35, this._furniture.add(e, t);
 				return;
 			}
 			let a = r.x1 - 10;
 			if (t.prop) {
-				let e = Tp[t.prop](), n = Ap[t.prop];
+				let e = wp[t.prop](), n = kp[t.prop];
 				e.position.set(r.x1 - 22 - n / 2, r.y, -96), e.rotation.set(-.14, -.1, 0), this._furniture.add(e), a = r.x1 - n - 44;
 			}
 			let o = r.x0 + 8;
-			for (let e of c.filter((e) => (Jf[e.type] ? e.type : "book") === t.items)) {
-				let t = op(e), n = t.userData.spec;
+			for (let e of c.filter((e) => (qf[e.type] ? e.type : "book") === t.items)) {
+				let t = ap(e), n = t.userData.spec;
 				o + n.t > a || n.h > r.h - 6 ? console.warn(`retro-shelf: no room on the shelf for "${n.title}"`) : (t.position.set(o + n.t / 2, r.y + n.h / 2, -16 - n.d / 2), t.userData.home = t.position.clone(), t.userData.item = this._items.length, t.userData.el = e.el, e.cover && this._loadCover(t, e.cover), this._furniture.add(t), this._items.push(t), o += n.t + .7);
 			}
 		}), this._buildA11y(), this._fit(), this._focusKey && this._aim();
@@ -16186,8 +16215,8 @@ var Tp = {
 			let n = document.createElement("button");
 			n.type = "button", n.textContent = e, n.addEventListener("click", t), this._sr.append(n);
 		};
-		for (let t of Ep) e(`Look at the ${Ff[t].META.name}`, () => this.focusTV(t)), this._sr.append(this._units[t]._sr);
-		this._items.forEach((t, n) => e(`${Jf[t.userData.spec.type].name}: ${t.userData.spec.title}`, () => this.select(n)));
+		for (let t of Tp) e(`Look at the ${Pf[t].META.name}`, () => this.focusTV(t)), this._sr.append(this._units[t]._sr);
+		this._items.forEach((t, n) => e(`${qf[t.userData.spec.type].name}: ${t.userData.spec.title}`, () => this.select(n)));
 	}
 	_resize() {
 		if (!this._renderer) return;
@@ -16223,7 +16252,7 @@ var Tp = {
 		let t = !1;
 		for (let [n, r] of this._tweens) {
 			let i = Math.min((e - r.start) / r.dur, 1);
-			r.fn(Mp(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
+			r.fn(jp(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
 		}
 		let n = this._over, r = this._camera, i = n.top - n.viewH / 2 - this._wall.scrollTop / n.pxPerMm, a = this._par.x * 26, o = this._par.y * 16, s = this._f, c = this._focus;
 		c && s > 0 ? (r.position.set(a + (c.pos.x - a) * s, i + o + (c.pos.y - i - o) * s, n.d + (c.pos.z - n.d) * s), r.lookAt(a * .4 + (c.look.x - a * .4) * s, i + o * .4 + (c.look.y - i - o * .4) * s, c.look.z * s)) : (r.position.set(a, i + o, n.d), r.lookAt(a * .4, i + o * .4, 0)), r.updateMatrixWorld();
@@ -16313,7 +16342,7 @@ var Tp = {
 		});
 		let u = n.userData.el, d = (e) => this._card.querySelector(e);
 		for (let e of this.querySelectorAll("retro-item[slot=\"card\"]")) e.removeAttribute("slot");
-		u.setAttribute("slot", "card"), d(".card-type").textContent = Jf[r.type].name, d(".card-title").textContent = r.title, d(".card-sub").textContent = r.subtitle, d(".card-sub").hidden = !r.subtitle;
+		u.setAttribute("slot", "card"), d(".card-type").textContent = qf[r.type].name, d(".card-title").textContent = r.title, d(".card-sub").textContent = r.subtitle, d(".card-sub").hidden = !r.subtitle;
 		let f = d(".card-link"), p = u.getAttribute("href");
 		f.hidden = !p, p && (f.href = p, f.textContent = u.getAttribute("link-text") || "Open"), this._card.hidden = !1, this._hint.classList.add("gone"), this.dispatchEvent(new CustomEvent("shelf-select", {
 			detail: {
@@ -16391,7 +16420,7 @@ var Tp = {
 		}
 		if (t && (t.moved = Math.max(t.moved, Math.hypot(e.clientX - t.x, e.clientY - t.y))), e.pointerType !== "mouse" || !this._ready) return;
 		let n = this._view.getBoundingClientRect();
-		if (this._par.x = jp((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -jp((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
+		if (this._par.x = Ap((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -Ap((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
 			let t = this._pick(e);
 			this._wall.style.cursor = t.control || t.item !== void 0 || t.unit && t.unit !== this._focusKey ? "pointer" : "";
 		}
@@ -16414,8 +16443,8 @@ var Tp = {
 	}
 };
 // src/index.js
-function Ip() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", qf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Fp));
+function Fp() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Kf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Pp));
 }
-Ip();
-export { Jf as ITEM_TYPES, Ff as MODELS, Tp as PROPS, Fp as RetroShelfElement, Op as STACKS, qf as SonyPVMElement, op as buildItem, cp as buildShelf, Ip as define };
+Fp();
+export { qf as ITEM_TYPES, Pf as MODELS, wp as PROPS, Pp as RetroShelfElement, Dp as STACKS, Kf as SonyPVMElement, ap as buildItem, sp as buildShelf, Fp as define };
