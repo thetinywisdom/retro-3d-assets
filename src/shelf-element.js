@@ -292,9 +292,18 @@ export class RetroShelfElement extends Base {
       const cx = (cell.x0 + cell.x1) / 2;
       if (plan.props) {
         const ps = PROPS['ps-one'](), pad = PROPS.dualshock();
-        ps.position.set(cx - 85, cell.y, -150); ps.rotation.y = 0.12;
-        pad.position.set(cx + 118, cell.y, -84); pad.rotation.y = -0.35;
-        this._furniture.add(ps, pad);
+        // propped up against the back so their tops face the viewer
+        const prop = (obj, x, z, half, tilt, turn) => {
+          const lean = new THREE.Group();
+          lean.add(obj);
+          obj.rotation.x = tilt;
+          obj.position.y = half * Math.sin(tilt) + 1;
+          lean.position.set(x, cell.y, z);
+          lean.rotation.y = turn;
+          return lean;
+        };
+        const cw = cell.x1 - cell.x0, k = Math.min(1, cw / 430);
+        this._furniture.add(prop(ps, cx - 74 * k, -150, 72, 0.98, 0.1), prop(pad, cx + 118 * k, -110, 48, 0.9, -0.22));
         return;
       }
       let limit = cell.x1 - 10;

@@ -40,7 +40,7 @@ Methods: `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API be
 
 Parts for styling: `card`, `back`, `fill`, `hint`.
 
-Prop sizes are the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5) with details modelled from reference photos. Case sizes: PS1 jewel case 142 × 125 × 10.4, GBA box 127 × 127 × 22, Vita case 104 × 135 × 13, PSP case 105 × 170 × 14.5.
+The consoles use the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5). Their body outlines are traced from straight-on reference images (`src/props/outlines.js`), and button, screen and label positions were measured from perspective-corrected photos scaled by each LCD's known size. Backs and undersides are plain. Case sizes: PS1 jewel case 142 × 125 × 10.4, GBA box 127 × 127 × 22, Vita case 104 × 135 × 13, PSP case 105 × 170 × 14.5.
 
 ## `<sony-pvm>`
 

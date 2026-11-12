@@ -17,8 +17,19 @@
   const cam = new THREE.PerspectiveCamera(26, innerWidth / innerHeight, 10, 5000);
   const tilt = +(q.get('tilt') ?? 0.5), yaw = +(q.get('yaw') ?? 0);
   const place = (name, x, y, flat) => { const g = PROPS[name](); const h = new THREE.Group(); h.add(g); if (flat) g.rotation.x = Math.PI / 2 - tilt; else g.rotation.x = -tilt + 0.3; h.rotation.y = yaw; h.position.set(x, y, 0); scene.add(h); };
-  place('ps-one', -120, 110, true); place('dualshock', 110, 110, true);
-  place('gba', -170, -150, false); place('ps-vita', 0, -150, false); place('psp-go', 165, -160, false);
-  cam.position.set(0, 0, 1150); cam.lookAt(0, -10, 0);
+  const only = q.get('only');
+  if (only) {
+    const flatOne = only === 'ps-one' || only === 'dualshock';
+    const g = PROPS[only](); const h = new THREE.Group(); h.add(g);
+    g.rotation.x = flatOne ? Math.PI / 2 - tilt : -tilt; h.rotation.y = yaw;
+    const box = new THREE.Box3().setFromObject(h); const c = box.getCenter(new THREE.Vector3()); h.position.sub(c); scene.add(h);
+    const size = box.getSize(new THREE.Vector3());
+    cam.position.set(0, 0, Math.max(size.x / cam.aspect, size.y) * 1.15 / (2 * Math.tan(13 * Math.PI / 180)) + size.z);
+    cam.lookAt(0, 0, 0);
+  } else {
+    place('ps-one', -120, 110, true); place('dualshock', 110, 110, true);
+    place('gba', -170, -150, false); place('ps-vita', 0, -150, false); place('psp-go', 165, -160, false);
+    cam.position.set(0, 0, 1150); cam.lookAt(0, -10, 0);
+  }
   renderer.render(scene, cam); window.done = true;
 </script>
