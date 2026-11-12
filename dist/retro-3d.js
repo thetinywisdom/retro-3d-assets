@@ -16995,7 +16995,9 @@ var Pp = [
 			"power",
 			"scene",
 			"lighting",
-			"wall"
+			"wall",
+			"backlight",
+			"consoles"
 		];
 	}
 	constructor() {
@@ -17059,7 +17061,9 @@ var Pp = [
 				"arrange",
 				"scene",
 				"lighting",
-				"wall"
+				"wall",
+				"backlight",
+				"consoles"
 			].includes(e) && this._rebuild(), e === "brand") for (let e of Object.values(this._units)) e.setBrand(n);
 			e === "power" && this._applyPowerAttr();
 		}
@@ -17141,8 +17145,10 @@ var Pp = [
 		if (!this._ready) return;
 		this._selected >= 0 && this.close(!0), this._dispose(this._furniture);
 		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r;
-		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .05 : .6, this._room = r ? .3 : i ? .06 : 1, this._floorPad = t ? 190 : 0;
-		let a = t ? {
+		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .05 : .6, this._room = r ? .3 : i ? .06 : 1;
+		let a = t && this.hasAttribute("consoles");
+		this._floorPad = a ? 330 : t ? 190 : 0, this._pitch = t ? a ? .27 : .12 : 0;
+		let o = t ? {
 			height: 0,
 			width: 0,
 			depth: 520,
@@ -17152,7 +17158,7 @@ var Pp = [
 			rows: 2,
 			cellW: e === "wide" ? 980 : 860
 		});
-		if (t || this._furniture.add(a.group), t || i) {
+		if (t || this._furniture.add(o.group), t || i) {
 			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po({
 				color: i ? 7828590 : 2762790,
 				roughness: i ? .62 : .5,
@@ -17160,7 +17166,8 @@ var Pp = [
 			}));
 			e.position.set(0, -.5, 0), e.raycast = () => {}, this._furniture.add(e);
 		}
-		if (this.hasAttribute("wall")) {
+		let s = this.getAttribute("backlight");
+		if (this.hasAttribute("wall") || s !== null) {
 			let e = new J(new Ya(9e3, 5e3), new po({
 				color: 4868164,
 				roughness: .9
@@ -17168,29 +17175,135 @@ var Pp = [
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
 		}
 		if (!i && !t) {
-			let e = new J(new Ya(a.width + 260, a.depth + 260).rotateX(-Math.PI / 2), new Yr({
-				map: td(a.width, a.depth, 130),
+			let e = new J(new Ya(o.width + 260, o.depth + 260).rotateX(-Math.PI / 2), new Yr({
+				map: td(o.width, o.depth, 130),
 				transparent: !0,
 				depthWrite: !1,
 				toneMapped: !1
 			}));
-			e.position.set(0, .5, -a.depth / 2), e.raycast = () => {}, this._furniture.add(e);
+			e.position.set(0, .5, -o.depth / 2), e.raycast = () => {}, this._furniture.add(e);
 		}
-		let o = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), s = Ip[e === "tall" && o[1] ? o[1] : o[0]] || Ip.pyramid;
+		let c = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), l = Ip[e === "tall" && c[1] ? c[1] : c[0]] || Ip.pyramid;
 		this._dark = i;
-		let c = {}, l = a.height, u = -a.width / 2, d = a.width / 2, f = (e) => {
-			if (e in c) return c[e];
-			let n = s[e], r = wf[e].META.size, o = n.on ? f(n.on) + wf[n.on].META.size.h : a.height, p = this._units[e]._parent;
-			return p.position.set(n.x, o, Fp - r.d / 2 + (n.z || 0)), p.rotation.y = Lt.degToRad(n.ry || 0), p.updateMatrixWorld(!0), l = Math.max(l, o + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, u = Math.min(u, n.x - r.w / 2), d = Math.max(d, n.x + r.w / 2), c[e] = o;
+		let u = {}, d = o.height, f = -o.width / 2, p = o.width / 2, m = (e) => {
+			if (e in u) return u[e];
+			let n = l[e], r = wf[e].META.size, a = n.on ? m(n.on) + wf[n.on].META.size.h : o.height, s = this._units[e]._parent;
+			return s.position.set(n.x, a, Fp - r.d / 2 + (n.z || 0)), s.rotation.y = Lt.degToRad(n.ry || 0), s.updateMatrixWorld(!0), d = Math.max(d, a + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, f = Math.min(f, n.x - r.w / 2), p = Math.max(p, n.x + r.w / 2), u[e] = a;
 		};
-		if (Pp.forEach(f), this._buildGlow(), this._bounds = {
-			w: Math.max(-u, d) * 2,
-			h: l
-		}, this._items = [], t) {
+		if (Pp.forEach(m), this._buildGlow(), this._bounds = {
+			w: Math.max(-f, p) * 2,
+			h: d
+		}, s !== null) {
+			let e = new K(s || "#2dff7a"), t = this._bounds.w / 2;
+			for (let [n, r, i] of [
+				[
+					-t * .55,
+					160,
+					1
+				],
+				[
+					t * .55,
+					160,
+					1
+				],
+				[
+					0,
+					d * .75,
+					.7
+				]
+			]) {
+				let t = new es(e, 27e4 * i, 0, 2);
+				t.position.set(n, r, -560), this._furniture.add(t);
+			}
+		}
+		if (a) {
+			let t = Math.max(this._bounds.w / 2 + 120, e === "tall" ? 330 : 520), n = e === "tall" ? [
+				[
+					"ps-one",
+					-.5,
+					250,
+					.2
+				],
+				[
+					"dualshock",
+					.42,
+					330,
+					-.5
+				],
+				[
+					"gba",
+					-.62,
+					520,
+					-.3
+				],
+				[
+					"ps-vita",
+					.2,
+					560,
+					.16
+				],
+				[
+					"psp-go",
+					.72,
+					150,
+					.5
+				]
+			] : [
+				[
+					"ps-one",
+					-.42,
+					300,
+					.22
+				],
+				[
+					"dualshock",
+					-.1,
+					420,
+					-.4
+				],
+				[
+					"gba",
+					-.86,
+					430,
+					.5
+				],
+				[
+					"ps-vita",
+					.34,
+					360,
+					-.2
+				],
+				[
+					"psp-go",
+					.8,
+					470,
+					.34
+				]
+			], r = {
+				gba: 13627083,
+				"ps-vita": 9419007,
+				"psp-go": 11126527
+			};
+			for (let [e, a, o, s] of n) {
+				let n = wp[e](), c = new In();
+				if (c.add(n), r[e]) {
+					n.rotation.x = -Math.PI / 2, n.traverse((t) => {
+						t.name === "lcd" && (t.material = new Yr({ color: r[e] }));
+					});
+					let t = new es(r[e], i ? 15e3 : 0, 0, 2);
+					t.position.set(0, 90, e === "psp-go" ? -75 : -42), c.add(t);
+				}
+				c.position.set(a * t, 0, o), c.rotation.y = s, c.traverse((e) => {
+					e.raycast = () => {};
+				}), this._furniture.add(c);
+			}
+			this._bounds.w = Math.max(this._bounds.w, t * 2 + 120);
+		}
+		if (this._items = [], t) {
 			this._buildA11y(), this._fit(), this._focusKey && this._aim();
 			return;
 		}
-		let p = [...this.querySelectorAll("retro-item")].map((e) => ({
+		let h = [...this.querySelectorAll("retro-item")].map((e) => ({
 			el: e,
 			type: (e.getAttribute("type") || "book").toLowerCase(),
 			title: e.getAttribute("title") || e.textContent.trim().slice(0, 40),
@@ -17204,7 +17317,7 @@ var Pp = [
 			let t = rp(e);
 			return t.userData.el = e.el, t;
 		});
-		for (let e of Np(this.getAttribute("arrange") || "browsed", a.cells, p, (e) => wp[e]())) {
+		for (let e of Np(this.getAttribute("arrange") || "browsed", o.cells, h, (e) => wp[e]())) {
 			if (e.userData.spec) {
 				e.userData.home = {
 					pos: e.position.clone(),
@@ -17288,7 +17401,11 @@ var Pp = [
 			r.fn(Rp(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
 		}
 		let n = this._over, r = this._camera, i = n.top - n.viewH / 2 - this._wall.scrollTop / n.pxPerMm, a = this._par.x * 26, o = this._par.y * 16, s = this._f, c = this._focus;
-		c && s > 0 ? (r.position.set(a + (c.pos.x - a) * s, i + o + (c.pos.y - i - o) * s, n.d + (c.pos.z - n.d) * s), r.lookAt(a * .4 + (c.look.x - a * .4) * s, i + o * .4 + (c.look.y - i - o * .4) * s, c.look.z * s)) : (r.position.set(a, i + o, n.d), r.lookAt(a * .4, i + o * .4, 0)), r.updateMatrixWorld();
+		if (c && s > 0) {
+			let e = i + o + n.d * Math.tan(this._pitch || 0);
+			r.position.set(a + (c.pos.x - a) * s, e + (c.pos.y - e) * s, n.d + (c.pos.z - n.d) * s), r.lookAt(a * .4 + (c.look.x - a * .4) * s, i + o * .4 + (c.look.y - i - o * .4) * s, c.look.z * s);
+		} else r.position.set(a, i + o + n.d * Math.tan(this._pitch || 0), n.d), r.lookAt(a * .4, i + o * .4, 0);
+		r.updateMatrixWorld();
 		for (let n of Object.values(this._units)) n._tick(e, r) && (t = !0);
 		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
 	}

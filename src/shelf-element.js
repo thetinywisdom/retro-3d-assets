@@ -104,7 +104,7 @@ const STYLE = /* css */ `
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles']; }
 
   constructor() {
     super();
@@ -169,7 +169,7 @@ export class RetroShelfElement extends Base {
   attributeChangedCallback(name, _o, v) {
     if (name === 'muted') this._sound.muted = v !== null;
     if (!this._renderer) return;
-    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall'].includes(name)) this._rebuild();
+    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles'].includes(name)) this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
   }
@@ -275,7 +275,9 @@ export class RetroShelfElement extends Base {
     this._fill.intensity = dark ? 0 : 0.5;
     this._scene.environmentIntensity = dim ? 0.16 : dark ? 0.05 : 0.6;
     this._room = dim ? 0.3 : dark ? 0.06 : 1;
-    this._floorPad = floorOnly ? 190 : 0;
+    const spread = floorOnly && this.hasAttribute('consoles');
+    this._floorPad = spread ? 330 : floorOnly ? 190 : 0;
+    this._pitch = floorOnly ? (spread ? 0.27 : 0.12) : 0;      // look down a little at things on the floor
     // two long levels, no dividers; narrower on a tall (phone) view
     const shelf = floorOnly ? { height: 0, width: 0, depth: 520, cells: [] } : buildShelf({ cols: 1, rows: 2, cellW: mode === 'wide' ? 980 : 860 });
     if (!floorOnly) this._furniture.add(shelf.group);
@@ -287,7 +289,8 @@ export class RetroShelfElement extends Base {
       floor.raycast = () => {};
       this._furniture.add(floor);
     }
-    if (this.hasAttribute('wall')) {
+    const back = this.getAttribute('backlight');
+    if (this.hasAttribute('wall') || back !== null) {
       const wall = new THREE.Mesh(new THREE.PlaneGeometry(9000, 5000), new THREE.MeshStandardMaterial({ color: 0x4a4844, roughness: 0.9 }));
       wall.position.set(0, 2500, -760);
       wall.raycast = () => {};
@@ -326,6 +329,41 @@ export class RetroShelfElement extends Base {
     TVS.forEach(place);
     this._buildGlow();
     this._bounds = { w: Math.max(-left, right) * 2, h: top };
+    if (back !== null) {
+      // coloured light hidden behind the sets, washing up the wall and round their edges
+      const color = new THREE.Color(back || '#2dff7a');
+      const half = this._bounds.w / 2;
+      for (const [x, y, k] of [[-half * 0.55, 160, 1], [half * 0.55, 160, 1], [0, top * 0.75, 0.7]]) {
+        const lamp = new THREE.PointLight(color, 270000 * k, 0, 2);
+        lamp.position.set(x, y, -560);
+        this._furniture.add(lamp);
+      }
+    }
+    if (spread) {
+      // consoles lying face up on the floor in front of the sets, switched on
+      const span = Math.max(this._bounds.w / 2 + 120, mode === 'tall' ? 330 : 520);
+      const spots = mode === 'tall'
+        ? [['ps-one', -0.5, 250, 0.2], ['dualshock', 0.42, 330, -0.5], ['gba', -0.62, 520, -0.3], ['ps-vita', 0.2, 560, 0.16], ['psp-go', 0.72, 150, 0.5]]
+        : [['ps-one', -0.42, 300, 0.22], ['dualshock', -0.1, 420, -0.4], ['gba', -0.86, 430, 0.5], ['ps-vita', 0.34, 360, -0.2], ['psp-go', 0.8, 470, 0.34]];
+      const LCD = { gba: 0xcfeecb, 'ps-vita': 0x8fb8ff, 'psp-go': 0xa9c6ff };
+      for (const [name, fx, z, turn] of spots) {
+        const obj = PROPS[name]();
+        const hold = new THREE.Group();
+        hold.add(obj);
+        if (LCD[name]) {
+          obj.rotation.x = -Math.PI / 2;                       // screen up, top edge away from the viewer
+          obj.traverse((o) => { if (o.name === 'lcd') o.material = new THREE.MeshBasicMaterial({ color: LCD[name] }); });
+          const glow = new THREE.PointLight(LCD[name], dark ? 15000 : 0, 0, 2);
+          glow.position.set(0, 90, name === 'psp-go' ? -75 : -42);
+          hold.add(glow);
+        }
+        hold.position.set(fx * span, 0, z);
+        hold.rotation.y = turn;
+        hold.traverse((o) => { o.raycast = () => {}; });
+        this._furniture.add(hold);
+      }
+      this._bounds.w = Math.max(this._bounds.w, span * 2 + 120);
+    }
 
     // items and consoles
     this._items = [];
@@ -463,10 +501,11 @@ export class RetroShelfElement extends Base {
     const px = this._par.x * 26, py = this._par.y * 16;
     const f = this._f, F = this._focus;
     if (F && f > 0) {
-      cam.position.set(px + (F.pos.x - px) * f, y + py + (F.pos.y - y - py) * f, o.d + (F.pos.z - o.d) * f);
+      const y0 = y + py + o.d * Math.tan(this._pitch || 0);
+      cam.position.set(px + (F.pos.x - px) * f, y0 + (F.pos.y - y0) * f, o.d + (F.pos.z - o.d) * f);
       cam.lookAt(px * 0.4 + (F.look.x - px * 0.4) * f, y + py * 0.4 + (F.look.y - y - py * 0.4) * f, F.look.z * f);
     } else {
-      cam.position.set(px, y + py, o.d);
+      cam.position.set(px, y + py + o.d * Math.tan(this._pitch || 0), o.d);
       cam.lookAt(px * 0.4, y + py * 0.4, 0);
     }
     cam.updateMatrixWorld();
