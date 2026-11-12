@@ -13949,6 +13949,13 @@ var Yd = /* @__PURE__ */ t({
 		h: Qd,
 		z: 118
 	},
+	focusNarrow: {
+		w: rf,
+		cy: 209 / 2,
+		h: 175,
+		z: 118,
+		edge: 6
+	},
 	inputs: af.map((e) => "ch-" + e),
 	inputOf: (e) => e.radio.channel,
 	noSignal: "noise",
@@ -17708,7 +17715,7 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
 	}
 	_aim() {
-		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen, a = i ? {
+		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen, a = (this.clientWidth || 1) < 560, o = i ? {
 			cx: r.cx,
 			cy: r.cy,
 			z: r.z,
@@ -17720,10 +17727,10 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 			z: n.d / 2,
 			w: n.w,
 			h: n.h
-		}, e._meta.focus || {}), o = this.clientWidth || 1, s = this.clientHeight || 1, c = i ? 0 : Math.min(s * .45, this._insetBottom()), l = i ? 0 : Math.min(40, Math.max(16, o * .04)), u = Math.max(1, o - 2 * l), d = Math.max(1, s - c - 2 * l), f = i ? 1.04 : 1, p = Math.max(a.h / 2 * f / (this._tan.v * d / s), a.w / 2 * f / (this._tan.h * u / o)), m = new U(a.cx, a.cy, a.z), h = t.localToWorld(m.clone()), g = t.localToWorld(m.clone().add(new U(0, 0, p))), _ = c / s * p * this._tan.v;
-		h.y -= _, g.y -= _, this._focus = {
-			pos: g,
-			look: h
+		}, e._meta.focus || {}, a && e._meta.focusNarrow || {}), s = this.clientWidth || 1, c = this.clientHeight || 1, l = i ? 0 : Math.min(c * .45, this._insetBottom()), u = i ? 0 : o.edge ?? Math.min(40, Math.max(16, s * .04)), d = Math.max(1, s - 2 * u), f = Math.max(1, c - l - 2 * u), p = i ? 1.04 : 1, m = Math.max(o.h / 2 * p / (this._tan.v * f / c), o.w / 2 * p / (this._tan.h * d / s)), h = new U(o.cx, o.cy, o.z), g = t.localToWorld(h.clone()), _ = t.localToWorld(h.clone().add(new U(0, 0, m))), v = l / c * m * this._tan.v;
+		g.y -= v, _.y -= v, this._focus = {
+			pos: _,
+			look: g
 		}, this.invalidate();
 	}
 	controlPoint(e, t) {

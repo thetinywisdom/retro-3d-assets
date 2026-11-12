@@ -25,6 +25,9 @@ export const META = {
   size: { w: W, h: BODY_H + 30, d: D },
   // when the camera moves in, frame the picture and the channel keys, not the carry handle above
   focus: { cy: BODY_H / 2, h: BODY_H, z: FZ_LOW - 6 },          // the plane of the picture and keys, behind the hood
+  // on a phone: the key block (150 mm) across the whole width and the picture above it, so the screen is
+  // readable; the hood's sides and the strip below the keys may be cut off (owner's request)
+  focusNarrow: { w: BLOCK_W, cy: (BASE_H + 192) / 2, h: 192 - BASE_H, z: FZ_LOW - 6, edge: 6 },
   inputs: CH.map((c) => 'ch-' + c),
   inputOf: (s) => s.radio.channel,
   noSignal: 'noise',

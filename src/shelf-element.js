@@ -689,13 +689,15 @@ export class RetroShelfElement extends Base {
   _aim() {
     const u = this._units[this._focusKey], g = u._parent, size = u._meta.size, pic = u._m.picture, fill = this._fillScreen;
     // what to frame: the picture, or the set's front (a model can narrow it with META.focus, e.g. leave out a handle)
+    const W0 = this.clientWidth || 1, narrow = W0 < 560;
+    // on a phone a model can frame tighter still (META.focusNarrow), e.g. so a small set's picture is readable
     const box = fill ? { cx: pic.cx, cy: pic.cy, z: pic.z, w: pic.w, h: pic.h }
-      : Object.assign({ cx: 0, cy: size.h / 2, z: size.d / 2, w: size.w, h: size.h }, u._meta.focus || {});
+      : Object.assign({ cx: 0, cy: size.h / 2, z: size.d / 2, w: size.w, h: size.h }, u._meta.focus || {}, (narrow && u._meta.focusNarrow) || {});
     // the space to frame it in: a safe margin at the sides and top, and room at the bottom for anything
     // laid over the scene there (the page's --focus-inset-bottom, e.g. a navigation dock)
     const W = this.clientWidth || 1, H = this.clientHeight || 1;
     const inset = fill ? 0 : Math.min(H * 0.45, this._insetBottom());
-    const edge = fill ? 0 : Math.min(40, Math.max(16, W * 0.04));
+    const edge = fill ? 0 : box.edge ?? Math.min(40, Math.max(16, W * 0.04));
     const availW = Math.max(1, W - 2 * edge), availH = Math.max(1, H - inset - 2 * edge);
     const m = fill ? 1.04 : 1;
     const dist = Math.max((box.h / 2) * m / (this._tan.v * availH / H), (box.w / 2) * m / (this._tan.h * availW / W));
