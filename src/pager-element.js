@@ -521,9 +521,10 @@ export class RetroPagerElement extends HTMLElement {
         while (s.length > 1 && g.measureText(s + '…').width > avail) s = s.slice(0, -1);
         g.fillText(s + '…', px, H * 0.8);
       } else {
-        // runs round continuously, like a pager: the text, a gap, the text again
-        const speed = W * 0.14, loop = tw + avail * 0.35;
-        off = ((performance.now() - this._mq0) / 1000 * speed) % loop;
+        // runs round like a pager: the text, a gap, the text again, resting 2 s at the start of each pass
+        // so its beginning can be read
+        const speed = W * 0.14, loop = tw + avail * 0.35, hold = 2000, cycle = hold + (loop / speed) * 1000;
+        off = Math.max(0, ((performance.now() - this._mq0) % cycle) - hold) / 1000 * speed;
         g.save(); g.beginPath(); g.rect(px, 0, avail, H); g.clip();
         g.fillText(msg, px - off, H * 0.8);
         g.fillText(msg, px - off + loop, H * 0.8);

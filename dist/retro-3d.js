@@ -18413,8 +18413,8 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 				for (; e.length > 1 && t.measureText(e + "…").width > u;) e = e.slice(0, -1);
 				t.fillText(e + "…", s, i * .8);
 			} else {
-				let e = r * .14, n = f + u * .35;
-				p = (performance.now() - this._mq0) / 1e3 * e % n, t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.fillText(d, s - p + n, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), 33);
+				let e = r * .14, n = f + u * .35, a = 2e3, o = a + n / e * 1e3;
+				p = Math.max(0, (performance.now() - this._mq0) % o - a) / 1e3 * e, t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.fillText(d, s - p + n, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), 33);
 			}
 		} else t.fillText(d, s, i * .8);
 		t.fillStyle = "rgba(20, 30, 10, 0.07)";
