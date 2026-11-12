@@ -10,6 +10,7 @@ export { SonyPVMElement, RetroShelfElement };
 export { MODELS } from './models/index.js';
 export { STACKS } from './shelf-element.js';
 export { PROPS } from './props/consoles.js';
+export { ARRANGEMENTS } from './arrange.js';
 export { buildShelf, buildItem, ITEM_TYPES } from './props/shelf.js';
 
 /** Register the custom elements (done automatically in the browser). */

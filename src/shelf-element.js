@@ -19,6 +19,7 @@ import { SonyPVMElement, STYLE as SCREEN_STYLE } from './element.js';
 import { MODELS } from './models/index.js';
 import { buildShelf, buildItem, ITEM_TYPES } from './props/shelf.js';
 import { PROPS } from './props/consoles.js';
+import { arrange } from './arrange.js';
 import { makeShadowTexture } from './labels.js';
 import { Sound } from './sound.js';
 
@@ -40,17 +41,6 @@ export const STACKS = {
     'kv-5200': { x: 268, on: 'pvm-9042qm', ry: 11 },
   },
 };
-
-// Which shelf cell holds what (cells are numbered row by row from the top-left).
-const CELL_PLAN = [
-  { items: 'ps1' },
-  { props: ['ps-one', 'dualshock'] },
-  { items: 'book' },
-  { items: 'gba', prop: 'gba' },
-  { items: 'vita', prop: 'ps-vita' },
-  { items: 'psp', prop: 'psp-go' },
-];
-const PROP_W = { gba: 145, 'ps-vita': 182, 'psp-go': 128 };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -93,7 +83,7 @@ const STYLE = /* css */ `
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'layout', 'brand', 'muted', 'power']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power']; }
 
   constructor() {
     super();
@@ -143,7 +133,7 @@ export class RetroShelfElement extends Base {
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(this);
     this._mo = new MutationObserver(() => { clearTimeout(this._moT); this._moT = setTimeout(() => this._rebuild(), 30); });
-    this._mo.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['type', 'title', 'subtitle', 'color', 'cover', 'thickness', 'height'] });
+    this._mo.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['type', 'title', 'subtitle', 'color', 'cover', 'thickness', 'height', 'binding'] });
     window.addEventListener('keydown', this._onKey);
     this._resize();
   }
@@ -158,7 +148,7 @@ export class RetroShelfElement extends Base {
   attributeChangedCallback(name, _o, v) {
     if (name === 'muted') this._sound.muted = v !== null;
     if (!this._renderer) return;
-    if (name === 'stack' || name === 'layout') this._rebuild();
+    if (name === 'stack' || name === 'layout' || name === 'arrange') this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
   }
@@ -250,7 +240,8 @@ export class RetroShelfElement extends Base {
     if (this._selected >= 0) this.close(true);
     this._dispose(this._furniture);
     const mode = (this._builtMode = this._mode());
-    const shelf = buildShelf(mode === 'wide' ? { cols: 3, rows: 2, cellW: 430 } : { cols: 2, rows: 3, cellW: 400 });
+    // two long levels, no dividers; narrower on a tall (phone) view
+    const shelf = buildShelf({ cols: 1, rows: 2, cellW: mode === 'wide' ? 980 : 860 });
     this._furniture.add(shelf.group);
     const shadow = new THREE.Mesh(
       new THREE.PlaneGeometry(shelf.width + 260, shelf.depth + 260).rotateX(-Math.PI / 2),
@@ -284,67 +275,32 @@ export class RetroShelfElement extends Base {
     const specs = [...this.querySelectorAll('retro-item')].map((el) => ({
       el, type: (el.getAttribute('type') || 'book').toLowerCase(), title: el.getAttribute('title') || el.textContent.trim().slice(0, 40),
       subtitle: el.getAttribute('subtitle') || '', color: el.getAttribute('color') || '', cover: el.getAttribute('cover'),
-      t: el.getAttribute('thickness'), h: el.getAttribute('height'),
+      t: el.getAttribute('thickness'), h: el.getAttribute('height'), binding: el.getAttribute('binding'),
     }));
-    CELL_PLAN.forEach((plan, i) => {
-      const cell = shelf.cells[i];
-      if (!cell) return;
-      const cx = (cell.x0 + cell.x1) / 2;
-      if (plan.props) {
-        const ps = PROPS['ps-one'](), pad = PROPS.dualshock();
-        // propped up against the back so their tops face the viewer
-        const prop = (obj, x, z, half, tilt, turn) => {
-          const lean = new THREE.Group();
-          lean.add(obj);
-          obj.rotation.x = tilt;
-          obj.position.y = half * Math.sin(tilt) + 1;
-          lean.position.set(x, cell.y, z);
-          lean.rotation.y = turn;
-          return lean;
-        };
-        const cw = cell.x1 - cell.x0, k = Math.min(1, cw / 430);
-        this._furniture.add(prop(ps, cx - 74 * k, -150, 72, 0.98, 0.1), prop(pad, cx + 118 * k, -110, 48, 0.9, -0.22));
-        return;
-      }
-      let limit = cell.x1 - 10;
-      if (plan.prop) {
-        const prop = PROPS[plan.prop]();
-        const w = PROP_W[plan.prop];
-        prop.position.set(cell.x1 - 22 - w / 2, cell.y, -96);
-        prop.rotation.set(-0.14, -0.1, 0);
-        this._furniture.add(prop);
-        limit = cell.x1 - w - 44;
-      }
-      let x = cell.x0 + 8;
-      for (const spec of specs.filter((s) => (ITEM_TYPES[s.type] ? s.type : 'book') === plan.items)) {
-        const mesh = buildItem(spec);
-        const sp = mesh.userData.spec;
-        if (x + sp.t > limit || sp.h > cell.h - 6) { console.warn(`retro-shelf: no room on the shelf for "${sp.title}"`); continue; }
-        mesh.position.set(x + sp.t / 2, cell.y + sp.h / 2, -16 - sp.d / 2);
-        mesh.userData.home = mesh.position.clone();
-        mesh.userData.item = this._items.length;
-        mesh.userData.el = spec.el;
-        if (spec.cover) this._loadCover(mesh, spec.cover);
-        this._furniture.add(mesh);
-        this._items.push(mesh);
-        x += sp.t + 0.7;
-      }
+    const built = specs.map((spec) => {
+      const item = buildItem(spec);
+      item.userData.el = spec.el;
+      return item;
     });
+    for (const obj of arrange(this.getAttribute('arrange') || 'browsed', shelf.cells, built, (name) => PROPS[name]())) {
+      if (obj.userData.spec) {
+        obj.userData.home = { pos: obj.position.clone(), quat: obj.quaternion.clone() };
+        obj.userData.item = this._items.length;
+        this._items.push(obj);
+        const cover = obj.userData.el.getAttribute('cover');
+        if (cover) this._loadCover(obj, cover);
+      }
+      this._furniture.add(obj);
+    }
     this._buildA11y();
     this._fit();
     if (this._focusKey) this._aim();
   }
 
-  _loadCover(mesh, src) {
+  _loadCover(item, src) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const mat = mesh.material[0];
-      mesh.userData.spec.image = img;
-      mat.map?.dispose(); mat.map = null;
-      if (this._items[this._selected] === mesh) mesh.userData.ensureCover();
-      this.invalidate();
-    };
+    img.onload = () => { item.userData.setCoverImage(img); this.invalidate(); };
     img.onerror = () => console.warn(`retro-shelf: could not load cover "${src}"`);
     img.src = src;
   }
@@ -511,11 +467,12 @@ export class RetroShelfElement extends Base {
     const dist = Math.min(o.d - 120, Math.max(sp.h / (2 * this._tan.v * 0.42), (sp.d + 30) / (2 * this._tan.h * 0.6)));
     const to = new THREE.Vector3(cam.position.x, cam.position.y + dist * this._tan.v * 0.3, cam.position.z - dist);
     const home = mesh.userData.home;
-    const mid = home.clone(); mid.z = 60 + sp.d / 2;
+    const mid = home.pos.clone(); mid.z = 70 + sp.d / 2;
+    const facing = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2 + 0.32);
     this._tween('item' + i, 620, (t) => {
       const a = Math.min(t / 0.35, 1), b = Math.max((t - 0.25) / 0.75, 0);
-      mesh.position.lerpVectors(home, mid, a).lerp(to, b);
-      mesh.rotation.y = (-Math.PI / 2 + 0.32) * b;
+      mesh.position.lerpVectors(home.pos, mid, a).lerp(to, b);
+      mesh.quaternion.slerpQuaternions(home.quat, facing, b);
     });
     const el = mesh.userData.el, q = (s) => this._card.querySelector(s);
     for (const other of this.querySelectorAll('retro-item[slot="card"]')) other.removeAttribute('slot');
@@ -538,8 +495,8 @@ export class RetroShelfElement extends Base {
     this._selected = -1;
     this._card.hidden = true;
     mesh.userData.el?.removeAttribute('slot');
-    const from = mesh.position.clone(), r0 = mesh.rotation.y, home = mesh.userData.home;
-    const back = (t) => { mesh.position.lerpVectors(from, home, t); mesh.rotation.y = r0 * (1 - t); };
+    const from = mesh.position.clone(), q0 = mesh.quaternion.clone(), home = mesh.userData.home;
+    const back = (t) => { mesh.position.lerpVectors(from, home.pos, t); mesh.quaternion.slerpQuaternions(q0, home.quat, t); };
     if (instant) { this._tweens.delete('item' + i); back(1); this.invalidate(); } else this._tween('item' + i, 420, back);
     this.dispatchEvent(new CustomEvent('shelf-select', { detail: { item: null, index: -1 }, bubbles: true, composed: true }));
   }

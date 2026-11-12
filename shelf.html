@@ -28,6 +28,9 @@
   <retro-item type="vita" title="Laundry Day" color="#ffd23f"></retro-item>
   <retro-item type="psp" title="Bus Stop Stories" color="#2f4858"></retro-item>
   <retro-item type="psp" title="Weekend Mode" color="#ffb3c7"></retro-item>
+  <retro-item type="psp" title="Rooftop Radio" color="#e8e2d2"></retro-item>
+  <retro-item type="ps1" title="Night Bus" color="#d9534f"></retro-item>
+  <retro-item type="vita" title="Small Hours" color="#7fd1c7"></retro-item>
   <retro-item type="book" title="About Me" subtitle="Brian"></retro-item>
   <retro-item type="book" title="Process Notes" color="#2f4858"></retro-item>
   <retro-item type="book" title="Sketchbook 2024" color="#e8e2d2"></retro-item>
@@ -39,7 +42,7 @@
   import './src/index.js';
   const el = document.getElementById('shelf');
   const q = new URLSearchParams(location.search);
-  for (const k of ['stack', 'layout']) if (q.get(k)) el.setAttribute(k, q.get(k));
+  for (const k of ['stack', 'layout', 'arrange']) if (q.get(k)) el.setAttribute(k, q.get(k));
   window.shelf = el;
 </script>
 </body>
