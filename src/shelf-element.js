@@ -101,6 +101,31 @@ const STYLE = /* css */ `
 :host(.nogl) { height: auto; }
 `;
 
+/** Carpet: fully matt, with a short speckled pile that also drives a bump map. */
+function carpet(color, repeat) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#8c8c8c'; g.fillRect(0, 0, 256, 256);
+  let s = 5;
+  const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 22000; i++) {
+    const v = 60 + Math.floor(rnd() * 170);
+    g.fillStyle = `rgba(${v},${v},${v},0.55)`;
+    const x = rnd() * 256, y = rnd() * 256, a = rnd() * Math.PI;
+    g.fillRect(x, y, 1 + Math.abs(Math.cos(a)) * 2, 1 + Math.abs(Math.sin(a)) * 2);
+  }
+  const tex = (srgb) => {
+    const t = new THREE.CanvasTexture(c);
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(repeat, repeat);
+    t.anisotropy = 8;
+    return t;
+  };
+  return { color: new THREE.Color(color).multiplyScalar(1.15), map: tex(true), bumpMap: tex(false), bumpScale: 1.6, roughness: 1, metalness: 0 };
+}
+
 /** Near-black concrete: blotchy, with faint trowel marks, plus panel seams and tie holes on walls. */
 function concrete(repeat, wall = false) {
   const c = document.createElement('canvas');
@@ -133,7 +158,7 @@ function concrete(repeat, wall = false) {
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color']; }
 
   constructor() {
     super();
@@ -198,7 +223,7 @@ export class RetroShelfElement extends Base {
   attributeChangedCallback(name, _o, v) {
     if (name === 'muted') this._sound.muted = v !== null;
     if (!this._renderer) return;
-    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles'].includes(name)) this._rebuild();
+    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color'].includes(name)) this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
   }
@@ -315,7 +340,9 @@ export class RetroShelfElement extends Base {
       // a floor to catch the glow; slightly glossy so the screens smear across it
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000).rotateX(-Math.PI / 2),
         new THREE.MeshStandardMaterial(dark
-          ? { color: 0x8a8a8a, map: concrete(60000 / 1400), roughness: 0.5, metalness: 0 }      // dark sealed concrete
+          ? (this.getAttribute('floor') === 'carpet'
+            ? carpet(this.getAttribute('floor-color') || '#55682f', 60000 / 300)                // matt pile, no shine
+            : { color: 0x8a8a8a, map: concrete(60000 / 1400), roughness: 0.5, metalness: 0 })   // dark sealed concrete
           : { color: 0x2a2826, roughness: 0.5, metalness: 0 }));
       floor.position.set(0, -0.5, 0);
       floor.raycast = () => {};

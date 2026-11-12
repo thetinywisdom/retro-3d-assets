@@ -16985,7 +16985,32 @@ var Pp = [
 		}
 	}
 }, Lp = (e, t, n) => Math.min(n, Math.max(t, e)), Rp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, zp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden] { display: none; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
-function Bp(e, t = !1) {
+function Bp(e, t) {
+	let n = document.createElement("canvas");
+	n.width = n.height = 256;
+	let r = n.getContext("2d");
+	r.fillStyle = "#8c8c8c", r.fillRect(0, 0, 256, 256);
+	let i = 5, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
+	for (let e = 0; e < 22e3; e++) {
+		let e = 60 + Math.floor(a() * 170);
+		r.fillStyle = `rgba(${e},${e},${e},0.55)`;
+		let t = a() * 256, n = a() * 256, i = a() * Math.PI;
+		r.fillRect(t, n, 1 + Math.abs(Math.cos(i)) * 2, 1 + Math.abs(Math.sin(i)) * 2);
+	}
+	let o = (e) => {
+		let r = new Ei(n);
+		return e && (r.colorSpace = qe), r.wrapS = r.wrapT = d, r.repeat.set(t, t), r.anisotropy = 8, r;
+	};
+	return {
+		color: new K(e).multiplyScalar(1.15),
+		map: o(!0),
+		bumpMap: o(!1),
+		bumpScale: 1.6,
+		roughness: 1,
+		metalness: 0
+	};
+}
+function Vp(e, t = !1) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 512;
 	let r = n.getContext("2d");
@@ -17018,7 +17043,7 @@ function Bp(e, t = !1) {
 	let o = new Ei(n);
 	return o.colorSpace = qe, o.wrapS = o.wrapT = d, o.repeat.set(e, t ? 5e3 / 9e3 * e : e), o.anisotropy = 8, o;
 }
-var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends Vp {
+var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends Hp {
 	static get observedAttributes() {
 		return [
 			"stack",
@@ -17031,7 +17056,9 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 			"lighting",
 			"wall",
 			"backlight",
-			"consoles"
+			"consoles",
+			"floor",
+			"floor-color"
 		];
 	}
 	constructor() {
@@ -17097,7 +17124,9 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 				"lighting",
 				"wall",
 				"backlight",
-				"consoles"
+				"consoles",
+				"floor",
+				"floor-color"
 			].includes(e) && this._rebuild(), e === "brand") for (let e of Object.values(this._units)) e.setBrand(n);
 			e === "power" && this._applyPowerAttr();
 		}
@@ -17193,9 +17222,9 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 			cellW: e === "wide" ? 980 : 860
 		});
 		if (t || this._furniture.add(o.group), t || i) {
-			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po(i ? {
+			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po(i ? this.getAttribute("floor") === "carpet" ? Bp(this.getAttribute("floor-color") || "#55682f", 200) : {
 				color: 9079434,
-				map: Bp(6e4 / 1400),
+				map: Vp(6e4 / 1400),
 				roughness: .5,
 				metalness: 0
 			} : {
@@ -17209,7 +17238,7 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 		if (this.hasAttribute("wall") || s !== null) {
 			let e = new J(new Ya(9e3, 5e3), new po({
 				color: 10132122,
-				map: Bp(9e3 / 1400, !0),
+				map: Vp(9e3 / 1400, !0),
 				roughness: .88
 			}));
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
@@ -17635,8 +17664,8 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 	}
 };
 // src/index.js
-function Up() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", If), customElements.get("retro-shelf") || customElements.define("retro-shelf", Hp));
+function Wp() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", If), customElements.get("retro-shelf") || customElements.define("retro-shelf", Up));
 }
-Up();
-export { Mp as ARRANGEMENTS, Lf as ITEM_TYPES, wf as MODELS, wp as PROPS, Hp as RetroShelfElement, Ip as STACKS, If as SonyPVMElement, rp as buildItem, ap as buildShelf, Up as define };
+Wp();
+export { Mp as ARRANGEMENTS, Lf as ITEM_TYPES, wf as MODELS, wp as PROPS, Up as RetroShelfElement, Ip as STACKS, If as SonyPVMElement, rp as buildItem, ap as buildShelf, Wp as define };

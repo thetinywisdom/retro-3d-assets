@@ -29,6 +29,7 @@ One straight-on camera. Tapping a TV moves in to it and its page becomes usable 
 | `scene` | `floor` removes the shelf and its contents and stands the TVs on the floor |
 | `lighting` | `dark`: the room is black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV). `dim`: the same with a little room light left on |
 | `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is a dim green; `backlight="#ff3355"` picks a colour |
+| `floor` | Floor in the dark room: `concrete` (default, slight sheen) or `carpet` (matt, no reflections). `floor-color="#55682f"` sets the carpet colour; the default is moss green |
 | `consoles` | With `scene="floor"`: lays the PS one, controller, Game Boy Advance, PS Vita and PSP Go face up on the floor in front of the TVs, handheld screens lit |
 | `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |
