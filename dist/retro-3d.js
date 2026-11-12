@@ -13901,6 +13901,7 @@ var Yd = /* @__PURE__ */ t({
 	META: () => sf,
 	buildMonitor: () => cf
 }), Xd = 162, Zd = 330, Qd = 205, $d = 48, ef = 65, tf = 124, nf = -120, rf = 150, af = [
+	"1",
 	"2",
 	"3",
 	"4",
@@ -13912,7 +13913,6 @@ var Yd = /* @__PURE__ */ t({
 	"10",
 	"11",
 	"12",
-	"13",
 	"u1",
 	"u2"
 ], of = (e) => e.startsWith("u") ? `UHF preset ${e[1]}` : `Channel ${e}`, sf = {
@@ -13926,7 +13926,7 @@ var Yd = /* @__PURE__ */ t({
 	inputs: af.map((e) => "ch-" + e),
 	inputOf: (e) => e.radio.channel,
 	noSignal: "noise",
-	barsLabel: "CH 2",
+	barsLabel: "CH 1",
 	controls: [
 		{
 			id: "power",

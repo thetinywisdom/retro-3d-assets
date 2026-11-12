@@ -141,7 +141,7 @@ Plain children go on the first input or channel. Add `slot="..."` to put more pa
 | --- | --- | --- |
 | `pvm-9042qm` | `line-b`, `rgb`, `component` | A/B and LINE/RGB buttons |
 | `pvm-20m4e` | `line-b`, `rgb` | LINE A / LINE B / RGB buttons |
-| `kv-5200` | `ch-3` … `ch-13`, `ch-u1`, `ch-u2` (default is channel 2) | The 14 channel keys |
+| `kv-5200` | `ch-2` … `ch-12`, `ch-u1`, `ch-u2` (default is channel 1) | The 14 channel keys |
 | `kv-9pr1` | `ch-2` … `ch-12` (default is channel 1) | Channel ▼ ▲ on top |
 
 Switching only takes over once you add a second page (or, in `<retro-shelf>`, when the TV is listed in `no-reader`). With a single page the buttons just send events. On the TVs, channels with no page show static. Only the channel on air plays: iframes on the other channels (YouTube, Spotify and other embedded players) are unloaded so their sound stops, and loaded again when you come back; `<video>` and `<audio>` are paused. The set's volume control and the shelf's `muted` also drive YouTube players on its channels (embed them with `enablejsapi=1`): a player asked to start with sound that the browser keeps silent is played muted and unmuted at the visitor's next click or key press. Spotify embeds have no volume control a page can reach.
@@ -154,7 +154,7 @@ Control ids (for `press()`, `setKnob()` and events):
 | --- | --- | --- |
 | `pvm-9042qm` | `power` `ab` `line-rgb` `sync` `degauss` `blue-only` `underscan` `hv-delay` `16-9` | `aper` `bright` `chroma` `phase` `contr` `volume` |
 | `pvm-20m4e` | `power` `line-a` `line-b` `rgb` `sync` `16-9` `hv-delay` `underscan` `blue-only` `degauss` `menu` `up` `down` `enter` | `aper` `bright` `chroma` `phase` `contr` `volume` |
-| `kv-5200` | `power` `ch-2` … `ch-13` `ch-u1` `ch-u2` | `volume` (slider) |
+| `kv-5200` | `power` `ch-1` … `ch-12` `ch-u1` `ch-u2` | `volume` (slider) |
 | `kv-9pr1` | `power` `ch-down` `ch-up` `vol-down` `vol-up` `sleep` | — |
 
 Built-in behaviour: power warms the tube up or collapses it to a dot; `sync` (EXT) makes the picture roll; `degauss` wobbles it in rainbow colours; `blue-only`, `underscan`, `hv-delay` and `16-9` change the picture the way the real buttons do; the picture knobs change sharpness, brightness, saturation, hue and contrast of your content; volume sets the volume of any `<video>` / `<audio>` inside the element. `menu`, `up`, `down`, `enter` and `sleep` only send events.

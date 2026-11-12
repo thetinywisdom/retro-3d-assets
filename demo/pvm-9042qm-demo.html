@@ -14083,6 +14083,7 @@ var Yd = /* @__PURE__ */ t({
 	META: () => sf,
 	buildMonitor: () => cf
 }), Xd = 162, Zd = 330, Qd = 205, $d = 48, ef = 65, tf = 124, nf = -120, rf = 150, af = [
+	"1",
 	"2",
 	"3",
 	"4",
@@ -14094,7 +14095,6 @@ var Yd = /* @__PURE__ */ t({
 	"10",
 	"11",
 	"12",
-	"13",
 	"u1",
 	"u2"
 ], of = (e) => e.startsWith("u") ? `UHF preset ${e[1]}` : `Channel ${e}`, sf = {
@@ -14108,7 +14108,7 @@ var Yd = /* @__PURE__ */ t({
 	inputs: af.map((e) => "ch-" + e),
 	inputOf: (e) => e.radio.channel,
 	noSignal: "noise",
-	barsLabel: "CH 2",
+	barsLabel: "CH 1",
 	controls: [
 		{
 			id: "power",
@@ -18581,7 +18581,7 @@ export { Bp as ARRANGEMENTS, Gf as ITEM_TYPES, Tf as MODELS, Mp as PROPS, lm as 
       acc: 'Accuracy: size from the service manual; front, hood, handle and rear measured from photos. The control door on the right side is modelled closed.',
       slot: 'ch-5', tags: ['CH 2', 'CH 5'], hint: 'Press channel <b>5</b> for the second page. Other channels show static.',
       controls: [['Power', 'Warms the tube up and shows the picture.'], ['Screen', SCREEN],
-        ['Channel keys', 'Fourteen keys, 2 to 13 and two UHF presets. Each can hold its own page; the number above the selected key lights up. Empty channels show static.'],
+        ['Channel keys', 'Fourteen keys, 1 to 12 and two UHF presets. Each can hold its own page; the number above the selected key lights up. Empty channels show static.'],
         ['Volume', 'Drag the slider. It sets the volume of any video or audio on the page.']],
     },
     'kv-9pr1': {

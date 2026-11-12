@@ -15,7 +15,8 @@ const FZ_TOP = D / 2, FZ_LOW = FZ_TOP - 41;               // hood overhangs 41 m
 const RZ = -D / 2 + 45;                                    // silver ends, black rear cover begins
 const BLOCK_W = 150;
 
-const CH = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'u1', 'u2'];
+// numbered 1-12 at the site owner's request (the real US-market set reads 2-13)
+const CH = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'u1', 'u2'];
 const chLabel = (c) => (c.startsWith('u') ? `UHF preset ${c[1]}` : `Channel ${c}`);
 
 export const META = {
@@ -25,7 +26,7 @@ export const META = {
   inputs: CH.map((c) => 'ch-' + c),
   inputOf: (s) => s.radio.channel,
   noSignal: 'noise',
-  barsLabel: 'CH 2',
+  barsLabel: 'CH 1',
   controls: [
     { id: 'power', label: 'Power', kind: 'button', role: 'power' },
     ...CH.map((c) => ({ id: 'ch-' + c, label: chLabel(c), kind: 'button', role: 'channel', radio: 'channel' })),
