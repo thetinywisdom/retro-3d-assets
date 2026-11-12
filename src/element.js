@@ -836,10 +836,11 @@ export class SonyPVMElement extends Base {
     const b = (role) => this._on(role), k = (role) => this._val(role);
     // which input is on air
     const all = this._meta.inputs, first = all[0];
-    const extra = all.slice(1).some((id) => this._hasContent(id));
+    const extra = this._alwaysSwitch || all.slice(1).some((id) => this._hasContent(id));
     const want = extra ? this.input : first;
     const has = this._hasContent(want);
     for (const id of all) this._inputs[id].classList.toggle('active', id === want && has);
+    this._holdMedia(power ? want : null);
     this._bars.classList.toggle('active', want === first && !has);
     this._bars.lastElementChild.textContent = this._meta.barsLabel || first.replace('-', ' ').toUpperCase();
     const snow = !has && want !== first && this._meta.noSignal === 'noise';
@@ -868,6 +869,27 @@ export class SonyPVMElement extends Base {
     const vol = power ? k('volume') : 0;
     for (const m of (this._host?.el || this).querySelectorAll('video, audio')) {
       try { m.volume = vol; } catch {}
+    }
+  }
+
+  /**
+   * Only the channel on air plays. Embedded players (YouTube, Spotify, ...) on
+   * the other channels are unloaded so their sound stops, and reloaded when
+   * their channel comes back; <video> and <audio> are paused.
+   */
+  _holdMedia(onAir) {
+    for (const [id, wrap] of Object.entries(this._inputs)) {
+      const live = id === onAir;
+      const nodes = wrap.querySelector('slot').assignedElements();
+      for (const n of nodes) {
+        for (const f of n.matches('iframe') ? [n] : n.querySelectorAll('iframe')) {
+          if (live && f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; }
+          else if (!live && !f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; }
+        }
+        for (const m of n.matches('video, audio') ? [n] : n.querySelectorAll('video, audio')) {
+          if (!live) { try { m.pause(); } catch {} } else if (m.autoplay) { m.play?.().catch(() => {}); }
+        }
+      }
     }
   }
 

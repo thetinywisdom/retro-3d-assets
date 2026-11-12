@@ -185,7 +185,7 @@ function concrete(repeat, wall = false) {
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'grain', 'front-light']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'grain', 'front-light', 'no-reader']; }
 
   constructor() {
     super();
@@ -258,6 +258,23 @@ export class RetroShelfElement extends Base {
     if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'front-light'].includes(name)) this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
+    if (name === 'no-reader') this._applyNoReader();
+  }
+
+  /**
+   * TVs listed in no-reader="..." never open full screen and stay at TV zoom.
+   * Once the camera is in on one, its screen takes clicks (so embedded players
+   * work), and its channel keys switch pages even before a second page exists.
+   */
+  canRead(id) { return !(this.getAttribute('no-reader') || '').split(/[\s,]+/).includes(id); }
+
+  _applyNoReader() {
+    if (!this._ready) return;
+    for (const [id, u] of Object.entries(this._units)) {
+      u._alwaysSwitch = !this.canRead(id);
+      u._applyPicture();
+    }
+    if (this._focusKey) this._setScreenLive(this._focusKey, true);
   }
 
   // ----------------------------------------------------------------- init --
@@ -314,6 +331,7 @@ export class RetroShelfElement extends Base {
     if (this.hasAttribute('brand')) for (const u of Object.values(this._units)) u.setBrand(this.getAttribute('brand'));
     this._applyPowerAttr();
     this._ready = true;
+    this._applyNoReader();
     this._applyGrain();
     this._rebuild();
     // page styles may not be applied yet on the first pass; read the glow colours again once they are
@@ -694,9 +712,9 @@ export class RetroShelfElement extends Base {
     }
     this._setScreenLive(id, true);
     this._wall.classList.add('locked');
-    this._back.hidden = false; this._readBtn.hidden = false;
+    this._back.hidden = false; this._readBtn.hidden = !this.canRead(id);
     // say what the next tap does, briefly
-    this._hint.textContent = 'Tap the screen to read it full screen';
+    this._hint.textContent = this.canRead(id) ? 'Tap the screen to read it full screen' : 'Press a channel key on the set';
     this._say(this._hint.textContent);
     this._hint.classList.remove('gone');
     clearTimeout(this._hintT);
@@ -725,6 +743,7 @@ export class RetroShelfElement extends Base {
     const u = this._units[id];
     u.state.focused = live;
     u._m.crtMaterial.uniforms.uGlare.value = live ? 0.35 : 1;
+    u._screenEl.style.pointerEvents = live && !this.canRead(id) ? 'auto' : 'none';
     this.invalidate();
   }
 
@@ -746,7 +765,7 @@ export class RetroShelfElement extends Base {
    * same element (state, scroll position and any running media are kept).
    */
   openReader(id = this._focusKey) {
-    if (!id || this._reading?.id === id) return;
+    if (!id || this._reading?.id === id || !this.canRead(id)) return;
     const page = this.querySelector(`[slot="${id}"]`);
     if (!page) return;
     if (this._reading) {
@@ -809,7 +828,7 @@ export class RetroShelfElement extends Base {
     r.page.setAttribute('slot', r.id);
     this._reader.classList.remove('open');
     this._readT = setTimeout(() => { this._reader.hidden = true; }, this._reduced ? 0 : 300);
-    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = false; this._say('Tap the screen to read it full screen'); }
+    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = !this.canRead(this._focusKey); this._say(this.canRead(this._focusKey) ? 'Tap the screen to read it full screen' : 'Press a channel key on the set'); }
     this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: r.id, open: false }, bubbles: true, composed: true }));
   }
 
@@ -877,7 +896,11 @@ export class RetroShelfElement extends Base {
     return out;
   }
 
-  _inLiveScreen() { return false; }
+  /** Pointer over the picture of a no-reader TV the camera is in on: let the page have it. */
+  _inLiveScreen(e) {
+    const id = this._focusKey;
+    return !!id && !this.canRead(id) && e.composedPath().includes(this._units[id]._screenEl);
+  }
 
   _onDown(e) {
     if (!this._ready || e.button > 0 || this._inLiveScreen(e)) return;

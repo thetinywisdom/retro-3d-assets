@@ -14981,9 +14981,9 @@ var Lf = class extends Pf {
 		return t ? t.querySelector("iframe") ? !0 : t.querySelector("slot").assignedNodes().some((e) => e.nodeType === 1 || e.textContent.trim()) : !1;
 	}
 	_applyPicture() {
-		let { power: e } = this.state, t = (e) => this._on(e), n = (e) => this._val(e), r = this._meta.inputs, i = r[0], a = r.slice(1).some((e) => this._hasContent(e)) ? this.input : i, o = this._hasContent(a);
+		let { power: e } = this.state, t = (e) => this._on(e), n = (e) => this._val(e), r = this._meta.inputs, i = r[0], a = this._alwaysSwitch || r.slice(1).some((e) => this._hasContent(e)) ? this.input : i, o = this._hasContent(a);
 		for (let e of r) this._inputs[e].classList.toggle("active", e === a && o);
-		this._bars.classList.toggle("active", a === i && !o), this._bars.lastElementChild.textContent = this._meta.barsLabel || i.replace("-", " ").toUpperCase();
+		this._holdMedia(e ? a : null), this._bars.classList.toggle("active", a === i && !o), this._bars.lastElementChild.textContent = this._meta.barsLabel || i.replace("-", " ").toUpperCase();
 		let s = !o && a !== i && this._meta.noSignal === "noise";
 		s && !this._noise.style.backgroundImage && (this._noise.style.backgroundImage = `url(${If()})`), this._noise.classList.toggle("active", s);
 		let c = [];
@@ -14994,6 +14994,18 @@ var Lf = class extends Pf {
 		for (let e of (this._host?.el || this).querySelectorAll("video, audio")) try {
 			e.volume = f;
 		} catch {}
+	}
+	_holdMedia(e) {
+		for (let [t, n] of Object.entries(this._inputs)) {
+			let r = t === e, i = n.querySelector("slot").assignedElements();
+			for (let e of i) {
+				for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) r && t.dataset.held ? (t.src = t.dataset.held, delete t.dataset.held) : !r && !t.dataset.held && t.getAttribute("src") && t.getAttribute("src") !== "about:blank" && (t.dataset.held = t.getAttribute("src"), t.src = "about:blank");
+				for (let t of e.matches("video, audio") ? [e] : e.querySelectorAll("video, audio")) if (r) t.autoplay && t.play?.().catch(() => {});
+				else try {
+					t.pause();
+				} catch {}
+			}
+		}
 	}
 	_setSrc(e, t = !1) {
 		let n = this._inputs[this._meta.inputs[0]];
@@ -17085,7 +17097,8 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 			"floor-color",
 			"smoke",
 			"grain",
-			"front-light"
+			"front-light",
+			"no-reader"
 		];
 	}
 	constructor() {
@@ -17159,7 +17172,16 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 				"smoke",
 				"front-light"
 			].includes(e) && this._rebuild(), e === "brand") for (let e of Object.values(this._units)) e.setBrand(n);
-			e === "power" && this._applyPowerAttr();
+			e === "power" && this._applyPowerAttr(), e === "no-reader" && this._applyNoReader();
+		}
+	}
+	canRead(e) {
+		return !(this.getAttribute("no-reader") || "").split(/[\s,]+/).includes(e);
+	}
+	_applyNoReader() {
+		if (this._ready) {
+			for (let [e, t] of Object.entries(this._units)) t._alwaysSwitch = !this.canRead(e), t._applyPicture();
+			this._focusKey && this._setScreenLive(this._focusKey, !0);
 		}
 	}
 	_init() {
@@ -17211,7 +17233,7 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 			this._units[e] = n;
 		}
 		if (this.hasAttribute("brand")) for (let e of Object.values(this._units)) e.setBrand(this.getAttribute("brand"));
-		this._applyPowerAttr(), this._ready = !0, this._applyGrain(), this._rebuild(), requestAnimationFrame(() => this._buildGlow()), window.addEventListener("load", () => this._buildGlow(), { once: !0 }), this.dispatchEvent(new CustomEvent("shelf-ready", {
+		this._applyPowerAttr(), this._ready = !0, this._applyNoReader(), this._applyGrain(), this._rebuild(), requestAnimationFrame(() => this._buildGlow()), window.addEventListener("load", () => this._buildGlow(), { once: !0 }), this.dispatchEvent(new CustomEvent("shelf-ready", {
 			bubbles: !0,
 			composed: !0
 		}));
@@ -17572,7 +17594,7 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 		} else this._tween("focus", 850, (e) => {
 			this._f = r + (1 - r) * e;
 		});
-		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !1, this._hint.textContent = "Tap the screen to read it full screen", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
+		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: e },
 			bubbles: !0,
 			composed: !0
@@ -17592,7 +17614,7 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 	}
 	_setScreenLive(e, t) {
 		let n = this._units[e];
-		n.state.focused = t, n._m.crtMaterial.uniforms.uGlare.value = t ? .35 : 1, this.invalidate();
+		n.state.focused = t, n._m.crtMaterial.uniforms.uGlare.value = t ? .35 : 1, n._screenEl.style.pointerEvents = t && !this.canRead(e) ? "auto" : "none", this.invalidate();
 	}
 	_setFill(e, t = !1) {
 		if (this._fillScreen = e, t || !this._focusKey) return;
@@ -17614,7 +17636,7 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 		});
 	}
 	openReader(e = this._focusKey) {
-		if (!e || this._reading?.id === e) return;
+		if (!e || this._reading?.id === e || !this.canRead(e)) return;
 		let t = this.querySelector(`[slot="${e}"]`);
 		if (t) {
 			if (this._reading) {
@@ -17673,7 +17695,7 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 		let e = this._reading;
 		e && (this._reading = null, clearTimeout(this._readT), e.page.setAttribute("slot", e.id), this._reader.classList.remove("open"), this._readT = setTimeout(() => {
 			this._reader.hidden = !0;
-		}, this._reduced ? 0 : 300), this._focusKey && (this._setFill(!1), this._back.hidden = !1, this._readBtn.hidden = !1, this._say("Tap the screen to read it full screen")), this.dispatchEvent(new CustomEvent("shelf-read", {
+		}, this._reduced ? 0 : 300), this._focusKey && (this._setFill(!1), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(this._focusKey), this._say(this.canRead(this._focusKey) ? "Tap the screen to read it full screen" : "Press a channel key on the set")), this.dispatchEvent(new CustomEvent("shelf-read", {
 			detail: {
 				tv: e.id,
 				open: !1
@@ -17736,8 +17758,9 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 		for (let e = n.object; e; e = e.parent) e.userData.item !== void 0 && (r.item = e.userData.item), e.userData.unit && (r.unit = e.userData.unit);
 		return r;
 	}
-	_inLiveScreen() {
-		return !1;
+	_inLiveScreen(e) {
+		let t = this._focusKey;
+		return !!t && !this.canRead(t) && e.composedPath().includes(this._units[t]._screenEl);
 	}
 	_onDown(e) {
 		if (!this._ready || e.button > 0 || this._inLiveScreen(e)) return;
@@ -17910,7 +17933,7 @@ var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 			let t = this._keys?.findIndex((t) => t.el === e.target) ?? -1;
 			t >= 0 && this._setHover(t);
 		}), this.addEventListener("focusout", () => this._setHover(-1)), this._onShelf = (e) => {
-			e.type === "shelf-hover" && (this._sceneTV = e.detail.tv, e.detail.tv && (this._note = null), this._layoutKeys()), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
+			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-hover" && (this._sceneTV = e.detail.tv, e.detail.tv && (this._note = null), this._layoutKeys()), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
 		};
 	}
 	connectedCallback() {
@@ -17945,7 +17968,8 @@ var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 			"shelf-hint",
 			"shelf-focus",
 			"shelf-read",
-			"shelf-ready"
+			"shelf-ready",
+			"pvm-input"
 		];
 		if (this._shelf) for (let e of t) this._shelf.removeEventListener(e, this._onShelf);
 		if (this._shelf = null, e) return;
@@ -18156,12 +18180,12 @@ var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${tm(t.getHours())}:${tm(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
 		if (a) {
 			if (a.tv) {
-				let t = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? "Press again to read it full screen" : null;
+				let t = this._shelf?.canRead?.(a.tv) ?? !0, n = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? t ? "Press again to read it full screen" : "Press a channel key on the set" : null;
 				return {
-					left: `CH ${a.channel}  ${a.label}`,
+					left: `TV ${a.channel}  ${a.label}`,
 					right: a.tv.toUpperCase(),
 					main: a.el.dataset.info || a.label,
-					sub: t
+					sub: n
 				};
 			}
 			return a.action === "back" ? {
@@ -18183,10 +18207,10 @@ var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 			right: n,
 			main: this._note
 		};
-		let o = e.reading || e.focused, s = o && this._keys?.find((e) => e.tv === o), c = this._shelf?.hint || "Tap a TV to look closer";
+		let o = e.reading || e.focused, s = o && this._keys?.find((e) => e.tv === o), c = this._shelf?.hint || "Tap a TV to look closer", l = o && this._channels?.[o], u = l ? "CH " + l.replace(/^ch-/, "").toUpperCase().padStart(2, "0") : null;
 		return {
-			left: s ? `CH ${s.channel}  ${s.label}` : r,
-			right: n,
+			left: s ? `TV ${s.channel}  ${s.label}` : r,
+			right: u || n,
 			main: c
 		};
 	}
@@ -18226,7 +18250,11 @@ var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 	}
 	_activate(e) {
 		let t = this._shelf, n = this._state(), r = e.dataset.tv, i = e.dataset.action;
-		this._note = null, r && t ? n.reading || n.focused === r ? t.openReader(r) : t.focusTV(r) : i === "back" && t ? n.reading ? t.closeReader() : n.focused && t.unfocus() : i === "sound" && t ? (t.toggleAttribute("muted"), this._paintLegends()) : i === "info" && (this._note = e.dataset.info || e.textContent.trim()), this.dispatchEvent(new CustomEvent("pager-press", {
+		if (this._note = null, r && t) {
+			let e = t.canRead?.(r) ?? !0;
+			n.reading && e ? t.openReader(r) : n.reading ? (t.closeReader(), t.focusTV(r)) : n.focused === r ? e && t.openReader(r) : t.focusTV(r);
+		} else i === "back" && t ? n.reading ? t.closeReader() : n.focused && t.unfocus() : i === "sound" && t ? (t.toggleAttribute("muted"), this._paintLegends()) : i === "info" && (this._note = e.dataset.info || e.textContent.trim());
+		this.dispatchEvent(new CustomEvent("pager-press", {
 			detail: {
 				tv: r || null,
 				action: i || null

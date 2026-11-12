@@ -38,6 +38,7 @@ One straight-on camera. The first tap on a TV moves in to it. A tap on its scree
 | `layout` | `wide`, `tall`, or leave it out to choose by the element's shape |
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |
 | `power` | Which TVs start switched on: `all` (default) or a list of model ids |
+| `no-reader` | TVs that never open full screen and stay at TV zoom, for example `no-reader="kv-5200"`. Once the camera is in on one, its picture takes clicks (so embedded players can be used), and its channel keys switch channels even with only one page (empty channels show static) |
 | `muted` | No sounds |
 
 TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-5200`. More pages for a TV's other inputs or channels use `slot="<model id>:<input>"`, for example `slot="kv-5200:ch-5"`.
@@ -46,7 +47,7 @@ TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-52
 
 Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, `shelf-hover` `{ tv }` (the TV under the mouse, or `null`), `shelf-hint` `{ text }` (what the next tap does), and every `pvm-*` event from the TVs with `detail.tv` added.
 
-Methods: `openReader(id)` (also switches pages while one is open), `closeReader()`, `page(id)` (that TV's page element, wherever it is), `hint` (the current hint text); `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
+Methods: `canRead(id)` (false for a `no-reader` TV), `openReader(id)` (also switches pages while one is open), `closeReader()`, `page(id)` (that TV's page element, wherever it is), `hint` (the current hint text); `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
 
 Parts for styling: `card`, `back`, `fill` (the Read button), `reader`, `reader-close`, `hint`.
 
@@ -70,7 +71,7 @@ The children are the real buttons: they stay in the page, off screen, for keyboa
 
 | Key | Press |
 | --- | --- |
-| `data-tv="<model id>"` | Moves in to that TV; pressed again, opens its page full screen. While a page is open, switches straight to this TV's page. The key stays down while its TV is in view, and its dot takes the colour of the page |
+| `data-tv="<model id>"` | Moves in to that TV; pressed again, opens its page full screen (not for a `no-reader` TV, whose current channel the LCD shows instead). While a page is open, switches straight to this TV's page. The key stays down while its TV is in view, and its dot takes the colour of the page |
 | `data-action="back"` | Closes the full-screen page, or moves back out to the room |
 | `data-action="sound"` | Toggles `muted` on the shelf |
 | `data-action="info"` | Shows its `data-info` on the LCD until the next key or TV |
@@ -143,7 +144,7 @@ Plain children go on the first input or channel. Add `slot="..."` to put more pa
 | `kv-5200` | `ch-3` … `ch-13`, `ch-u1`, `ch-u2` (default is channel 2) | The 14 channel keys |
 | `kv-9pr1` | `ch-2` … `ch-12` (default is channel 1) | Channel ▼ ▲ on top |
 
-Switching only takes over once you add a second page. With a single page the buttons just send events. On the TVs, channels with no page show static.
+Switching only takes over once you add a second page (or, in `<retro-shelf>`, when the TV is listed in `no-reader`). With a single page the buttons just send events. On the TVs, channels with no page show static. Only the channel on air plays: iframes on the other channels (YouTube, Spotify and other embedded players) are unloaded so their sound stops, and loaded again when you come back; `<video>` and `<audio>` are paused.
 
 ## What the controls do
 

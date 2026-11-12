@@ -130,6 +130,7 @@ export class RetroPagerElement extends HTMLElement {
     this.addEventListener('focusout', () => this._setHover(-1));
 
     this._onShelf = (e) => {
+      if (e.type === 'pvm-input') { (this._channels ||= {})[e.detail.tv] = e.detail.input; }
       if (e.type === 'shelf-hover') { this._sceneTV = e.detail.tv; if (e.detail.tv) this._note = null; this._layoutKeys(); }
       if (e.type === 'shelf-ready') this._paintLegends();
       if (e.type === 'shelf-focus' || e.type === 'shelf-read') { this._note = null; this._layoutKeys(); this._paintLegends(); }
@@ -166,7 +167,7 @@ export class RetroPagerElement extends HTMLElement {
   get shelf() { return this._shelf || null; }
 
   _bind(off = false) {
-    const evs = ['shelf-hover', 'shelf-hint', 'shelf-focus', 'shelf-read', 'shelf-ready'];
+    const evs = ['shelf-hover', 'shelf-hint', 'shelf-focus', 'shelf-read', 'shelf-ready', 'pvm-input'];
     if (this._shelf) for (const t of evs) this._shelf.removeEventListener(t, this._onShelf);
     this._shelf = null;
     if (off) return;
@@ -458,8 +459,9 @@ export class RetroPagerElement extends HTMLElement {
     const k = this._hover >= 0 ? this._keys[this._hover] : scene;
     if (k) {
       if (k.tv) {
-        const go = k.tv === st.reading ? 'Reading now' : k.tv === st.focused ? 'Press again to read it full screen' : null;
-        return { left: `CH ${k.channel}  ${k.label}`, right: k.tv.toUpperCase(), main: k.el.dataset.info || k.label, sub: go };
+        const readable = this._shelf?.canRead?.(k.tv) ?? true;
+        const go = k.tv === st.reading ? 'Reading now' : k.tv === st.focused ? (readable ? 'Press again to read it full screen' : 'Press a channel key on the set') : null;
+        return { left: `TV ${k.channel}  ${k.label}`, right: k.tv.toUpperCase(), main: k.el.dataset.info || k.label, sub: go };
       }
       if (k.action === 'back') return { left: 'BACK', right: clock, main: st.reading ? 'Back to the TV' : st.focused ? 'Back to the room' : 'You are in the room' };
       if (k.action === 'sound') return { left: 'SOUND', right: st.muted ? 'OFF' : 'ON', main: st.muted ? 'Sound is off. Press to turn it on' : 'Sound is on. Press to mute' };
@@ -469,7 +471,9 @@ export class RetroPagerElement extends HTMLElement {
     const on = st.reading || st.focused;
     const cur = on && this._keys?.find((x) => x.tv === on);
     const hint = this._shelf?.hint || 'Tap a TV to look closer';
-    return { left: cur ? `CH ${cur.channel}  ${cur.label}` : name, right: clock, main: hint };
+    // a TV that changes channel shows the one on air
+    const tuned = on && this._channels?.[on], chan = tuned ? 'CH ' + tuned.replace(/^ch-/, '').toUpperCase().padStart(2, '0') : null;
+    return { left: cur ? `TV ${cur.channel}  ${cur.label}` : name, right: chan || clock, main: hint };
   }
 
   _draw() {
@@ -538,8 +542,10 @@ export class RetroPagerElement extends HTMLElement {
     const s = this._shelf, st = this._state(), tv = el.dataset.tv, act = el.dataset.action;
     this._note = null;
     if (tv && s) {
-      if (st.reading) s.openReader(tv);
-      else if (st.focused === tv) s.openReader(tv);
+      const readable = s.canRead?.(tv) ?? true;
+      if (st.reading && readable) s.openReader(tv);
+      else if (st.reading) { s.closeReader(); s.focusTV(tv); }
+      else if (st.focused === tv) { if (readable) s.openReader(tv); }
       else s.focusTV(tv);
     } else if (act === 'back' && s) {
       if (st.reading) s.closeReader();
