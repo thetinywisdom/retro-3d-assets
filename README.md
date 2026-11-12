@@ -68,7 +68,7 @@ A navigation dock in the shape of a 1990s pager, drawn in 3D on its own small ca
 </retro-pager>
 ```
 
-The children are the real buttons: they stay in the page, off screen, for keyboard and screen-reader users, and the pager draws a key for each. Pointing at a key (or tabbing to it) shows its `data-info` on the LCD; pointing at a TV in the shelf does the same for that TV's key. Otherwise the LCD shows the shelf's hint ("Tap a TV to look closer") and the time.
+The children are the real buttons: they stay in the page, off screen, for keyboard and screen-reader users, and the pager draws a key for each. Pointing at a key (or tabbing to it) shows its `data-info` on the LCD; pointing elsewhere (the TVs in the shelf included) leaves the LCD alone. Otherwise the LCD shows the shelf's hint ("Tap a TV to look closer") and the time.
 
 | Key | Press |
 | --- | --- |

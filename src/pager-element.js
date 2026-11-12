@@ -131,7 +131,6 @@ export class RetroPagerElement extends HTMLElement {
 
     this._onShelf = (e) => {
       if (e.type === 'pvm-input') { (this._channels ||= {})[e.detail.tv] = e.detail.input; }
-      if (e.type === 'shelf-hover') { this._sceneTV = e.detail.tv; if (e.detail.tv) this._note = null; this._layoutKeys(); }
       if (e.type === 'shelf-ready') this._paintLegends();
       if (e.type === 'shelf-focus' || e.type === 'shelf-read') { this._note = null; this._layoutKeys(); this._paintLegends(); }
       this._draw();
@@ -167,7 +166,8 @@ export class RetroPagerElement extends HTMLElement {
   get shelf() { return this._shelf || null; }
 
   _bind(off = false) {
-    const evs = ['shelf-hover', 'shelf-hint', 'shelf-focus', 'shelf-read', 'shelf-ready', 'pvm-input'];
+    // (the pager does not follow the mouse over the scene: its screen changes only for its own keys and the shelf's state)
+    const evs = ['shelf-hint', 'shelf-focus', 'shelf-read', 'shelf-ready', 'pvm-input'];
     if (this._shelf) for (const t of evs) this._shelf.removeEventListener(t, this._onShelf);
     this._nowMo?.disconnect();
     this._shelf = null;

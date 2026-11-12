@@ -18099,7 +18099,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 			let t = this._keys?.findIndex((t) => t.el === e.target) ?? -1;
 			t >= 0 && this._setHover(t);
 		}), this.addEventListener("focusout", () => this._setHover(-1)), this._onShelf = (e) => {
-			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-hover" && (this._sceneTV = e.detail.tv, e.detail.tv && (this._note = null), this._layoutKeys()), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
+			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
 		};
 	}
 	connectedCallback() {
@@ -18130,7 +18130,6 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 	}
 	_bind(e = !1) {
 		let t = [
-			"shelf-hover",
 			"shelf-hint",
 			"shelf-focus",
 			"shelf-read",
