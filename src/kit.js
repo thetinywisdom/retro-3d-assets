@@ -157,6 +157,30 @@ export class Kit {
     return m;
   }
 
+  /**
+   * Backlight for a key, like a backlit keyboard: a soft glow on the panel behind the key that shows
+   * round its edges. Off until a host turns it up (material.opacity). Shared texture, additive.
+   */
+  backlight(x, y, z, w, h, color = 0xffe2b8) {
+    Kit._halo ||= (() => {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 104;
+      const g = c.getContext('2d');
+      g.fillStyle = '#fff';
+      g.shadowColor = '#fff'; g.shadowBlur = 16;
+      for (let k = 0; k < 3; k++) { g.beginPath(); g.roundRect(26, 22, 76, 60, 8); g.fill(); }
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      return t;
+    })();
+    const mat = new THREE.MeshBasicMaterial({ map: Kit._halo, color, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+    const m = this.mesh(new THREE.PlaneGeometry(w * 1.68, h * 1.73), mat, 'backlight');
+    m.position.set(x, y, z);
+    m.raycast = () => {};
+    m.renderOrder = 2;
+    return m;
+  }
+
   lamp(geometry, color, name) {
     const mat = new THREE.MeshStandardMaterial({ name: 'lamp', color: 0x1a1a1a, roughness: 0.35, emissive: color, emissiveIntensity: 0 });
     const m = this.mesh(geometry, mat, name);

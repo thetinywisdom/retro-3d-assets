@@ -86,6 +86,7 @@ export function buildMonitor() {
     lamp.userData.lampOn = 1.4;
     lamp.raycast = () => {};
     const b = k.button({ id: 'ch-' + c, pos: [x, by(r.key), panelZ], w: 10.9, h: 8.7, out: 1.3, travel: 0.9, len: 6, r: 0.5, c: 0.35, material: cap(), lamp });
+    b.backlight = k.backlight(x, by(r.key), panelZ + 0.05, 10.9, 8.7);   // not on the real set: the site's backlit-keyboard hint
     const pip = new THREE.Mesh(dot, k.M.chrome);
     pip.position.set(0, 0, 6.2);
     pip.scale.z = 0.5;

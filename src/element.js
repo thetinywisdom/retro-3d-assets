@@ -740,39 +740,29 @@ export class SonyPVMElement extends Base {
 
   /** Indicator lamps follow their button's resting state. */
   /**
-   * A hint that keys can be pressed: the keys with this role (the KV-5200's channel keys) glow softly
-   * in a wave, key and number cell together, a few times, then go back to normal. The key that is
-   * already on keeps its lamp lit.
+   * Light the keys with this role like a backlit keyboard: a soft glow round each key and the number
+   * cells above them lit faintly (the key that is on keeps its full lamp). Fades in and out.
+   * Only keys built with a backlight (the KV-5200's channel keys) have the glow.
    */
-  shimmerLamps(role = 'channel', { cycles = 3, period = 2600, peak = 0.45, keyPeak = 0.16, stagger = 90, delay = 600 } = {}) {
-    if (!this._m || !this.state.power) return;
-    const keys = [];
+  setBacklight(on = true, { role = 'channel', glow = 0.55, cells = 0.3, duration = 700 } = {}) {
+    if (!this._m) return;
+    this._bl ||= { v: 0, role, glow, cells };
+    Object.assign(this._bl, { role, glow, cells });
+    const to = on && this.state.power ? 1 : 0;
+    this._tween('backlight', this._bl.v, to, this._reduced ? 0 : duration, (v) => { this._bl.v = v; this._applyBacklight(); }, { ease: easeInOut });
+  }
+
+  _applyBacklight() {
+    const bl = this._bl;
+    if (!bl || !this._m) return;
+    const v = this.state.power ? bl.v : 0;
     for (const c of this._meta.controls) {
       const rec = this._m.controls[c.id];
-      if (c.role !== role || !rec?.mesh) continue;
-      const cap = rec.mesh.material;
-      if (rec.lamp && cap.emissive) cap.emissive.copy(rec.lamp.material.emissive);   // the key glows in its lamp's colour
-      keys.push({ cap, lamp: rec.lamp, lit: this._buttonRest(c.id) === 1 });
+      if (c.role !== bl.role || !rec) continue;
+      if (rec.backlight) rec.backlight.material.opacity = bl.glow * v;
+      if (rec.lamp && this._buttonRest(c.id) !== 1) rec.lamp.material.emissiveIntensity = bl.cells * v;
     }
-    if (!keys.length) return;
-    const total = delay + (keys.length - 1) * stagger + cycles * period;
-    const set = (k, w) => {
-      if (k.cap.emissive) k.cap.emissiveIntensity = keyPeak * w;
-      if (k.lamp && !k.lit) k.lamp.material.emissiveIntensity = peak * w;
-    };
-    const end = () => { for (const k of keys) if (k.cap.emissive) k.cap.emissiveIntensity = 0; this._syncLamps(); };
-    if (this._reduced) {
-      // no movement: a faint steady glow for the same time
-      for (const k of keys) set(k, 0.4);
-      this._tween('lamp-hint', 0, 1, total, () => {}, { ease: linear, done: end });
-      return;
-    }
-    this._tween('lamp-hint', 0, total, total, (ms) => {
-      keys.forEach((k, i) => {
-        const t = (ms - delay - i * stagger) / period;
-        set(k, t > 0 && t < cycles ? Math.pow(Math.sin(Math.PI * (t % 1)), 2) : 0);
-      });
-    }, { ease: linear, done: end });
+    this.invalidate();
   }
 
   _syncLamps() {
@@ -783,9 +773,9 @@ export class SonyPVMElement extends Base {
       const on = this._buttonRest(c.id) === 1;
       const a = this._a11y[c.id];
       if (a?.hasAttribute('aria-pressed')) a.setAttribute('aria-pressed', String(on));
-      if (this._tweens?.has('lamp-hint') && !on) continue;            // a lamp hint is playing on the unlit lamps
       if (rec?.lamp && c.role !== 'power') rec.lamp.material.emissiveIntensity = on && (this.state.power || c.lampAlways) ? rec.lamp.userData.lampOn : 0;
     }
+    this._applyBacklight();
     this.invalidate();
   }
 

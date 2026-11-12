@@ -12914,7 +12914,7 @@ function fd(e, t, n, r = e) {
 		floor: Q(r, [], t - n)
 	};
 }
-var pd = (e, t, n, r) => e.rotateX(-Math.PI / 2).translate(t, n, r), md = class {
+var pd = (e, t, n, r) => e.rotateX(-Math.PI / 2).translate(t, n, r), md = class e {
 	constructor(e) {
 		this.root = new Ln(), this.root.name = e, this.interactive = new Ln(), this.interactive.name = "controls", this.root.add(this.interactive), this.controls = {}, this.bucket = {}, this.grain = nd(), this.grain.repeat.set(1 / 9, 1 / 9), this.M = {
 			black: new q({
@@ -12959,6 +12959,27 @@ var pd = (e, t, n, r) => e.rotateX(-Math.PI / 2).translate(t, n, r), md = class 
 	mesh(e, t, n) {
 		let r = new K(e, t);
 		return n && (r.name = n), this.root.add(r), r;
+	}
+	backlight(t, n, r, i, a, o = 16769720) {
+		e._halo || (e._halo = (() => {
+			let e = document.createElement("canvas");
+			e.width = 128, e.height = 104;
+			let t = e.getContext("2d");
+			t.fillStyle = "#fff", t.shadowColor = "#fff", t.shadowBlur = 16;
+			for (let e = 0; e < 3; e++) t.beginPath(), t.roundRect(26, 22, 76, 60, 8), t.fill();
+			let n = new Oi(e);
+			return n.colorSpace = "srgb", n;
+		})());
+		let s = new Zr({
+			map: e._halo,
+			color: o,
+			transparent: !0,
+			opacity: 0,
+			depthWrite: !1,
+			blending: 2,
+			toneMapped: !1
+		}), c = this.mesh(new Za(i * 1.68, a * 1.73), s, "backlight");
+		return c.position.set(t, n, r), c.raycast = () => {}, c.renderOrder = 2, c;
 	}
 	lamp(e, t, n) {
 		let r = new q({
@@ -14043,7 +14064,9 @@ function cf() {
 			c: .35,
 			material: t(),
 			lamp: o
-		}), c = new K(g, e.M.chrome);
+		});
+		s.backlight = e.backlight(a, u(i.key), 124.45, 10.9, 8.7);
+		let c = new K(g, e.M.chrome);
 		c.position.set(0, 0, 6.2), c.scale.z = .5, c.userData.control = s.id, s.mesh.add(c);
 	});
 	let _ = {
@@ -14922,41 +14945,32 @@ var Wf = class extends Vf {
 			r.pos = e, r.mesh.position.copy(r.home).addScaledVector(r.axis, r.travel * e);
 		}));
 	}
-	shimmerLamps(e = "channel", { cycles: t = 3, period: n = 2600, peak: r = .45, keyPeak: i = .16, stagger: a = 90, delay: o = 600 } = {}) {
-		if (!this._m || !this.state.power) return;
-		let s = [];
-		for (let t of this._meta.controls) {
-			let n = this._m.controls[t.id];
-			if (t.role !== e || !n?.mesh) continue;
-			let r = n.mesh.material;
-			n.lamp && r.emissive && r.emissive.copy(n.lamp.material.emissive), s.push({
-				cap: r,
-				lamp: n.lamp,
-				lit: this._buttonRest(t.id) === 1
-			});
-		}
-		if (!s.length) return;
-		let c = o + (s.length - 1) * a + t * n, l = (e, t) => {
-			e.cap.emissive && (e.cap.emissiveIntensity = i * t), e.lamp && !e.lit && (e.lamp.material.emissiveIntensity = r * t);
-		}, u = () => {
-			for (let e of s) e.cap.emissive && (e.cap.emissiveIntensity = 0);
-			this._syncLamps();
-		};
-		if (this._reduced) {
-			for (let e of s) l(e, .4);
-			this._tween("lamp-hint", 0, 1, c, () => {}, {
-				ease: Mf,
-				done: u
-			});
-		} else this._tween("lamp-hint", 0, c, c, (e) => {
-			s.forEach((r, i) => {
-				let s = (e - o - i * a) / n;
-				l(r, s > 0 && s < t ? Math.sin(s % 1 * Math.PI) ** 2 : 0);
-			});
-		}, {
-			ease: Mf,
-			done: u
+	setBacklight(e = !0, { role: t = "channel", glow: n = .55, cells: r = .3, duration: i = 700 } = {}) {
+		if (!this._m) return;
+		this._bl || (this._bl = {
+			v: 0,
+			role: t,
+			glow: n,
+			cells: r
+		}), Object.assign(this._bl, {
+			role: t,
+			glow: n,
+			cells: r
 		});
+		let a = e && this.state.power ? 1 : 0;
+		this._tween("backlight", this._bl.v, a, this._reduced ? 0 : i, (e) => {
+			this._bl.v = e, this._applyBacklight();
+		}, { ease: Af });
+	}
+	_applyBacklight() {
+		let e = this._bl;
+		if (!e || !this._m) return;
+		let t = this.state.power ? e.v : 0;
+		for (let n of this._meta.controls) {
+			let r = this._m.controls[n.id];
+			n.role === e.role && r && (r.backlight && (r.backlight.material.opacity = e.glow * t), r.lamp && this._buttonRest(n.id) !== 1 && (r.lamp.material.emissiveIntensity = e.cells * t));
+		}
+		this.invalidate();
 	}
 	_syncLamps() {
 		if (this._m) {
@@ -14964,9 +14978,9 @@ var Wf = class extends Vf {
 				let t = this._m.controls[e.id];
 				if (e.kind !== "button") continue;
 				let n = this._buttonRest(e.id) === 1, r = this._a11y[e.id];
-				r?.hasAttribute("aria-pressed") && r.setAttribute("aria-pressed", String(n)), (!this._tweens?.has("lamp-hint") || n) && t?.lamp && e.role !== "power" && (t.lamp.material.emissiveIntensity = n && (this.state.power || e.lampAlways) ? t.lamp.userData.lampOn : 0);
+				r?.hasAttribute("aria-pressed") && r.setAttribute("aria-pressed", String(n)), t?.lamp && e.role !== "power" && (t.lamp.material.emissiveIntensity = n && (this.state.power || e.lampAlways) ? t.lamp.userData.lampOn : 0);
 			}
-			this.invalidate();
+			this._applyBacklight(), this.invalidate();
 		}
 	}
 	_buttonDown(e) {
