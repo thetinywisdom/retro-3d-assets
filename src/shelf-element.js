@@ -306,6 +306,7 @@ export class RetroShelfElement extends Base {
     this._room = dim ? 0.3 : dark ? 0.06 : 1;
     const spread = floorOnly && this.hasAttribute('consoles');
     this._floorPad = spread ? 330 : floorOnly ? 190 : 0;
+    this._hint.textContent = floorOnly ? 'Tap a TV to look closer' : 'Tap a TV, a game or a book';
     this._pitch = floorOnly ? (spread ? 0.27 : 0.12) : 0;      // look down a little at things on the floor
     // two long levels, no dividers; narrower on a tall (phone) view
     const shelf = floorOnly ? { height: 0, width: 0, depth: 520, cells: [] } : buildShelf({ cols: 1, rows: 2, cellW: mode === 'wide' ? 980 : 860 });

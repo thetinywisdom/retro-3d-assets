@@ -17363,7 +17363,7 @@ var Vp = typeof HTMLElement < "u" ? HTMLElement : class {}, Hp = class extends V
 		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r;
 		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .05 : .6, this._room = r ? .3 : i ? .06 : 1;
 		let a = t && this.hasAttribute("consoles");
-		this._floorPad = a ? 330 : t ? 190 : 0, this._pitch = t ? a ? .27 : .12 : 0;
+		this._floorPad = a ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._pitch = t ? a ? .27 : .12 : 0;
 		let o = t ? {
 			height: 0,
 			width: 0,
