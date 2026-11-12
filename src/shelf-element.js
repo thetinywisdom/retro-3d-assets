@@ -238,7 +238,12 @@ export class RetroShelfElement extends Base {
     if (!this._renderer) return;
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(this);
-    this._mo = new MutationObserver(() => { clearTimeout(this._moT); this._moT = setTimeout(() => this._rebuild(), 30); });
+    // rebuild when the shelf's own children or its <retro-item>s change; changes inside a TV's page
+    // (a player loading, a picture swapped on a channel) are that page's business and must not rebuild the scene
+    this._mo = new MutationObserver((list) => {
+      if (!list.some((m) => m.target === this || m.target.closest?.('retro-item'))) return;
+      clearTimeout(this._moT); this._moT = setTimeout(() => this._rebuild(), 30);
+    });
     this._mo.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['type', 'title', 'subtitle', 'color', 'cover', 'thickness', 'height', 'binding'] });
     window.addEventListener('keydown', this._onKey);
     this._resize();

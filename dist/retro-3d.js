@@ -17209,8 +17209,8 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		}, { passive: !0 });
 	}
 	connectedCallback() {
-		this._inited || (this._inited = !0, this._init()), this._renderer && (this._ro = new ResizeObserver(() => this._resize()), this._ro.observe(this), this._mo = new MutationObserver(() => {
-			clearTimeout(this._moT), this._moT = setTimeout(() => this._rebuild(), 30);
+		this._inited || (this._inited = !0, this._init()), this._renderer && (this._ro = new ResizeObserver(() => this._resize()), this._ro.observe(this), this._mo = new MutationObserver((e) => {
+			e.some((e) => e.target === this || e.target.closest?.("retro-item")) && (clearTimeout(this._moT), this._moT = setTimeout(() => this._rebuild(), 30));
 		}), this._mo.observe(this, {
 			childList: !0,
 			subtree: !0,
