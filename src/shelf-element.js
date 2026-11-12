@@ -102,6 +102,24 @@ const STYLE = /* css */ `
 :host(.nogl) { height: auto; }
 `;
 
+/** Wispy cloud texture for the haze. */
+function smokeTexture() {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 160;
+  const g = c.getContext('2d');
+  let s = 23;
+  const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 70; i++) {
+    const x = 40 + rnd() * 176, y = 40 + rnd() * 80, r = 8 + rnd() * 30;
+    const grad = g.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, `rgba(255,255,255,${0.04 + rnd() * rnd() * 0.3})`); grad.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grad; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 /** Carpet: fully matt, with a short speckled pile that also drives a bump map. */
 function carpet(color, repeat) {
   const c = document.createElement('canvas');
@@ -159,7 +177,7 @@ function concrete(repeat, wall = false) {
 const Base = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
 export class RetroShelfElement extends Base {
-  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color']; }
+  static get observedAttributes() { return ['stack', 'arrange', 'layout', 'brand', 'muted', 'power', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke']; }
 
   constructor() {
     super();
@@ -224,7 +242,7 @@ export class RetroShelfElement extends Base {
   attributeChangedCallback(name, _o, v) {
     if (name === 'muted') this._sound.muted = v !== null;
     if (!this._renderer) return;
-    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color'].includes(name)) this._rebuild();
+    if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke'].includes(name)) this._rebuild();
     if (name === 'brand') for (const u of Object.values(this._units)) u.setBrand(v);
     if (name === 'power') this._applyPowerAttr();
   }
@@ -328,7 +346,7 @@ export class RetroShelfElement extends Base {
     // room light: normal, or nothing but the screens
     this._key.intensity = dim ? 0.22 : dark ? 0 : 2.1;
     this._fill.intensity = dark ? 0 : 0.5;
-    this._scene.environmentIntensity = dim ? 0.16 : dark ? 0.05 : 0.6;
+    this._scene.environmentIntensity = dim ? 0.16 : dark ? 0.014 : 0.6;
     this._room = dim ? 0.3 : dark ? 0.06 : 1;
     const spread = floorOnly && this.hasAttribute('consoles');
     this._floorPad = spread ? 330 : floorOnly ? 190 : 0;
@@ -393,10 +411,33 @@ export class RetroShelfElement extends Base {
       // coloured light hidden behind the sets, washing up the wall and round their edges
       const color = new THREE.Color(back || '#10a045');
       const half = this._bounds.w / 2;
-      for (const [x, y, k] of [[-half * 0.55, 160, 1], [half * 0.55, 160, 1], [0, top * 0.75, 0.7]]) {
-        const lamp = new THREE.PointLight(color, 300000 * k, 0, 2);
+      // low and wide, so it reads as a haze at the edges of the room rather than a halo
+      for (const [x, y, k] of [[-half * 1.5, 120, 1], [half * 1.5, 120, 0.8], [0, 60, 0.35]]) {
+        const lamp = new THREE.PointLight(color, 150000 * k, 0, 2);
         lamp.position.set(x, y, -560);
         this._furniture.add(lamp);
+      }
+    }
+    this._smoke = [];
+    if (this.hasAttribute('smoke')) {
+      // slow drifting haze: big soft sheets that pick up the backlight colour
+      const tint = new THREE.Color(back || (back === '' ? '#10a045' : '#8a8f8c'));
+      const strength = Math.max(0.2, Math.min(3, parseFloat(this.getAttribute('smoke')) || 1));
+      const map = smokeTexture();
+      const half = Math.max(this._bounds.w / 2, 500);
+      let seed = 11;
+      const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+      for (let i = 0; i < 14; i++) {
+        const behind = i < 9, size = 900 + rnd() * 1100;
+        const mat = new THREE.MeshBasicMaterial({ map, color: tint, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: (behind ? 0.13 : 0.04) * strength, toneMapped: false });
+        const puff = new THREE.Mesh(new THREE.PlaneGeometry(size, size * 0.6), mat);
+        puff.position.set((rnd() - 0.5) * half * 4.2, behind ? 120 + rnd() * top * 0.9 : 40 + rnd() * 160, behind ? -330 - rnd() * 380 : 140 + rnd() * 420);
+        puff.rotation.z = (rnd() - 0.5) * 0.8;
+        puff.raycast = () => {};
+        puff.renderOrder = 5;
+        puff.userData = { x: puff.position.x, y: puff.position.y, r: puff.rotation.z, speed: 0.04 + rnd() * 0.07, phase: rnd() * 6.28, sway: 90 + rnd() * 180, o: mat.opacity };
+        this._furniture.add(puff);
+        this._smoke.push(puff);
       }
     }
     if (spread) {
@@ -471,11 +512,11 @@ export class RetroShelfElement extends Base {
       light.position.set(pic.cx, pic.cy, pic.z);
       light.target.position.set(pic.cx, pic.cy - 160, pic.z + 400);
       g.add(light.target);
-      light.userData.full = pic.w * pic.h * 0.75;
+      light.userData.full = pic.w * pic.h * (this._room > 0.1 ? 0.75 : 0.2);
       // plus a little spill in every direction, so neighbours and the set's own bezel pick up the colour
       const spill = new THREE.PointLight(color, 0, 0, 1.7);
       spill.position.set(0, 0, pic.w * 0.9);
-      spill.userData.full = pic.w * pic.h * 0.05;
+      spill.userData.full = pic.w * pic.h * (this._room > 0.1 ? 0.05 : 0.012);
       light.add(spill);
       g.add(light);
       u._glow = light;
@@ -569,10 +610,18 @@ export class RetroShelfElement extends Base {
       cam.lookAt(px * 0.4, y + py * 0.4, 0);
     }
     cam.updateMatrixWorld();
+    for (const p of this._smoke || []) {
+      const d = p.userData, t = now / 1000;
+      p.position.x = d.x + Math.sin(t * d.speed + d.phase) * d.sway;
+      p.position.y = d.y + Math.sin(t * d.speed * 0.7 + d.phase * 2) * 30;
+      p.rotation.z = d.r + Math.sin(t * d.speed * 0.5 + d.phase) * 0.25;
+      p.material.opacity = d.o * (0.75 + 0.25 * Math.sin(t * d.speed * 1.7 + d.phase * 3));
+    }
     for (const u of Object.values(this._units)) if (u._tick(now, cam)) active = true;
     this._renderer.render(this._scene, cam);
     this._css.render(this._scene, cam);
     if (active) this.invalidate();
+    else if (this._smoke?.length && !this._reduced) { clearTimeout(this._smokeT); this._smokeT = setTimeout(() => this.invalidate(), 70); }  // keep the haze drifting at a low frame rate
   }
 
   // ---------------------------------------------------------------- focus --

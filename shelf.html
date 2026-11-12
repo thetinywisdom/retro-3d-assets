@@ -42,7 +42,7 @@
   import './src/index.js';
   const el = document.getElementById('shelf');
   const q = new URLSearchParams(location.search);
-  for (const k of ['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'power', 'backlight', 'consoles', 'floor', 'floor-color']) if (q.has(k)) el.setAttribute(k, q.get(k));
+  for (const k of ['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'power', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke']) if (q.has(k)) el.setAttribute(k, q.get(k));
   if (q.get('lighting') === 'dark') document.body.style.background = '#030303';
   window.shelf = el;
 </script>

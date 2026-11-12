@@ -16987,7 +16987,18 @@ var Pp = [
 		}
 	}
 }, Lp = (e, t, n) => Math.min(n, Math.max(t, e)), Rp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, zp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden] { display: none; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
-function Bp(e, t) {
+function Bp() {
+	let e = document.createElement("canvas");
+	e.width = 256, e.height = 160;
+	let t = e.getContext("2d"), n = 23, r = () => (n = n * 1664525 + 1013904223 >>> 0) / 4294967296;
+	for (let e = 0; e < 70; e++) {
+		let e = 40 + r() * 176, n = 40 + r() * 80, i = 8 + r() * 30, a = t.createRadialGradient(e, n, 0, e, n, i);
+		a.addColorStop(0, `rgba(255,255,255,${.04 + r() * r() * .3})`), a.addColorStop(1, "rgba(255,255,255,0)"), t.fillStyle = a, t.fillRect(e - i, n - i, i * 2, i * 2);
+	}
+	let i = new Ei(e);
+	return i.colorSpace = qe, i;
+}
+function Vp(e, t) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 256;
 	let r = n.getContext("2d");
@@ -17012,7 +17023,7 @@ function Bp(e, t) {
 		metalness: 0
 	};
 }
-function Vp(e, t = !1) {
+function Hp(e, t = !1) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 512;
 	let r = n.getContext("2d");
@@ -17045,7 +17056,7 @@ function Vp(e, t = !1) {
 	let o = new Ei(n);
 	return o.colorSpace = qe, o.wrapS = o.wrapT = d, o.repeat.set(e, t ? 5e3 / 9e3 * e : e), o.anisotropy = 8, o;
 }
-var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends Hp {
+var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends Up {
 	static get observedAttributes() {
 		return [
 			"stack",
@@ -17060,7 +17071,8 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 			"backlight",
 			"consoles",
 			"floor",
-			"floor-color"
+			"floor-color",
+			"smoke"
 		];
 	}
 	constructor() {
@@ -17128,7 +17140,8 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 				"backlight",
 				"consoles",
 				"floor",
-				"floor-color"
+				"floor-color",
+				"smoke"
 			].includes(e) && this._rebuild(), e === "brand") for (let e of Object.values(this._units)) e.setBrand(n);
 			e === "power" && this._applyPowerAttr();
 		}
@@ -17210,7 +17223,7 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 		if (!this._ready) return;
 		this._selected >= 0 && this.close(!0), this._dispose(this._furniture);
 		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r;
-		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .05 : .6, this._room = r ? .3 : i ? .06 : 1;
+		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = i ? 0 : .5, this._scene.environmentIntensity = r ? .16 : i ? .014 : .6, this._room = r ? .3 : i ? .06 : 1;
 		let a = t && this.hasAttribute("consoles");
 		this._floorPad = a ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._pitch = t ? a ? .27 : .12 : 0;
 		let o = t ? {
@@ -17224,9 +17237,9 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 			cellW: e === "wide" ? 980 : 860
 		});
 		if (t || this._furniture.add(o.group), t || i) {
-			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po(i ? this.getAttribute("floor") === "carpet" ? Bp(this.getAttribute("floor-color") || "#55682f", 200) : {
+			let e = new J(new Ya(6e4, 6e4).rotateX(-Math.PI / 2), new po(i ? this.getAttribute("floor") === "carpet" ? Vp(this.getAttribute("floor-color") || "#55682f", 200) : {
 				color: 9079434,
-				map: Vp(6e4 / 1400),
+				map: Hp(6e4 / 1400),
 				roughness: .5,
 				metalness: 0
 			} : {
@@ -17240,7 +17253,7 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 		if (this.hasAttribute("wall") || s !== null) {
 			let e = new J(new Ya(9e3, 5e3), new po({
 				color: 10132122,
-				map: Vp(9e3 / 1400, !0),
+				map: Hp(9e3 / 1400, !0),
 				roughness: .88
 			}));
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
@@ -17268,23 +17281,46 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 			let e = new K(s || "#10a045"), t = this._bounds.w / 2;
 			for (let [n, r, i] of [
 				[
-					-t * .55,
-					160,
+					-t * 1.5,
+					120,
 					1
 				],
 				[
-					t * .55,
-					160,
-					1
+					t * 1.5,
+					120,
+					.8
 				],
 				[
 					0,
-					d * .75,
-					.7
+					60,
+					.35
 				]
 			]) {
-				let t = new es(e, 3e5 * i, 0, 2);
+				let t = new es(e, 15e4 * i, 0, 2);
 				t.position.set(n, r, -560), this._furniture.add(t);
+			}
+		}
+		if (this._smoke = [], this.hasAttribute("smoke")) {
+			let e = new K(s || (s === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = Bp(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
+			for (let i = 0; i < 14; i++) {
+				let o = i < 9, s = 900 + a() * 1100, c = new Yr({
+					map: n,
+					color: e,
+					transparent: !0,
+					depthWrite: !1,
+					blending: 2,
+					opacity: (o ? .13 : .04) * t,
+					toneMapped: !1
+				}), l = new J(new Ya(s, s * .6), c);
+				l.position.set((a() - .5) * r * 4.2, o ? 120 + a() * d * .9 : 40 + a() * 160, o ? -330 - a() * 380 : 140 + a() * 420), l.rotation.z = (a() - .5) * .8, l.raycast = () => {}, l.renderOrder = 5, l.userData = {
+					x: l.position.x,
+					y: l.position.y,
+					r: l.rotation.z,
+					speed: .04 + a() * .07,
+					phase: a() * 6.28,
+					sway: 90 + a() * 180,
+					o: c.opacity
+				}, this._furniture.add(l), this._smoke.push(l);
 			}
 		}
 		if (a) {
@@ -17408,9 +17444,9 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 			let i = this.querySelector(`[slot="${e}"]`), a = i ? getComputedStyle(i).backgroundColor : "", o = new K(!a || a === "transparent" || a.endsWith(", 0)") ? "#cfe0ff" : a), s = o.getHSL({});
 			o.setHSL(s.h, Math.min(s.s, .8), Math.max(s.l, .55));
 			let c = new Qo(o, 0, 0, 1.25, 1, 1.7);
-			c.position.set(r.cx, r.cy, r.z), c.target.position.set(r.cx, r.cy - 160, r.z + 400), n.add(c.target), c.userData.full = r.w * r.h * .75;
+			c.position.set(r.cx, r.cy, r.z), c.target.position.set(r.cx, r.cy - 160, r.z + 400), n.add(c.target), c.userData.full = r.w * r.h * (this._room > .1 ? .75 : .2);
 			let l = new es(o, 0, 0, 1.7);
-			l.position.set(0, 0, r.w * .9), l.userData.full = r.w * r.h * .05, c.add(l), n.add(c), t._glow = c;
+			l.position.set(0, 0, r.w * .9), l.userData.full = r.w * r.h * (this._room > .1 ? .05 : .012), c.add(l), n.add(c), t._glow = c;
 		}
 		this._syncGlow();
 	}
@@ -17477,8 +17513,12 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 			r.position.set(a + (c.pos.x - a) * s, e + (c.pos.y - e) * s, n.d + (c.pos.z - n.d) * s), r.lookAt(a * .4 + (c.look.x - a * .4) * s, i + o * .4 + (c.look.y - i - o * .4) * s, c.look.z * s);
 		} else r.position.set(a, i + o + n.d * Math.tan(this._pitch || 0), n.d), r.lookAt(a * .4, i + o * .4, 0);
 		r.updateMatrixWorld();
+		for (let t of this._smoke || []) {
+			let n = t.userData, r = e / 1e3;
+			t.position.x = n.x + Math.sin(r * n.speed + n.phase) * n.sway, t.position.y = n.y + Math.sin(r * n.speed * .7 + n.phase * 2) * 30, t.rotation.z = n.r + Math.sin(r * n.speed * .5 + n.phase) * .25, t.material.opacity = n.o * (.75 + .25 * Math.sin(r * n.speed * 1.7 + n.phase * 3));
+		}
 		for (let n of Object.values(this._units)) n._tick(e, r) && (t = !0);
-		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
+		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t ? this.invalidate() : this._smoke?.length && !this._reduced && (clearTimeout(this._smokeT), this._smokeT = setTimeout(() => this.invalidate(), 70));
 	}
 	_aim() {
 		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen ? new W(r.cx, r.cy, r.z) : new W(0, n.h / 2, n.d / 2), a = this._fillScreen ? r.w : n.w, o = this._fillScreen ? r.h : n.h, s = this._fillScreen ? 1.04 : 1.12, c = Math.max(o / 2 * s / this._tan.v, a / 2 * s / this._tan.h), l = t.localToWorld(i.clone()), u = t.localToWorld(i.clone().add(new W(0, 0, c)));
@@ -17666,8 +17706,8 @@ var Hp = typeof HTMLElement < "u" ? HTMLElement : class {}, Up = class extends H
 	}
 };
 // src/index.js
-function Wp() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", If), customElements.get("retro-shelf") || customElements.define("retro-shelf", Up));
+function Gp() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", If), customElements.get("retro-shelf") || customElements.define("retro-shelf", Wp));
 }
-Wp();
-export { Mp as ARRANGEMENTS, Lf as ITEM_TYPES, wf as MODELS, wp as PROPS, Up as RetroShelfElement, Ip as STACKS, If as SonyPVMElement, rp as buildItem, ap as buildShelf, Wp as define };
+Gp();
+export { Mp as ARRANGEMENTS, Lf as ITEM_TYPES, wf as MODELS, wp as PROPS, Wp as RetroShelfElement, Ip as STACKS, If as SonyPVMElement, rp as buildItem, ap as buildShelf, Gp as define };
