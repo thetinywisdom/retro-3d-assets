@@ -14508,25 +14508,25 @@ var wf = (e) => ({
 		let i = e.createGain();
 		i.gain.setValueAtTime(.55, t), i.gain.exponentialRampToValueAtTime(.001, t + 1.3), n.connect(r).connect(i).connect(this.master), n.start(t), n.stop(t + 1.35);
 	}
-}, Of = Rt.degToRad(150), kf = (e, t, n) => Math.min(n, Math.max(t, e)), Af = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, jf = (e) => 1 - (1 - e) ** 3, Mf = (e) => e, Nf = (e) => (1 - Math.cos(Math.PI * e)) / 2, Pf = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//, Ff = (e) => Pf.test(e.getAttribute("src") || e.dataset.held || ""), If = /* @__PURE__ */ new Set(), Lf = (e, t) => {
+}, Of = Rt.degToRad(150), kf = (e, t, n) => Math.min(n, Math.max(t, e)), Af = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, jf = (e) => 1 - (1 - e) ** 3, Mf = (e) => e, Nf = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//, Pf = (e) => Nf.test(e.getAttribute("src") || e.dataset.held || ""), Ff = /* @__PURE__ */ new Set(), If = (e, t) => {
 	try {
 		e.contentWindow?.postMessage(JSON.stringify(t), "*");
 	} catch {}
-}, Rf = (e, t, n = []) => Lf(e, {
+}, Lf = (e, t, n = []) => If(e, {
 	event: "command",
 	func: t,
 	args: n
 });
-function zf(e, t, n) {
+function Rf(e, t, n) {
 	let r = e._yt;
-	r && (r.vol = t, r.quiet = n, n || t <= 0 ? Rf(e, "mute") : r.blocked || (Rf(e, "unMute"), Rf(e, "setVolume", [Math.round(t * 100)])));
+	r && (r.vol = t, r.quiet = n, n || t <= 0 ? Lf(e, "mute") : r.blocked || (Lf(e, "unMute"), Lf(e, "setVolume", [Math.round(t * 100)])));
 }
-function Bf(e, t) {
+function zf(e, t) {
 	e._yt || (e._yt = {
 		state: -1,
 		level: t
-	}, If.add(e), e.addEventListener("load", () => {
-		if (!Pf.test(e.src)) return;
+	}, Ff.add(e), e.addEventListener("load", () => {
+		if (!Nf.test(e.src)) return;
 		let t = e._yt;
 		t.state = -1, t.blocked = !1, clearTimeout(t.t);
 		for (let n of [
@@ -14534,17 +14534,17 @@ function Bf(e, t) {
 			900,
 			2e3
 		]) setTimeout(() => {
-			Lf(e, {
+			If(e, {
 				event: "listening",
 				id: 1,
 				channel: "widget"
 			});
 			let { vol: n, quiet: r } = t.level();
-			zf(e, n, r);
+			Rf(e, n, r);
 		}, n);
 		t.t = setTimeout(() => {
 			let { vol: n, quiet: r } = t.level();
-			t.state !== 1 && !r && n > 0 && (t.blocked = !0, Rf(e, "mute"), Rf(e, "playVideo"));
+			t.state !== 1 && !r && n > 0 && (t.blocked = !0, Lf(e, "mute"), Lf(e, "playVideo"));
 		}, 3200);
 	}));
 }
@@ -14558,22 +14558,22 @@ if (typeof window < "u") {
 			return;
 		}
 		let n = t?.info?.playerState;
-		if (n !== void 0) for (let t of If) t.contentWindow === e.source && t._yt && (t._yt.state = n);
+		if (n !== void 0) for (let t of Ff) t.contentWindow === e.source && t._yt && (t._yt.state = n);
 	});
 	let e = () => {
-		for (let e of If) {
+		for (let e of Ff) {
 			let t = e._yt;
-			if (!t?.blocked || !e.isConnected || !Pf.test(e.src)) continue;
+			if (!t?.blocked || !e.isConnected || !Nf.test(e.src)) continue;
 			t.blocked = !1;
 			let { vol: n, quiet: r } = t.level();
-			zf(e, n, r);
+			Rf(e, n, r);
 		}
 	};
 	window.addEventListener("pointerdown", e, !0), window.addEventListener("keydown", e, !0);
 }
-var Vf = "\n:host { display: block; position: relative; width: 100%; height: 480px; }\n:host([hidden]) { display: none; }\n.stage { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.stage.dragging { cursor: grabbing; }\n.css { position: absolute; inset: 0; z-index: 0; }\ncanvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; pointer-events: none; }\n\n.screen { width: 640px; height: 480px; background: #000; overflow: hidden; color: #e9e9e4;\n  font: 16px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; text-align: left; }\n.beam, .roll, .raster, .picture { position: absolute; inset: 0; }\n.beam { opacity: 0; }\n.beam.on { opacity: 1; animation: pvm-on 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }\n.beam.off { animation: pvm-off 0.5s ease-in both; }\n.beam.instant { animation-duration: 1ms; }\n@keyframes pvm-on {\n  0% { opacity: 0; transform: scale(1, 0.004); filter: brightness(6); }\n  20% { opacity: 1; transform: scale(1, 0.004); filter: brightness(6); }\n  55% { transform: scale(1, 1); filter: brightness(2.2); }\n  100% { opacity: 1; transform: none; filter: none; }\n}\n@keyframes pvm-off {\n  0% { opacity: 1; transform: none; filter: none; }\n  45% { opacity: 1; transform: scale(1, 0.004); filter: brightness(8); }\n  85% { opacity: 1; transform: scale(0.004, 0.004); filter: brightness(12); }\n  100% { opacity: 0; transform: scale(0.004, 0.004); }\n}\n.roll.rolling { animation: pvm-roll 1.25s linear infinite; }\n@keyframes pvm-roll {\n  from { transform: translateY(-100%) skewX(-3deg); }\n  to { transform: translateY(100%) skewX(-3deg); }\n}\n.raster { transition: transform 0.22s ease-out; overflow: hidden; }\n.picture { background: #000; overflow: hidden; }\n.input { position: absolute; inset: 0; overflow: auto; display: none; }\n.input.active { display: block; }\n.input iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }\n.blue { position: absolute; inset: 0; background: #00f; mix-blend-mode: multiply; pointer-events: none; display: none; }\n.screen.blue-only .blue { display: block; }\n\n.noise { position: absolute; inset: -64px; display: none; background-size: 192px 192px; image-rendering: pixelated; animation: pvm-noise 0.32s steps(4) infinite; }\n.noise.active { display: block; }\n@keyframes pvm-noise { 0% { transform: translate(0, 0); } 25% { transform: translate(-37px, 23px); } 50% { transform: translate(29px, -41px); } 75% { transform: translate(-19px, -13px); } 100% { transform: translate(0, 0); } }\n.bars { position: absolute; inset: 0; display: none; flex-direction: column; }\n.bars.active { display: flex; }\n.bars i { display: block; }\n.bars i:nth-child(1) { flex: 67; background: linear-gradient(90deg, #c0c0c0 0 14.286%, #c0c000 0 28.571%, #00c0c0 0 42.857%, #00c000 0 57.143%, #c000c0 0 71.429%, #c00000 0 85.714%, #0000c0 0); }\n.bars i:nth-child(2) { flex: 8; background: linear-gradient(90deg, #0000c0 0 14.286%, #131313 0 28.571%, #c000c0 0 42.857%, #131313 0 57.143%, #00c0c0 0 71.429%, #131313 0 85.714%, #c0c0c0 0); }\n.bars i:nth-child(3) { flex: 25; background: linear-gradient(90deg, #00214c 0 17.86%, #fff 0 35.71%, #32006a 0 53.57%, #131313 0 71.43%, #090909 0 76.19%, #131313 0 80.95%, #1d1d1d 0 85.71%, #131313 0); }\n.bars b { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%); background: #000; color: #f2f2f2;\n  font: 600 22px/1 ui-monospace, \"SF Mono\", Menlo, Consolas, monospace; letter-spacing: 0.12em; padding: 10px 16px; }\n\n.back { position: absolute; z-index: 3; top: 14px; left: 14px; padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2;\n  font: 500 13px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.back:hover { background: rgba(40, 40, 40, 0.85); }\n.back:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.back[hidden] { display: none; }\n.hint { position: absolute; z-index: 2; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 13px;\n  border-radius: 999px; background: rgba(18, 18, 18, 0.6); color: #ededed; white-space: nowrap; pointer-events: none;\n  font: 500 12px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; transition: opacity 0.5s; }\n.hint.gone, :host([no-hint]) .hint { opacity: 0; }\n.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }\n\n/* no-WebGL fallback: just show the content in a plain frame */\n.stage.nogl { cursor: default; display: grid; place-items: center; }\n.stage.nogl canvas, .stage.nogl .hint, .stage.nogl .css { display: none; }\n.stage.nogl .screen { position: relative; max-width: 100%; border: 14px solid #62605c; border-radius: 10px; box-sizing: content-box; }\n@media (prefers-reduced-motion: reduce) {\n  .beam.on, .beam.off { animation-duration: 1ms; }\n  .roll.rolling, .noise { animation: none; }\n  .raster { transition: none; }\n}\n", Hf = typeof HTMLElement < "u" ? HTMLElement : class {}, Uf = null;
-function Wf() {
-	if (Uf) return Uf;
+var Bf = "\n:host { display: block; position: relative; width: 100%; height: 480px; }\n:host([hidden]) { display: none; }\n.stage { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; cursor: grab;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.stage.dragging { cursor: grabbing; }\n.css { position: absolute; inset: 0; z-index: 0; }\ncanvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; pointer-events: none; }\n\n.screen { width: 640px; height: 480px; background: #000; overflow: hidden; color: #e9e9e4;\n  font: 16px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; text-align: left; }\n.beam, .roll, .raster, .picture { position: absolute; inset: 0; }\n.beam { opacity: 0; }\n.beam.on { opacity: 1; animation: pvm-on 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }\n.beam.off { animation: pvm-off 0.5s ease-in both; }\n.beam.instant { animation-duration: 1ms; }\n@keyframes pvm-on {\n  0% { opacity: 0; transform: scale(1, 0.004); filter: brightness(6); }\n  20% { opacity: 1; transform: scale(1, 0.004); filter: brightness(6); }\n  55% { transform: scale(1, 1); filter: brightness(2.2); }\n  100% { opacity: 1; transform: none; filter: none; }\n}\n@keyframes pvm-off {\n  0% { opacity: 1; transform: none; filter: none; }\n  45% { opacity: 1; transform: scale(1, 0.004); filter: brightness(8); }\n  85% { opacity: 1; transform: scale(0.004, 0.004); filter: brightness(12); }\n  100% { opacity: 0; transform: scale(0.004, 0.004); }\n}\n.roll.rolling { animation: pvm-roll 1.25s linear infinite; }\n@keyframes pvm-roll {\n  from { transform: translateY(-100%) skewX(-3deg); }\n  to { transform: translateY(100%) skewX(-3deg); }\n}\n.raster { transition: transform 0.22s ease-out; overflow: hidden; }\n.picture { background: #000; overflow: hidden; }\n.input { position: absolute; inset: 0; overflow: auto; display: none; }\n.input.active { display: block; }\n.input iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }\n.blue { position: absolute; inset: 0; background: #00f; mix-blend-mode: multiply; pointer-events: none; display: none; }\n.screen.blue-only .blue { display: block; }\n\n.noise { position: absolute; inset: -64px; display: none; background-size: 192px 192px; image-rendering: pixelated; animation: pvm-noise 0.32s steps(4) infinite; }\n.noise.active { display: block; }\n@keyframes pvm-noise { 0% { transform: translate(0, 0); } 25% { transform: translate(-37px, 23px); } 50% { transform: translate(29px, -41px); } 75% { transform: translate(-19px, -13px); } 100% { transform: translate(0, 0); } }\n.bars { position: absolute; inset: 0; display: none; flex-direction: column; }\n.bars.active { display: flex; }\n.bars i { display: block; }\n.bars i:nth-child(1) { flex: 67; background: linear-gradient(90deg, #c0c0c0 0 14.286%, #c0c000 0 28.571%, #00c0c0 0 42.857%, #00c000 0 57.143%, #c000c0 0 71.429%, #c00000 0 85.714%, #0000c0 0); }\n.bars i:nth-child(2) { flex: 8; background: linear-gradient(90deg, #0000c0 0 14.286%, #131313 0 28.571%, #c000c0 0 42.857%, #131313 0 57.143%, #00c0c0 0 71.429%, #131313 0 85.714%, #c0c0c0 0); }\n.bars i:nth-child(3) { flex: 25; background: linear-gradient(90deg, #00214c 0 17.86%, #fff 0 35.71%, #32006a 0 53.57%, #131313 0 71.43%, #090909 0 76.19%, #131313 0 80.95%, #1d1d1d 0 85.71%, #131313 0); }\n.bars b { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%); background: #000; color: #f2f2f2;\n  font: 600 22px/1 ui-monospace, \"SF Mono\", Menlo, Consolas, monospace; letter-spacing: 0.12em; padding: 10px 16px; }\n\n.back { position: absolute; z-index: 3; top: 14px; left: 14px; padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2;\n  font: 500 13px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.back:hover { background: rgba(40, 40, 40, 0.85); }\n.back:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.back[hidden] { display: none; }\n.hint { position: absolute; z-index: 2; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 7px 13px;\n  border-radius: 999px; background: rgba(18, 18, 18, 0.6); color: #ededed; white-space: nowrap; pointer-events: none;\n  font: 500 12px/1 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; transition: opacity 0.5s; }\n.hint.gone, :host([no-hint]) .hint { opacity: 0; }\n.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }\n\n/* no-WebGL fallback: just show the content in a plain frame */\n.stage.nogl { cursor: default; display: grid; place-items: center; }\n.stage.nogl canvas, .stage.nogl .hint, .stage.nogl .css { display: none; }\n.stage.nogl .screen { position: relative; max-width: 100%; border: 14px solid #62605c; border-radius: 10px; box-sizing: content-box; }\n@media (prefers-reduced-motion: reduce) {\n  .beam.on, .beam.off { animation-duration: 1ms; }\n  .roll.rolling, .noise { animation: none; }\n  .raster { transition: none; }\n}\n", Vf = typeof HTMLElement < "u" ? HTMLElement : class {}, Hf = null;
+function Uf() {
+	if (Hf) return Hf;
 	let e = document.createElement("canvas");
 	e.width = e.height = 96;
 	let t = e.getContext("2d"), n = t.createImageData(96, 96);
@@ -14581,9 +14581,9 @@ function Wf() {
 		let t = Math.random() * 255;
 		n.data[e] = t * .92, n.data[e + 1] = t * .97, n.data[e + 2] = Math.min(255, t * 1.08), n.data[e + 3] = 255;
 	}
-	return t.putImageData(n, 0, 0), Uf = e.toDataURL();
+	return t.putImageData(n, 0, 0), Hf = e.toDataURL();
 }
-var Gf = class extends Hf {
+var Wf = class extends Vf {
 	static get observedAttributes() {
 		return [
 			"model",
@@ -14626,7 +14626,7 @@ var Gf = class extends Hf {
 	}
 	_buildDom() {
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Vf}</style>
+		e.innerHTML = `<style>${Bf}</style>
       <div class="stage" part="stage">
         <div class="css"></div>
         <canvas aria-hidden="true"></canvas>
@@ -14959,16 +14959,16 @@ var Gf = class extends Hf {
 		let s = e && this.state.power;
 		if (this._bl.on = s, this._tween("backlight", this._bl.v, +!!s, this._reduced ? 0 : o, (e) => {
 			this._bl.v = e, this._applyBacklight();
-		}, { ease: Af }), s && !this._reduced && !this._tweens.has("backlight-pulse")) {
-			let e = (t) => this._tween("backlight-pulse", +!t, +!!t, a / 2, (e) => {
-				this._bl.p = e, this._applyBacklight();
-			}, {
-				ease: Nf,
-				done: () => {
-					(this._bl.on || this._bl.v > 0) && e(!t);
+		}, { ease: Af }), s && !this._reduced && !this._blTimer) {
+			let e = performance.now();
+			this._blTimer = setInterval(() => {
+				if (!this._bl.on && this._bl.v <= 0) {
+					clearInterval(this._blTimer), this._blTimer = 0;
+					return;
 				}
-			});
-			e(!0);
+				let t = (performance.now() - e) % a / a;
+				this._bl.p = (1 - Math.cos(2 * Math.PI * t)) / 2, this._applyBacklight();
+			}, 80);
 		}
 	}
 	_applyBacklight() {
@@ -15112,7 +15112,7 @@ var Gf = class extends Hf {
 		for (let e of r) this._inputs[e].classList.toggle("active", e === a && o);
 		this._holdMedia(e ? a : null), this._bars.classList.toggle("active", a === i && !o), this._bars.lastElementChild.textContent = this._meta.barsLabel || i.replace("-", " ").toUpperCase();
 		let s = !o && a !== i && this._meta.noSignal === "noise";
-		s && !this._noise.style.backgroundImage && (this._noise.style.backgroundImage = `url(${Wf()})`), this._noise.classList.toggle("active", s);
+		s && !this._noise.style.backgroundImage && (this._noise.style.backgroundImage = `url(${Uf()})`), this._noise.classList.toggle("active", s);
 		let c = [];
 		n("bright") !== .5 && c.push(`brightness(${(.35 + 1.3 * n("bright")).toFixed(3)})`), n("contr") !== .5 && c.push(`contrast(${(.4 + 1.2 * n("contr")).toFixed(3)})`), n("chroma") !== .5 && c.push(`saturate(${(2 * n("chroma")).toFixed(3)})`), n("phase") !== .5 && c.push(`hue-rotate(${((n("phase") - .5) * 120).toFixed(1)}deg)`), n("aper") < .5 && c.push(`blur(${((.5 - n("aper")) * 2.4).toFixed(2)}px)`), this._picture.style.filter = c.join(" ");
 		let l = 1, u = 1, d = "";
@@ -15122,7 +15122,7 @@ var Gf = class extends Hf {
 			for (let t of e.matches("video, audio") ? [e] : e.querySelectorAll("video, audio")) try {
 				t.volume = f, t.muted = p;
 			} catch {}
-			for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) Ff(t) && zf(t, f, p);
+			for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) Pf(t) && Rf(t, f, p);
 		}
 	}
 	_content() {
@@ -15134,7 +15134,7 @@ var Gf = class extends Hf {
 		for (let [t, n] of Object.entries(this._inputs)) {
 			let r = t === e, i = n.querySelector("slot").assignedElements();
 			for (let e of i) {
-				for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) Ff(t) && Bf(t, () => ({
+				for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) Pf(t) && zf(t, () => ({
 					vol: this.state.power ? this._val("volume") : 0,
 					quiet: !!this._sound?.muted
 				})), r && t.dataset.held ? (t.src = t.dataset.held, delete t.dataset.held) : !r && !t.dataset.held && t.getAttribute("src") && t.getAttribute("src") !== "about:blank" && (t.dataset.held = t.getAttribute("src"), t.src = "about:blank");
@@ -15258,7 +15258,7 @@ var Gf = class extends Hf {
 			composed: !0
 		}));
 	}
-}, Kf = {
+}, Gf = {
 	ps1: {
 		t: 10.4,
 		h: 125,
@@ -15289,18 +15289,18 @@ var Gf = class extends Hf {
 		d: 150,
 		name: "Book"
 	}
-}, qf = "\"Barlow Semi Condensed\", \"Arial Narrow\", \"Helvetica Neue\", Arial, \"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", sans-serif", Jf = "Georgia, \"Times New Roman\", \"Hiragino Mincho ProN\", \"Yu Mincho\", serif", Yf = /[぀-ヿ㐀-鿿＀-￯]/;
-function Xf(e) {
+}, Kf = "\"Barlow Semi Condensed\", \"Arial Narrow\", \"Helvetica Neue\", Arial, \"Hiragino Sans\", \"Yu Gothic\", \"Noto Sans JP\", sans-serif", qf = "Georgia, \"Times New Roman\", \"Hiragino Mincho ProN\", \"Yu Mincho\", serif", Jf = /[぀-ヿ㐀-鿿＀-￯]/;
+function Yf(e) {
 	let t = 2166136261;
 	for (let n of e) t = Math.imul(t ^ n.codePointAt(0), 16777619);
 	return (t >>> 0) / 4294967296;
 }
-function Zf(e) {
+function Xf(e) {
 	let t = new G(e);
 	return .2126 * t.r + .7152 * t.g + .0722 * t.b;
 }
-var Qf = (e) => Zf(e) > .45 ? "#16140f" : "#f4f1ea", $f = (e, t) => "#" + new G(e).multiplyScalar(t).getHexString();
-function ep(e, t, n, r) {
+var Zf = (e) => Xf(e) > .45 ? "#16140f" : "#f4f1ea", Qf = (e, t) => "#" + new G(e).multiplyScalar(t).getHexString();
+function $f(e, t, n, r) {
 	let i = document.createElement("canvas");
 	i.width = Math.max(8, Math.round(e * n)), i.height = Math.max(8, Math.round(t * n));
 	let a = i.getContext("2d");
@@ -15308,9 +15308,9 @@ function ep(e, t, n, r) {
 	let o = new Oi(i);
 	return o.colorSpace = Je, o.anisotropy = 8, o;
 }
-function tp(e, t, n, r, i, a, o, s = `700 ${a}px ${qf}`) {
+function ep(e, t, n, r, i, a, o, s = `700 ${a}px ${Kf}`) {
 	if (!t || i - r < 4) return;
-	if (e.fillStyle = o, e.textBaseline = "middle", Yf.test(t)) {
+	if (e.fillStyle = o, e.textBaseline = "middle", Jf.test(t)) {
 		let o = [...t], c = Math.min(a, (i - r) / o.length);
 		e.font = s.replace(/[\d.]+px/, c + "px"), e.textAlign = "center", o.forEach((t, i) => e.fillText(t, n, r + c * (i + .55)));
 		return;
@@ -15319,7 +15319,7 @@ function tp(e, t, n, r, i, a, o, s = `700 ${a}px ${qf}`) {
 	let c = e.measureText(t).width, l = i - r;
 	c > l && e.scale(l / c, 1), e.fillText(t, 0, .05 * a), e.restore();
 }
-function np(e, t, n, r, i, a, o = qf, s = 700, c = 1.06) {
+function tp(e, t, n, r, i, a, o = Kf, s = 700, c = 1.06) {
 	let l = t.split(/\s+/), u = a, d;
 	for (;;) {
 		e.font = `${s} ${u}px ${o}`, d = [];
@@ -15333,40 +15333,40 @@ function np(e, t, n, r, i, a, o = qf, s = 700, c = 1.06) {
 	}
 	return d.forEach((t, i) => e.fillText(t, n, r + i * u * c)), r + d.length * u * c;
 }
-function rp(e, t, n, r, i, a, { font: o = qf, upper: s = !0 } = {}) {
+function np(e, t, n, r, i, a, { font: o = Kf, upper: s = !0 } = {}) {
 	if (e.save(), e.beginPath(), e.rect(n, r, i, a), e.clip(), e.fillStyle = t.color, e.fillRect(n, r, i, a), t.image) {
 		let o = t.image.naturalWidth || t.image.width, s = t.image.naturalHeight || t.image.height, c = Math.max(i / o, a / s);
 		e.drawImage(t.image, n + (i - o * c) / 2, r + (a - s * c) / 2, o * c, s * c);
 	} else {
-		let c = Qf(t.color), l = i * .09;
+		let c = Zf(t.color), l = i * .09;
 		e.fillStyle = c, e.globalAlpha = .13, e.beginPath(), e.arc(n + i * .74, r + a * .7, i * .44, 0, Math.PI * 2), e.fill(), e.beginPath(), e.arc(n + i * .2, r + a * .95, i * .3, 0, Math.PI * 2), e.fill(), e.globalAlpha = 1, e.textAlign = "left", e.textBaseline = "top";
-		let u = np(e, s ? t.title.toUpperCase() : t.title, n + l, r + l, i - l * 2, i * .175, o);
-		t.subtitle && (e.globalAlpha = .78, np(e, t.subtitle, n + l, u + i * .03, i - l * 2, i * .075, o, 500), e.globalAlpha = 1);
+		let u = tp(e, s ? t.title.toUpperCase() : t.title, n + l, r + l, i - l * 2, i * .175, o);
+		t.subtitle && (e.globalAlpha = .78, tp(e, t.subtitle, n + l, u + i * .03, i - l * 2, i * .075, o, 500), e.globalAlpha = 1);
 	}
 	e.restore();
 }
-function ip(e, t, n, r, i, a, o, s, c) {
-	e.fillStyle = o, e.fillRect(n - i / 2, r - a / 2, i, a), e.fillStyle = s, e.textAlign = "center", e.textBaseline = "middle", e.font = `700 ${c}px ${qf}`;
+function rp(e, t, n, r, i, a, o, s, c) {
+	e.fillStyle = o, e.fillRect(n - i / 2, r - a / 2, i, a), e.fillStyle = s, e.textAlign = "center", e.textBaseline = "middle", e.font = `700 ${c}px ${Kf}`;
 	let l = e.measureText(t).width;
 	e.save(), e.translate(n, r + c * .05), l > i * .86 && e.scale(i * .86 / l, 1), e.fillText(t, 0, 0), e.restore();
 }
-function ap(e, t, n, r, i, a, o) {
-	e.save(), e.translate(n, (r + i) / 2), e.rotate(-Math.PI / 2), e.fillStyle = o, e.textAlign = "center", e.textBaseline = "middle", e.font = `700 ${a}px ${qf}`;
+function ip(e, t, n, r, i, a, o) {
+	e.save(), e.translate(n, (r + i) / 2), e.rotate(-Math.PI / 2), e.fillStyle = o, e.textAlign = "center", e.textBaseline = "middle", e.font = `700 ${a}px ${Kf}`;
 	let s = e.measureText(t).width, c = i - r;
 	s > c && e.scale(c / s, 1), e.fillText(t, 0, a * .05), e.restore();
 }
-var op = {
+var ap = {
 	ps1: {
 		plastic: 13226196,
 		rough: .16,
 		spine(e, t, n, r) {
-			e.fillStyle = "#8d969b", e.fillRect(0, 0, n, r), e.fillStyle = "#5d666b", e.fillRect(7.6, 0, .3, r), e.fillStyle = "#e9e8e2", e.fillRect(8.3, 3.4, 1.3, r - 6.8), e.fillStyle = "#0c0c0d", e.fillRect(.45, 2.6, 6.9, r - 5.2), ip(e, "PS", 3.9, 8.4, 5, 5, "#e9e9e4", "#0c0c0d", 3.2), tp(e, t.title.toUpperCase(), 3.9, 14, r - (t.subtitle ? 30 : 8), 4.3, "#f3f3ee"), t.subtitle && tp(e, t.subtitle, 3.9, r - 27, r - 6, 2.5, "#b9b9b4", `500 2.5px ${qf}`), e.fillStyle = "rgba(255,255,255,0.35)", e.fillRect(.5, 0, .5, r);
+			e.fillStyle = "#8d969b", e.fillRect(0, 0, n, r), e.fillStyle = "#5d666b", e.fillRect(7.6, 0, .3, r), e.fillStyle = "#e9e8e2", e.fillRect(8.3, 3.4, 1.3, r - 6.8), e.fillStyle = "#0c0c0d", e.fillRect(.45, 2.6, 6.9, r - 5.2), rp(e, "PS", 3.9, 8.4, 5, 5, "#e9e9e4", "#0c0c0d", 3.2), ep(e, t.title.toUpperCase(), 3.9, 14, r - (t.subtitle ? 30 : 8), 4.3, "#f3f3ee"), t.subtitle && ep(e, t.subtitle, 3.9, r - 27, r - 6, 2.5, "#b9b9b4", `500 2.5px ${Kf}`), e.fillStyle = "rgba(255,255,255,0.35)", e.fillRect(.5, 0, .5, r);
 		},
 		cover(e, t, n, r) {
 			e.fillStyle = "#ccd3d7", e.fillRect(0, 0, n, r), e.fillStyle = "#b4bcc1";
 			for (let t = 6; t < r - 6; t += 2.1) e.fillRect(1.6, t, 8.6, .9);
 			let i = 12.5, a = n - i - 2.2, o = 2.4, s = r - 4.8;
-			e.fillStyle = "#0c0c0d", e.fillRect(i, o, 13.5, s), ap(e, "PlayStation", 19.3, 22.4, o + s - 6, 6.6, "#efefea"), ip(e, "PS", 19.3, 12.4, 9.5, 9.5, "#e9e9e4", "#0c0c0d", 6), rp(e, t, 26, o, a - 13.5, s), e.fillStyle = "rgba(255,255,255,0.16)", e.fillRect(i, o, a, 1.6);
+			e.fillStyle = "#0c0c0d", e.fillRect(i, o, 13.5, s), ip(e, "PlayStation", 19.3, 22.4, o + s - 6, 6.6, "#efefea"), rp(e, "PS", 19.3, 12.4, 9.5, 9.5, "#e9e9e4", "#0c0c0d", 6), np(e, t, 26, o, a - 13.5, s), e.fillStyle = "rgba(255,255,255,0.16)", e.fillRect(i, o, a, 1.6);
 		},
 		back: "#111112",
 		edge: 8358029
@@ -15375,12 +15375,12 @@ var op = {
 		plastic: 2057174,
 		rough: .22,
 		spine(e, t, n, r) {
-			e.fillStyle = "#1b5acb", e.fillRect(0, 0, n, r), e.fillStyle = "#f5f6f8", e.fillRect(1.1, 3, n - 2.2, r - 6), e.fillStyle = "#1657c8", e.fillRect(1.1, 3, n - 2.2, 21), ap(e, "PS VITA", n / 2, 4.5, 22.5, 4.4, "#ffffff"), tp(e, t.title, n / 2, 28, r - (t.subtitle ? 30 : 9), 5, "#15161a"), t.subtitle && tp(e, t.subtitle, n / 2, r - 27, r - 7, 2.8, "#5a5d66", `500 2.8px ${qf}`);
+			e.fillStyle = "#1b5acb", e.fillRect(0, 0, n, r), e.fillStyle = "#f5f6f8", e.fillRect(1.1, 3, n - 2.2, r - 6), e.fillStyle = "#1657c8", e.fillRect(1.1, 3, n - 2.2, 21), ip(e, "PS VITA", n / 2, 4.5, 22.5, 4.4, "#ffffff"), ep(e, t.title, n / 2, 28, r - (t.subtitle ? 30 : 9), 5, "#15161a"), t.subtitle && ep(e, t.subtitle, n / 2, r - 27, r - 7, 2.8, "#5a5d66", `500 2.8px ${Kf}`);
 		},
 		cover(e, t, n, r) {
 			e.fillStyle = "#1b5acb", e.fillRect(0, 0, n, r);
 			let i = 2.4, a = n - i * 2, o = r - i * 2;
-			e.fillStyle = "#1657c8", e.fillRect(i, i, a, 15), e.fillStyle = "#ffffff", e.textAlign = "left", e.textBaseline = "middle", e.save(), e.translate(8.4, 10.3), e.scale(1.3, 1), e.font = `300 7.4px ${qf}`, e.fillText("PS VITA", 0, 0), e.restore(), rp(e, t, i, 17.4, a, o - 15), e.fillStyle = "rgba(255,255,255,0.14)", e.fillRect(i, i, a, 1.4);
+			e.fillStyle = "#1657c8", e.fillRect(i, i, a, 15), e.fillStyle = "#ffffff", e.textAlign = "left", e.textBaseline = "middle", e.save(), e.translate(8.4, 10.3), e.scale(1.3, 1), e.font = `300 7.4px ${Kf}`, e.fillText("PS VITA", 0, 0), e.restore(), np(e, t, i, 17.4, a, o - 15), e.fillStyle = "rgba(255,255,255,0.14)", e.fillRect(i, i, a, 1.4);
 		},
 		back: "#1b5acb",
 		edge: 1859023
@@ -15389,12 +15389,12 @@ var op = {
 		plastic: 13620696,
 		rough: .18,
 		spine(e, t, n, r) {
-			e.fillStyle = "#d5dadd", e.fillRect(0, 0, n, r), e.fillStyle = "#f6f6f3", e.fillRect(1.2, 3, n - 2.4, r - 6), e.fillStyle = "#0d0d0f", e.fillRect(1.2, 3, n - 2.4, 20), ap(e, "PSP", n / 2, 5, 21, 6, "#f2f2ee"), tp(e, t.title, n / 2, 27, r - (t.subtitle ? 34 : 10), 5.6, "#15161a"), t.subtitle && tp(e, t.subtitle, n / 2, r - 31, r - 8, 3, "#5a5d66", `500 3px ${qf}`);
+			e.fillStyle = "#d5dadd", e.fillRect(0, 0, n, r), e.fillStyle = "#f6f6f3", e.fillRect(1.2, 3, n - 2.4, r - 6), e.fillStyle = "#0d0d0f", e.fillRect(1.2, 3, n - 2.4, 20), ip(e, "PSP", n / 2, 5, 21, 6, "#f2f2ee"), ep(e, t.title, n / 2, 27, r - (t.subtitle ? 34 : 10), 5.6, "#15161a"), t.subtitle && ep(e, t.subtitle, n / 2, r - 31, r - 8, 3, "#5a5d66", `500 3px ${Kf}`);
 		},
 		cover(e, t, n, r) {
 			e.fillStyle = "#cfd5d8", e.fillRect(0, 0, n, r);
 			let i = 2.6, a = n - i * 2, o = r - i * 2;
-			e.fillStyle = "#0d0d0f", e.fillRect(i, i, 12.5, o), ap(e, "PSP", 8.9, i + o - 44, i + o - 6, 9, "#f2f2ee"), rp(e, t, 15.1, i, a - 12.5, o);
+			e.fillStyle = "#0d0d0f", e.fillRect(i, i, 12.5, o), ip(e, "PSP", 8.9, i + o - 44, i + o - 6, 9, "#f2f2ee"), np(e, t, 15.1, i, a - 12.5, o);
 		},
 		back: "#e9e9e5",
 		edge: 13028817
@@ -15403,19 +15403,19 @@ var op = {
 		plastic: null,
 		rough: .82,
 		spine(e, t, n, r) {
-			e.fillStyle = t.color, e.fillRect(0, 0, n, r), e.fillStyle = "#3a2f93", e.fillRect(0, 0, n, 27), ap(e, "GAME BOY ADVANCE", n / 2, 2, 25, 3.3, "#f1f0f7");
-			let i = Qf(t.color);
-			tp(e, t.title.toUpperCase(), n / 2, 31, r - (t.subtitle ? 30 : 8), 8.4, i), t.subtitle && tp(e, t.subtitle, n / 2, r - 27, r - 6, 3.4, i, `500 3.4px ${qf}`), e.fillStyle = "rgba(255,255,255,0.22)", e.fillRect(0, 0, .5, r), e.fillRect(n - .5, 0, .5, r);
+			e.fillStyle = t.color, e.fillRect(0, 0, n, r), e.fillStyle = "#3a2f93", e.fillRect(0, 0, n, 27), ip(e, "GAME BOY ADVANCE", n / 2, 2, 25, 3.3, "#f1f0f7");
+			let i = Zf(t.color);
+			ep(e, t.title.toUpperCase(), n / 2, 31, r - (t.subtitle ? 30 : 8), 8.4, i), t.subtitle && ep(e, t.subtitle, n / 2, r - 27, r - 6, 3.4, i, `500 3.4px ${Kf}`), e.fillStyle = "rgba(255,255,255,0.22)", e.fillRect(0, 0, .5, r), e.fillRect(n - .5, 0, .5, r);
 		},
 		cover(e, t, n, r) {
-			e.fillStyle = t.color, e.fillRect(0, 0, n, r), rp(e, t, 22, 0, n - 22, r), e.fillStyle = "#3a2f93", e.beginPath(), e.moveTo(0, 0), e.lineTo(26, 0), e.bezierCurveTo(15, r * .3, 15, r * .7, 21, r), e.lineTo(0, r), e.closePath(), e.fill(), e.fillStyle = "#8f88d6", e.beginPath(), e.moveTo(26, 0), e.lineTo(28, 0), e.bezierCurveTo(17, r * .3, 17, r * .7, 23, r), e.lineTo(21, r), e.bezierCurveTo(15, r * .7, 15, r * .3, 26, 0), e.fill(), ap(e, "GAME BOY ADVANCE", 8.4, 8, r - 8, 7.4, "#f1f0f7"), e.fillStyle = "rgba(255,255,255,0.2)", e.fillRect(0, 0, n, .6), e.fillRect(0, r - .6, n, .6);
+			e.fillStyle = t.color, e.fillRect(0, 0, n, r), np(e, t, 22, 0, n - 22, r), e.fillStyle = "#3a2f93", e.beginPath(), e.moveTo(0, 0), e.lineTo(26, 0), e.bezierCurveTo(15, r * .3, 15, r * .7, 21, r), e.lineTo(0, r), e.closePath(), e.fill(), e.fillStyle = "#8f88d6", e.beginPath(), e.moveTo(26, 0), e.lineTo(28, 0), e.bezierCurveTo(17, r * .3, 17, r * .7, 23, r), e.lineTo(21, r), e.bezierCurveTo(15, r * .7, 15, r * .3, 26, 0), e.fill(), ip(e, "GAME BOY ADVANCE", 8.4, 8, r - 8, 7.4, "#f1f0f7"), e.fillStyle = "rgba(255,255,255,0.2)", e.fillRect(0, 0, n, .6), e.fillRect(0, r - .6, n, .6);
 		},
 		back: null,
 		edge: null
 	}
 };
-function sp(e, t, n) {
-	return ep(e, t, 6, (r) => {
+function op(e, t, n) {
+	return $f(e, t, 6, (r) => {
 		r.fillStyle = "#ece4cf", r.fillRect(0, 0, e, t);
 		let i = 7, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296, o = n === "x" ? e : t;
 		for (let i = 0; i < o * 3; i++) {
@@ -15425,9 +15425,9 @@ function sp(e, t, n) {
 		}
 	});
 }
-function cp(e, t) {
-	let { t: n, h: r, color: i } = e, a = t ? Zf(i) > .5 ? "#2a2016" : "#e2c98a" : Qf(i);
-	return ep(n, r, Math.min(10, 2048 / r), (o) => {
+function sp(e, t) {
+	let { t: n, h: r, color: i } = e, a = t ? Xf(i) > .5 ? "#2a2016" : "#e2c98a" : Zf(i);
+	return $f(n, r, Math.min(10, 2048 / r), (o) => {
 		if (o.fillStyle = i, o.fillRect(0, 0, n, r), t) {
 			o.fillStyle = "rgba(0,0,0,0.05)";
 			for (let e = 0; e < r; e += .6) o.fillRect(0, e, n, .25);
@@ -15438,9 +15438,9 @@ function cp(e, t) {
 				r - 26,
 				r - 24
 			]) o.fillRect(n * .14, e, n * .72, .6);
-			tp(o, e.title, n / 2, 19, r - (e.subtitle ? 62 : 32), Math.min(n * .5, 11), a, `700 ${Math.min(n * .5, 11)}px ${Jf}`), e.subtitle && tp(o, e.subtitle, n / 2, r - 58, r - 31, Math.min(n * .3, 6), a, `400 ${Math.min(n * .3, 6)}px ${Jf}`), o.beginPath(), o.arc(n / 2, r - 13, Math.min(n * .22, 4.5), 0, Math.PI * 2), o.lineWidth = .6, o.strokeStyle = a, o.stroke();
+			ep(o, e.title, n / 2, 19, r - (e.subtitle ? 62 : 32), Math.min(n * .5, 11), a, `700 ${Math.min(n * .5, 11)}px ${qf}`), e.subtitle && ep(o, e.subtitle, n / 2, r - 58, r - 31, Math.min(n * .3, 6), a, `400 ${Math.min(n * .3, 6)}px ${qf}`), o.beginPath(), o.arc(n / 2, r - 13, Math.min(n * .22, 4.5), 0, Math.PI * 2), o.lineWidth = .6, o.strokeStyle = a, o.stroke();
 		} else {
-			o.fillStyle = $f(i, .72), o.fillRect(0, 0, n, 16), o.fillStyle = a, tp(o, e.title, n / 2, 22, r - (e.subtitle ? 60 : 30), Math.min(n * .52, 11), a), e.subtitle && tp(o, e.subtitle, n / 2, r - 56, r - 28, Math.min(n * .32, 6), a, `500 ${Math.min(n * .32, 6)}px ${qf}`);
+			o.fillStyle = Qf(i, .72), o.fillRect(0, 0, n, 16), o.fillStyle = a, ep(o, e.title, n / 2, 22, r - (e.subtitle ? 60 : 30), Math.min(n * .52, 11), a), e.subtitle && ep(o, e.subtitle, n / 2, r - 56, r - 28, Math.min(n * .32, 6), a, `500 ${Math.min(n * .32, 6)}px ${Kf}`);
 			let t = Math.min(n * .26, 5);
 			o.fillRect(n / 2 - t, r - 18, t * 2, t * 2), o.fillStyle = i, o.fillRect(n / 2 - t * .45, r - 18 + t * .55, t * .9, t * .9), o.fillStyle = "rgba(255,255,255,0.18)";
 			for (let e of [
@@ -15451,26 +15451,26 @@ function cp(e, t) {
 		}
 	});
 }
-function lp(e, t) {
+function cp(e, t) {
 	let { d: n, h: r, color: i } = e;
-	return ep(n, r, Math.min(6, 1024 / r), (a) => {
+	return $f(n, r, Math.min(6, 1024 / r), (a) => {
 		if (a.fillStyle = i, a.fillRect(0, 0, n, r), e.image) {
-			rp(a, e, 0, 0, n, r);
+			np(a, e, 0, 0, n, r);
 			return;
 		}
-		let o = Qf(i), s = n * .11;
+		let o = Zf(i), s = n * .11;
 		if (a.fillStyle = o, a.textAlign = "left", a.textBaseline = "top", t) {
 			a.lineWidth = .7, a.strokeStyle = o, a.strokeRect(s * .6, s * .6, n - s * 1.2, r - s * 1.2);
-			let t = np(a, e.title, s * 1.3, r * .2, n - s * 2.6, n * .16, Jf);
-			a.fillRect(s * 1.3, t + 4, n * .2, .8), e.subtitle && np(a, e.subtitle, s * 1.3, t + 10, n - s * 2.6, n * .07, Jf, 400);
+			let t = tp(a, e.title, s * 1.3, r * .2, n - s * 2.6, n * .16, qf);
+			a.fillRect(s * 1.3, t + 4, n * .2, .8), e.subtitle && tp(a, e.subtitle, s * 1.3, t + 10, n - s * 2.6, n * .07, qf, 400);
 		} else {
-			a.fillStyle = $f(i, .72), a.fillRect(0, 0, n, r * .09), a.fillStyle = o, a.globalAlpha = .12, a.beginPath(), a.arc(n * .7, r * .72, n * .42, 0, Math.PI * 2), a.fill(), a.globalAlpha = 1;
-			let t = np(a, e.title.toUpperCase(), s, r * .16, n - s * 2, n * .17);
-			e.subtitle && (a.globalAlpha = .78, np(a, e.subtitle, s, t + n * .03, n - s * 2, n * .075, qf, 500), a.globalAlpha = 1), a.fillStyle = "rgba(0,0,0,0.16)", a.fillRect(4.5, 0, .5, r);
+			a.fillStyle = Qf(i, .72), a.fillRect(0, 0, n, r * .09), a.fillStyle = o, a.globalAlpha = .12, a.beginPath(), a.arc(n * .7, r * .72, n * .42, 0, Math.PI * 2), a.fill(), a.globalAlpha = 1;
+			let t = tp(a, e.title.toUpperCase(), s, r * .16, n - s * 2, n * .17);
+			e.subtitle && (a.globalAlpha = .78, tp(a, e.subtitle, s, t + n * .03, n - s * 2, n * .075, Kf, 500), a.globalAlpha = 1), a.fillStyle = "rgba(0,0,0,0.16)", a.fillRect(4.5, 0, .5, r);
 		}
 	});
 }
-var up = [
+var lp = [
 	"#ffd23f",
 	"#ff7a59",
 	"#7fd1c7",
@@ -15481,26 +15481,26 @@ var up = [
 	"#5d8fd6",
 	"#d9534f",
 	"#2f4858"
-], dp = null;
-function fp(e) {
-	let t = Kf[e.type] || Kf.book, n = {
+], up = null;
+function dp(e) {
+	let t = Gf[e.type] || Gf.book, n = {
 		subtitle: "",
 		...e,
-		type: Kf[e.type] ? e.type : "book"
+		type: Gf[e.type] ? e.type : "book"
 	};
-	n.title = (n.title || "Untitled").trim(), n.color || (n.color = up[Math.floor(Xf(n.title + n.type) * up.length)]), n.d = t.d;
+	n.title = (n.title || "Untitled").trim(), n.color || (n.color = lp[Math.floor(Yf(n.title + n.type) * lp.length)]), n.d = t.d;
 	let r = n.type === "book";
-	n.t = +n.t || (r ? 16 + Math.round(Xf(n.title) * 22) : t.t), n.h = +n.h || (r ? 176 + Math.round(Xf(n.title + "h") * 38) : t.h), r && (n.d = 128 + Math.round(Xf(n.title + "d") * 26));
+	n.t = +n.t || (r ? 16 + Math.round(Yf(n.title) * 22) : t.t), n.h = +n.h || (r ? 176 + Math.round(Yf(n.title + "h") * 38) : t.h), r && (n.d = 128 + Math.round(Yf(n.title + "d") * 26));
 	let { t: i, h: a, d: o } = n, s = new Ln();
 	s.name = `${n.type}: ${n.title}`;
 	let c = (e) => new q(e), l, u;
 	if (r) {
-		dp || (dp = {
-			top: sp(40, 40, "x"),
-			fore: sp(40, 40, "x")
+		up || (up = {
+			top: op(40, 40, "x"),
+			fore: op(40, 40, "x")
 		});
 		let e = n.binding ? n.binding === "hard" : n.t >= 27, t = c({
-			map: dp.top,
+			map: up.top,
 			roughness: .9
 		}), r = c({
 			color: n.color,
@@ -15511,10 +15511,10 @@ function fp(e) {
 			roughness: e ? .86 : .5
 		});
 		let d = c({
-			map: cp(n, e),
+			map: sp(n, e),
 			roughness: e ? .86 : .5
 		});
-		if (u = () => lp(n, e), e) {
+		if (u = () => cp(n, e), e) {
 			let e = 2.4, n = 3.4, c = i * .78, u = Math.asin(i / 2 / c), f = c * (1 - Math.cos(u)), p = o - f, m = (t, n) => {
 				let r = new K(new Mi(e, a, p), n);
 				r.position.set(t, 0, -f / 2), s.add(r);
@@ -15544,14 +15544,14 @@ function fp(e) {
 			t
 		]));
 	} else {
-		let e = op[n.type], t = c({
-			map: ep(i, a, Math.min(14, 2048 / a), (t) => e.spine(t, n, i, a)),
+		let e = ap[n.type], t = c({
+			map: $f(i, a, Math.min(14, 2048 / a), (t) => e.spine(t, n, i, a)),
 			roughness: e.rough
 		});
 		l = c({
 			color: e.plastic ?? n.color,
 			roughness: e.rough
-		}), u = () => ep(o, a, Math.min(7, 1024 / a), (t) => e.cover(t, n, o, a));
+		}), u = () => $f(o, a, Math.min(7, 1024 / a), (t) => e.cover(t, n, o, a));
 		let r = c({
 			color: e.edge ?? new G(n.color).multiplyScalar(.82).getHex(),
 			roughness: e.rough
@@ -15576,7 +15576,7 @@ function fp(e) {
 		l.map?.dispose(), l.map = null, t && s.userData.ensureCover();
 	}, s;
 }
-function pp() {
+function fp() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 256;
 	let t = e.getContext("2d");
@@ -15590,12 +15590,12 @@ function pp() {
 	let i = new Oi(e);
 	return i.colorSpace = Je, i.wrapS = i.wrapT = d, i;
 }
-function mp({ cols: e = 1, rows: t = 2, cellW: n = 1290, cellH: r = 236, depth: i = 520, t: a = 24, plinth: o = 50 } = {}) {
+function pp({ cols: e = 1, rows: t = 2, cellW: n = 1290, cellH: r = 236, depth: i = 520, t: a = 24, plinth: o = 50 } = {}) {
 	let s = new Ln();
 	s.name = "shelf";
 	let c = new q({
 		name: "wood",
-		map: pp(),
+		map: fp(),
 		roughness: .62
 	}), l = new q({
 		name: "shelf-back",
@@ -15628,7 +15628,7 @@ function mp({ cols: e = 1, rows: t = 2, cellW: n = 1290, cellH: r = 236, depth: 
 	};
 }
 // src/props/outlines.js
-var hp = {
+var mp = {
 	vita: [
 		[0, -42.95],
 		[3.57, -42.95],
@@ -16379,8 +16379,8 @@ var hp = {
 		[-4.62, -16.96],
 		[-2.37, -16.77]
 	]
-}, gp = "Rockwell, \"Roboto Slab\", Georgia, \"Times New Roman\", serif";
-function _p(e, t, n, r = 0, i = 0, a = 7) {
+}, hp = "Rockwell, \"Roboto Slab\", Georgia, \"Times New Roman\", serif";
+function gp(e, t, n, r = 0, i = 0, a = 7) {
 	let o = e / 2, s = t / 2, c = [
 		[
 			o,
@@ -16411,7 +16411,7 @@ function _p(e, t, n, r = 0, i = 0, a = 7) {
 		}
 	}), l;
 }
-function vp(e, t) {
+function _p(e, t) {
 	let n = e.length;
 	return e.map((r, i) => {
 		let a = e[(i + n - 1) % n], o = e[(i + 1) % n], s = o.y - a.y, c = -(o.x - a.x), l = Math.hypot(s, c) || 1;
@@ -16422,42 +16422,42 @@ function $(e, t, n, r = 1.5) {
 	let i = Math.min(r, (n - t) * .9), a = [Z(e, t), Z(e, n - i)];
 	for (let t = 1; t <= 3; t++) {
 		let r = t / 3 * (Math.PI / 2);
-		a.push(Z(vp(e, i * (1 - Math.cos(r))), n - i + i * Math.sin(r)));
+		a.push(Z(_p(e, i * (1 - Math.cos(r))), n - i + i * Math.sin(r)));
 	}
-	return qu([ud(a), Q(vp(e, i), [], n)]);
+	return qu([ud(a), Q(_p(e, i), [], n)]);
 }
-var yp = (e) => e.rotateX(-Math.PI / 2);
-function bp(e, t, n, r, i, a, o, s = 16) {
+var vp = (e) => e.rotateX(-Math.PI / 2);
+function yp(e, t, n, r, i, a, o, s = 16) {
 	return e.decal(ad(t, n, s, (e, r) => {
 		e.translate(t / 2, n / 2), e.textAlign = "center", e.textBaseline = "middle", o(e, r);
 	}), t, n, r, i, a);
 }
-var xp = (e, t, n, r, i, a) => {
+var bp = (e, t, n, r, i, a) => {
 	e.font = i, e.fillStyle = a, e.fillText(t, n, -r);
 };
-function Sp(e, t, n, r, i, a, o = .45) {
+function xp(e, t, n, r, i, a, o = .45) {
 	e.lineWidth = o, e.lineJoin = "round";
 	let [s, c, l, u] = a;
 	e.strokeStyle = s, e.beginPath(), e.moveTo(t, -(n + r) - i), e.lineTo(t + i, -(n + r) + i * .75), e.lineTo(t - i, -(n + r) + i * .75), e.closePath(), e.stroke(), e.strokeStyle = c, e.beginPath(), e.arc(t + r, -n, i * .9, 0, Math.PI * 2), e.stroke(), e.strokeStyle = l, e.beginPath(), e.moveTo(t - i * .8, -(n - r) - i * .8), e.lineTo(t + i * .8, -(n - r) + i * .8), e.moveTo(t + i * .8, -(n - r) - i * .8), e.lineTo(t - i * .8, -(n - r) + i * .8), e.stroke(), e.strokeStyle = u, e.strokeRect(t - r - i * .8, -n - i * .8, i * 1.6, i * 1.6);
 }
-var Cp = (e, t = 1, n = 1) => hp[e].map(([e, r]) => new H(e * t, r * n));
-function wp(e, t, n, r = 2, i = 2, a = 4) {
+var Sp = (e, t = 1, n = 1) => mp[e].map(([e, r]) => new H(e * t, r * n));
+function Cp(e, t, n, r = 2, i = 2, a = 4) {
 	let o = [];
 	for (let n = 0; n <= a; n++) {
 		let r = n / a * (Math.PI / 2);
-		o.push(Z(vp(e, i * (1 - Math.sin(r))), t + i * (1 - Math.cos(r))));
+		o.push(Z(_p(e, i * (1 - Math.sin(r))), t + i * (1 - Math.cos(r))));
 	}
 	for (let t = 0; t <= a; t++) {
 		let i = t / a * (Math.PI / 2);
-		o.push(Z(vp(e, r * (1 - Math.cos(i))), n - r + r * Math.sin(i)));
+		o.push(Z(_p(e, r * (1 - Math.cos(i))), n - r + r * Math.sin(i)));
 	}
 	return qu([
 		ud(o),
-		Q(vp(e, r), [], n),
-		Q(vp(e, i), [], 0).rotateY(Math.PI).translate(0, 0, t)
+		Q(_p(e, r), [], n),
+		Q(_p(e, i), [], 0).rotateY(Math.PI).translate(0, 0, t)
 	]);
 }
-function Tp(e, t, [n, r], i, a, o) {
+function wp(e, t, [n, r], i, a, o) {
 	let s = -r, c = n, l = o / 2, u = i + o * .45, d = (i, a) => new H(e + n * i + s * a, t + r * i + c * a);
 	return [
 		d(i, 0),
@@ -16467,14 +16467,14 @@ function Tp(e, t, [n, r], i, a, o) {
 		d(u, l)
 	];
 }
-var Ep = (e, t, n, r, i) => n.forEach(([n, a]) => e.add(t, Q(ld(r, n, a, 10), [], i)));
-function Dp(e, t, n = 0) {
+var Tp = (e, t, n, r, i) => n.forEach(([n, a]) => e.add(t, Q(ld(r, n, a, 10), [], i)));
+function Ep(e, t, n = 0) {
 	let { root: r } = e.finish({});
 	r.position.y = n;
 	let i = new Ln();
 	return i.add(r), i.name = t, i.userData.prop = t, i;
 }
-function Op() {
+function Dp() {
 	let e = new md("PS one");
 	e.mat("shell", {
 		color: 12895165,
@@ -16492,22 +16492,22 @@ function Op() {
 		color: 11118755,
 		roughness: .6
 	});
-	let t = Cp("psone");
-	e.add("shell", yp(wp(t, 0, 33.5, 7, 11, 6))), e.add("seam", yp(ud([Z(vp(t, -.05), 17.6), Z(vp(t, -.05), 18.4)]))), e.add("lid", yp($(X(105, 30, 2, 0, 56.5), 31.5, 35.1, 1.2))), e.add("lid", yp($(ld(67.5, 0, -1, 72), 31.5, 36.9, 2.6))), e.add("seam", new Qa(67.4, 68.4, 72).rotateX(-Math.PI / 2).translate(0, 33.56, 1));
-	for (let t of [-1, 1]) e.add("shell", yp($(ld(19.5, t * 75, -49, 44), 30.5, 34.4, 2))), e.add("seam", new Qa(15, 15.8, 44).rotateX(-Math.PI / 2).translate(t * 75, 34.45, 49)), e.add("lid", yp($(ld(15, t * 75, -49, 44), 32.5, 36.1, 1.4)));
+	let t = Sp("psone");
+	e.add("shell", vp(Cp(t, 0, 33.5, 7, 11, 6))), e.add("seam", vp(ud([Z(_p(t, -.05), 17.6), Z(_p(t, -.05), 18.4)]))), e.add("lid", vp($(X(105, 30, 2, 0, 56.5), 31.5, 35.1, 1.2))), e.add("lid", vp($(ld(67.5, 0, -1, 72), 31.5, 36.9, 2.6))), e.add("seam", new Qa(67.4, 68.4, 72).rotateX(-Math.PI / 2).translate(0, 33.56, 1));
+	for (let t of [-1, 1]) e.add("shell", vp($(ld(19.5, t * 75, -49, 44), 30.5, 34.4, 2))), e.add("seam", new Qa(15, 15.8, 44).rotateX(-Math.PI / 2).translate(t * 75, 34.45, 49)), e.add("lid", vp($(ld(15, t * 75, -49, 44), 32.5, 36.1, 1.4)));
 	e.add("seam", new Za(1.6, 5).rotateX(-Math.PI / 2).translate(-75, 31.3, 68.2)), e.add("seam", new Pi(15, 24, Math.PI, Math.PI).translate(0, 29.1, 71.1).rotateX(0));
 	for (let t of [-1, 1]) e.add("door", new Mi(53, 8.4, 2).translate(t * 34.5, 22.6, 71)), e.add("port", $(X(53, 10.5, 4, t * 34.5, 11.8), 65.6, 72.1, .5));
-	bp(e, 150, 30, 0, 17, 72.16, (e, t) => {
+	yp(e, 150, 30, 0, 17, 72.16, (e, t) => {
 		for (let n of [-1, 1]) {
-			xp(e, "MEMORY CARD", n * 34.5, 5.4, `600 2.5px ${t}`, "#74736e");
+			bp(e, "MEMORY CARD", n * 34.5, 5.4, `600 2.5px ${t}`, "#74736e");
 			for (let t = 0; t < 3; t++) {
 				let r = n * 34.5 - 23.5 + t * 16.2;
 				e.fillStyle = "#d7d6d1", e.beginPath(), e.roundRect(r, 2.1, 14.6, 6.2, 1.2), e.fill(), e.fillStyle = "#85847f";
 				for (let t = 0; t < 3; t++) e.fillRect(r + 3.4 + t * 3.3, 4.6, 1.3, 1.3);
 			}
 		}
-	}), bp(e, 170, 144, 0, 36.96, 0, (e, t) => {
-		xp(e, "SONY", 0, 40, `700 9px ${gp}`, "#6f6e68"), [
+	}), yp(e, 170, 144, 0, 36.96, 0, (e, t) => {
+		bp(e, "SONY", 0, 40, `700 9px ${hp}`, "#6f6e68"), [
 			[
 				"#d9382c",
 				-2.6,
@@ -16538,18 +16538,18 @@ function Op() {
 			]
 		].forEach(([t, n, r, i, a]) => {
 			e.fillStyle = t, e.fillRect(n - i / 2, -(-33 + r) - a / 2, i, a);
-		}), xp(e, "PS", -4.6, -43, `500 6.4px ${t}`, "#66655f"), xp(e, "one", 5.4, -43.3, `500 5.2px ${t}`, "#66655f");
-	}).rotation.x = -Math.PI / 2, bp(e, 170, 144, 0, 33.58, 0, (e, t) => {
-		xp(e, "1", -37, -66.5, `500 4px ${t}`, "#a3a29c"), xp(e, "2", 37, -66.5, `500 4px ${t}`, "#a3a29c");
+		}), bp(e, "PS", -4.6, -43, `500 6.4px ${t}`, "#66655f"), bp(e, "one", 5.4, -43.3, `500 5.2px ${t}`, "#66655f");
+	}).rotation.x = -Math.PI / 2, yp(e, 170, 144, 0, 33.58, 0, (e, t) => {
+		bp(e, "1", -37, -66.5, `500 4px ${t}`, "#a3a29c"), bp(e, "2", 37, -66.5, `500 4px ${t}`, "#a3a29c");
 	}).rotation.x = -Math.PI / 2;
 	for (let [t, n] of [[-1, (e, t) => {
-		xp(e, "I/⏻", 0, 2.2, `700 7px ${t}`, "#2f9b68"), xp(e, "RESET", 0, -5, `700 3px ${t}`, "#6f6e68");
+		bp(e, "I/⏻", 0, 2.2, `700 7px ${t}`, "#2f9b68"), bp(e, "RESET", 0, -5, `700 3px ${t}`, "#6f6e68");
 	}], [1, (e) => {
 		e.strokeStyle = "#3d86c9", e.lineWidth = 1.1, e.lineJoin = "round", e.beginPath(), e.moveTo(-4.4, .6), e.lineTo(0, -4.8), e.lineTo(4.4, .6), e.closePath(), e.stroke(), e.strokeRect(-4.4, 2.6, 8.8, 1.8);
-	}]]) bp(e, 26, 26, t * 75, 36.16, 49, n).rotation.x = -Math.PI / 2;
-	return Dp(e, "ps-one");
+	}]]) yp(e, 26, 26, t * 75, 36.16, 49, n).rotation.x = -Math.PI / 2;
+	return Ep(e, "ps-one");
 }
-function kp() {
+function Op() {
 	let e = new md("DualShock");
 	e.mat("shell", {
 		color: 14078918,
@@ -16563,30 +16563,30 @@ function kp() {
 	}), e.mat("cable", {
 		color: 12171443,
 		roughness: .7
-	}), e.add("shell", yp(wp(Cp("pad"), 0, 27, 6, 7, 5)));
+	}), e.add("shell", vp(Cp(Sp("pad"), 0, 27, 6, 7, 5)));
 	for (let t of [-1, 1]) e.add("shell", new Ni(12.5, 26, 10, 24).rotateX(Math.PI / 2 - .5).rotateY(t * .19).translate(t * 62.5, 5, 24));
-	for (let t of [-1, 1]) e.add("key", yp($(X(22, 7, 3, t * 45, 44.6), 9, 21, 2)));
+	for (let t of [-1, 1]) e.add("key", vp($(X(22, 7, 3, t * 45, 44.6), 9, 21, 2)));
 	let t = -45.5;
-	e.add("pad", yp($(X(37, 13.5, 2, t, 11), 26, 27.5, .4))), e.add("pad", yp($(X(13.5, 37, 2, t, 11), 26, 27.5, .4)));
+	e.add("pad", vp($(X(37, 13.5, 2, t, 11), 26, 27.5, .4))), e.add("pad", vp($(X(13.5, 37, 2, t, 11), 26, 27.5, .4)));
 	for (let n of [
 		[0, 1],
 		[0, -1],
 		[1, 0],
 		[-1, 0]
-	]) e.add("key", yp($(Tp(t, 11, n, 2.2, 13.6, 9.6), 27, 30, .9)));
-	e.add("pad", yp($(X(38, 14.5, 2, 46, 11), 26, 27.5, .4))), e.add("pad", yp($(X(14.5, 38, 2, 46, 11), 26, 27.5, .4)));
+	]) e.add("key", vp($(wp(t, 11, n, 2.2, 13.6, 9.6), 27, 30, .9)));
+	e.add("pad", vp($(X(38, 14.5, 2, 46, 11), 26, 27.5, .4))), e.add("pad", vp($(X(14.5, 38, 2, 46, 11), 26, 27.5, .4)));
 	for (let [t, n] of [
 		[0, 12],
 		[12, 0],
 		[0, -12],
 		[-12, 0]
-	]) e.add("key", yp($(ld(6.2, 46 + t, 11 + n, 28), 27, 30.2, 1)));
-	for (let t of [-1, 1]) e.add("shell", yp($(ld(15.5, t * 23, -11.5, 36), 25, 29.2, 2.2))), e.add("key", yp($(ld(4, t * 23, -11.5, 16), 27, 31, .4))), e.add("key", yp($(ld(11, t * 23, -11.5, 32), 30.4, 34.4, 2)));
-	e.add("key", yp($(X(7.6, 4.4, .9, -14.5, 11), 27, 28.3, .4))), e.add("key", yp($([
+	]) e.add("key", vp($(ld(6.2, 46 + t, 11 + n, 28), 27, 30.2, 1)));
+	for (let t of [-1, 1]) e.add("shell", vp($(ld(15.5, t * 23, -11.5, 36), 25, 29.2, 2.2))), e.add("key", vp($(ld(4, t * 23, -11.5, 16), 27, 31, .4))), e.add("key", vp($(ld(11, t * 23, -11.5, 32), 30.4, 34.4, 2)));
+	e.add("key", vp($(X(7.6, 4.4, .9, -14.5, 11), 27, 28.3, .4))), e.add("key", vp($([
 		new H(10.5, 13.9),
 		new H(10.5, 8.1),
 		new H(19.5, 11)
-	], 27, 28.3, .3))), e.add("key", yp($(X(7.6, 4.8, .9, 0, -4.2), 27, 28.3, .4))), e.add("key", new Za(4.6, 1.6).rotateX(-Math.PI / 2).translate(0, 27.06, 11.2));
+	], 27, 28.3, .3))), e.add("key", vp($(X(7.6, 4.8, .9, 0, -4.2), 27, 28.3, .4))), e.add("key", new Za(4.6, 1.6).rotateX(-Math.PI / 2).translate(0, 27.06, 11.2));
 	let n = new Gi([
 		[
 			0,
@@ -16614,9 +16614,9 @@ function kp() {
 			-64
 		]
 	].map((e) => new U(...e)));
-	return e.add("cable", new ro(n, 36, 2.3, 8)), bp(e, 160, 100, 0, 27.08, 0, (e, n) => {
+	return e.add("cable", new ro(n, 36, 2.3, 8)), yp(e, 160, 100, 0, 27.08, 0, (e, n) => {
 		let r = "#85837a";
-		xp(e, "SONY", 0, 24.5, `700 7.6px ${gp}`, r), xp(e, "PS", -2.8, 9.6, `500 3.6px ${n}`, r), xp(e, "one", 2.6, 9.4, `500 3px ${n}`, r), xp(e, "SELECT", -14.5, 6.2, `500 2.5px ${n}`, r), xp(e, "START", 14.5, 6.2, `500 2.5px ${n}`, r), xp(e, "ANALOG", 0, .9, `500 2.5px ${n}`, r), e.strokeStyle = r, e.lineWidth = .35, e.lineJoin = "round";
+		bp(e, "SONY", 0, 24.5, `700 7.6px ${hp}`, r), bp(e, "PS", -2.8, 9.6, `500 3.6px ${n}`, r), bp(e, "one", 2.6, 9.4, `500 3px ${n}`, r), bp(e, "SELECT", -14.5, 6.2, `500 2.5px ${n}`, r), bp(e, "START", 14.5, 6.2, `500 2.5px ${n}`, r), bp(e, "ANALOG", 0, .9, `500 2.5px ${n}`, r), e.strokeStyle = r, e.lineWidth = .35, e.lineJoin = "round";
 		for (let [n, r, i] of [
 			[
 				0,
@@ -16639,14 +16639,14 @@ function kp() {
 				-Math.PI / 2
 			]
 		]) e.save(), e.translate(t + n * 16.2, -(11 + r * 16.2)), e.rotate(i), e.beginPath(), e.moveTo(-1.6, .7), e.lineTo(0, -.7), e.lineTo(1.6, .7), e.stroke(), e.restore();
-	}).rotation.x = -Math.PI / 2, bp(e, 44, 44, 46, 30.259999999999998, -11, (e) => Sp(e, 0, 0, 12, 3.3, [
+	}).rotation.x = -Math.PI / 2, yp(e, 44, 44, 46, 30.259999999999998, -11, (e) => xp(e, 0, 0, 12, 3.3, [
 		"#2fa07a",
 		"#d8553f",
 		"#7f9bd6",
 		"#d98ab0"
-	], .65)).rotation.x = -Math.PI / 2, Dp(e, "dualshock");
+	], .65)).rotation.x = -Math.PI / 2, Ep(e, "dualshock");
 }
-function Ap() {
+function kp() {
 	let e = new md("Game Boy Advance");
 	e.mat("shell", {
 		color: 5523112,
@@ -16664,21 +16664,21 @@ function Ap() {
 		color: 8422523,
 		roughness: .6
 	});
-	let t = Cp("gba", 1, 1.02);
-	for (let t of [-1, 1]) e.add("key", wp(_p(26, 13, [
+	let t = Sp("gba", 1, 1.02);
+	for (let t of [-1, 1]) e.add("key", Cp(gp(26, 13, [
 		6.5,
 		6.5,
 		3,
 		3
 	], 0, 0).map((e) => e.clone().rotateAround(new H(), -t * .5).add(new H(t * 60.6, 25.5))), 3.5, 14.5, 3, 3));
-	e.add("shell", wp(t, 0, 21, 4.5, 8, 5));
-	let n = _p(74, 63.5, [
+	e.add("shell", Cp(t, 0, 21, 4.5, 8, 5));
+	let n = gp(74, 63.5, [
 		5.5,
 		5.5,
 		15,
 		15
 	], 0, -1.2);
-	e.add("dark", Q(_p(77, 66.5, [
+	e.add("dark", Q(gp(77, 66.5, [
 		7,
 		7,
 		16.5,
@@ -16696,16 +16696,16 @@ function Ap() {
 		[13, -14]
 	].forEach(([t, n], r) => {
 		e.add("dark", Q(X(t, 1.15, .55), [], 0).rotateZ(.21).translate(47.8 - r * .2, -10.6 + n, 21.04));
-	}), e.add("dark", Q(ld(1.15, 45.9, 25.2, 14), [], 21.04)), bp(e, 150, 86, 0, 0, 21.98, (e, t) => {
-		e.save(), e.translate(0, 25.2), e.transform(1, 0, -.2, 1, 0, 0), xp(e, "GAME BOY", -10.2, 0, `900 3.9px ${t}`, "#d4d4d8"), e.save(), e.scale(1.15, 1), xp(e, "ADVANCE", 9.9, -.1, `600 3.3px ${t}`, "#d4d4d8"), e.restore(), e.restore();
-	}, 20), bp(e, 150, 86, 0, 0, 21.06, (e, t) => {
+	}), e.add("dark", Q(ld(1.15, 45.9, 25.2, 14), [], 21.04)), yp(e, 150, 86, 0, 0, 21.98, (e, t) => {
+		e.save(), e.translate(0, 25.2), e.transform(1, 0, -.2, 1, 0, 0), bp(e, "GAME BOY", -10.2, 0, `900 3.9px ${t}`, "#d4d4d8"), e.save(), e.scale(1.15, 1), bp(e, "ADVANCE", 9.9, -.1, `600 3.3px ${t}`, "#d4d4d8"), e.restore(), e.restore();
+	}, 20), yp(e, 150, 86, 0, 0, 21.06, (e, t) => {
 		let n = "#473c9f";
 		e.strokeStyle = n, e.lineWidth = .45;
-		for (let [r, i] of [[-13.1, "START"], [-21.2, "SELECT"]]) e.beginPath(), e.roundRect(-58.5, -r - 2.7, 13.5, 5.4, 2.7), e.stroke(), xp(e, i, -52.4, r, `800 2.3px ${t}`, n);
-		xp(e, "POWER", 53, 25.2, `800 2.2px ${t}`, n), e.beginPath(), e.ellipse(1.5, -35.6, 9, 2.3, 0, 0, Math.PI * 2), e.stroke(), xp(e, "Nintendo", 1.5, 35.5, `800 3px ${t}`, n);
-	}, 20), Dp(e, "gba", 40);
+		for (let [r, i] of [[-13.1, "START"], [-21.2, "SELECT"]]) e.beginPath(), e.roundRect(-58.5, -r - 2.7, 13.5, 5.4, 2.7), e.stroke(), bp(e, i, -52.4, r, `800 2.3px ${t}`, n);
+		bp(e, "POWER", 53, 25.2, `800 2.2px ${t}`, n), e.beginPath(), e.ellipse(1.5, -35.6, 9, 2.3, 0, 0, Math.PI * 2), e.stroke(), bp(e, "Nintendo", 1.5, 35.5, `800 3px ${t}`, n);
+	}, 20), Ep(e, "gba", 40);
 }
-function jp() {
+function Ap() {
 	let e = new md("PS Vita");
 	e.mat("shell", {
 		color: 1513242,
@@ -16724,14 +16724,14 @@ function jp() {
 		roughness: .35
 	});
 	let t = 85.1;
-	e.add("shell", wp(Cp("vita", 1, t / 85.9), 0, 14, 3.2, 5, 5)), e.add("face", $(X(121.5, 81.5, 5, 0, 1.3), 13.4, 14.5, .45)), e.add("lcd", new Za(110.7, 62.3).translate(0, 3.8, 14.53));
+	e.add("shell", Cp(Sp("vita", 1, t / 85.9), 0, 14, 3.2, 5, 5)), e.add("face", $(X(121.5, 81.5, 5, 0, 1.3), 13.4, 14.5, .45)), e.add("lcd", new Za(110.7, 62.3).translate(0, 3.8, 14.53));
 	let n = -74.5, r = 14.3;
 	for (let t of [
 		[0, 1],
 		[0, -1],
 		[1, 0],
 		[-1, 0]
-	]) e.add("key", $(Tp(n, r, t, 1.6, 10, 6.2), 14, 15.7, .6));
+	]) e.add("key", $(wp(n, r, t, 1.6, 10, 6.2), 14, 15.7, .6));
 	for (let [t, n] of [[-70, -6.8999999999999995], [68.8, -6.6000000000000005]]) e.add("face", Q(ld(8.2, t, n, 32), [], 14.04)), e.add("stick", $(ld(3.2, t, n, 16), 14, 16.6, .3)), e.add("stick", $(ld(6.2, t, n, 28), 16.2, 18.6, 1.3));
 	let i = 73.8, a = 14.600000000000001;
 	for (let [t, n] of [
@@ -16742,7 +16742,7 @@ function jp() {
 	]) e.add("key", $(ld(3.7, i + t, a + n, 22), 14, 15.6, .6));
 	e.add("key", $(ld(3, 65.6, 27.1, 20), 14, 14.9, .4)), e.add("key", $(ld(4.1, -71.5, -22.2, 22), 14, 14.9, .4));
 	for (let t of [65.6, 74.6]) e.add("key", $(ld(3.7, t, -22.4, 22), 14, 14.9, .4));
-	for (let [t, n] of [[-84, -6.8999999999999995], [82.3, -6.8999999999999995]]) Ep(e, "face", [
+	for (let [t, n] of [[-84, -6.8999999999999995], [82.3, -6.8999999999999995]]) Tp(e, "face", [
 		[0, 0],
 		[2.2, 1.3],
 		[2.2, -1.3],
@@ -16751,10 +16751,10 @@ function jp() {
 		[0, 2.6],
 		[0, -2.6]
 	].map(([e, r]) => [t + e, n + r]), .6, 14.05);
-	return bp(e, 190, 90, 0, 0, 14.56, (e, t) => {
-		xp(e, "SONY", -48, 38.4, `700 4.3px ${gp}`, "#d2d2d6"), e.save(), e.translate(-.8, 33), e.scale(1.42, 1), xp(e, "PS VITA", 0, 0, `200 5.6px ${t}`, "#dcdce0"), e.restore();
-	}, 20), bp(e, 190, 90, 0, 0, 15.66, (e, t) => {
-		Sp(e, i, a, 8, 1.8, [
+	return yp(e, 190, 90, 0, 0, 14.56, (e, t) => {
+		bp(e, "SONY", -48, 38.4, `700 4.3px ${hp}`, "#d2d2d6"), e.save(), e.translate(-.8, 33), e.scale(1.42, 1), bp(e, "PS VITA", 0, 0, `200 5.6px ${t}`, "#dcdce0"), e.restore();
+	}, 20), yp(e, 190, 90, 0, 0, 15.66, (e, t) => {
+		xp(e, i, a, 8, 1.8, [
 			"#c4c4c8",
 			"#c4c4c8",
 			"#c4c4c8",
@@ -16782,11 +16782,11 @@ function jp() {
 				-Math.PI / 2
 			]
 		]) e.save(), e.translate(n + t * 6.6, -(r + i * 6.6)), e.rotate(a), e.beginPath(), e.moveTo(-1.1, .6), e.lineTo(0, -.6), e.lineTo(1.1, .6), e.closePath(), e.stroke(), e.restore();
-	}, 20), bp(e, 190, 90, 0, 0, 14.96, (e, t) => {
-		xp(e, "SELECT", 65.6, -22.4, `700 1.5px ${t}`, "#e6e6ea"), xp(e, "START", 74.6, -22.4, `700 1.5px ${t}`, "#e6e6ea");
-	}, 24), Dp(e, "ps-vita", t / 2);
+	}, 20), yp(e, 190, 90, 0, 0, 14.96, (e, t) => {
+		bp(e, "SELECT", 65.6, -22.4, `700 1.5px ${t}`, "#e6e6ea"), bp(e, "START", 74.6, -22.4, `700 1.5px ${t}`, "#e6e6ea");
+	}, 24), Ep(e, "ps-vita", t / 2);
 }
-function Mp() {
+function jp() {
 	let e = new md("PSP Go");
 	e.mat("silver", {
 		color: 12171965,
@@ -16808,8 +16808,8 @@ function Mp() {
 		color: 3421755,
 		roughness: .35
 	});
-	let t = 38.8, n = 9.5, r = Cp("pspgo");
-	e.add("silver", wp(r, 0, 9, 1.6, 4, 4)), e.add("deck", $(vp(r, 2.6), 8.1, n, .6)), e.add("silver", new no(4.2, 1.1, 8, 20).translate(-58.5, -30.5, 3));
+	let t = 38.8, n = 9.5, r = Sp("pspgo");
+	e.add("silver", Cp(r, 0, 9, 1.6, 4, 4)), e.add("deck", $(_p(r, 2.6), 8.1, n, .6)), e.add("silver", new no(4.2, 1.1, 8, 20).translate(-58.5, -30.5, 3));
 	let i = n, a = -15.5, o = 34.9;
 	for (let t of [-1, 1]) e.add("deck", $(ld(16.6, t * o, a, 44), 8.9, 10, .5)), e.add("silver", new Qa(12.5, 14.7, 48).translate(t * o, a, 10.03));
 	for (let t of [
@@ -16817,7 +16817,7 @@ function Mp() {
 		[0, -1],
 		[1, 0],
 		[-1, 0]
-	]) e.add("key", $(Tp(-34.9, a, t, 1.6, 11, 8.6), 9.9, 11.4, .6));
+	]) e.add("key", $(wp(-34.9, a, t, 1.6, 11, 8.6), 9.9, 11.4, .6));
 	for (let [t, n] of [
 		[0, 8.4],
 		[8.4, 0],
@@ -16833,8 +16833,8 @@ function Mp() {
 		}
 		return e > 0 ? t : t.reverse();
 	};
-	e.add("key", $(s(1), i, 10.7, .4)), e.add("key", $(s(-1), i, 10.7, .4)), e.add("face", Q(X(2.4, 1.1, .5, 0, -31.6), [], 9.54)), bp(e, 130, 70, 0, 0, 11.46, (e, t) => {
-		Sp(e, o, a, 8.4, 1.75, [
+	e.add("key", $(s(1), i, 10.7, .4)), e.add("key", $(s(-1), i, 10.7, .4)), e.add("face", Q(X(2.4, 1.1, .5, 0, -31.6), [], 9.54)), yp(e, 130, 70, 0, 0, 11.46, (e, t) => {
+		xp(e, o, a, 8.4, 1.75, [
 			"#d6d6da",
 			"#d6d6da",
 			"#d6d6da",
@@ -16862,43 +16862,43 @@ function Mp() {
 				-Math.PI / 2
 			]
 		]) e.save(), e.translate(-34.9 + t * 8, -(a + n * 8)), e.rotate(r), e.beginPath(), e.moveTo(-1.2, .7), e.lineTo(0, -.7), e.lineTo(1.2, .7), e.closePath(), e.stroke(), e.restore();
-	}, 24), bp(e, 130, 70, 0, 0, 10.76, (e, t) => {
-		xp(e, "SELECT", 10.8, -18.3, `500 1.9px ${t}`, "#d6d6da"), xp(e, "START", 10.8, -23.3, `500 1.9px ${t}`, "#d6d6da");
+	}, 24), yp(e, 130, 70, 0, 0, 10.76, (e, t) => {
+		bp(e, "SELECT", 10.8, -18.3, `500 1.9px ${t}`, "#d6d6da"), bp(e, "START", 10.8, -23.3, `500 1.9px ${t}`, "#d6d6da");
 	}, 24);
 	let c = r.map((e) => new H(e.x, e.y + t));
-	e.add("silver", ud([Z(vp(c, .3), 9.6), Z(vp(c, .3), 10.8)])), e.add("deck", wp(c, 10.7, 16.5, 1.8, 1.2, 4)), e.add("face", $(X(86.5, 56, 1.5, 0, 38.8), 16.1, 16.85, .3)), e.add("lcd", new Za(84.1, 47.3).translate(0, 40.8, 16.88)), e.add("key", $(_p(9, 9, [
+	e.add("silver", ud([Z(_p(c, .3), 9.6), Z(_p(c, .3), 10.8)])), e.add("deck", Cp(c, 10.7, 16.5, 1.8, 1.2, 4)), e.add("face", $(X(86.5, 56, 1.5, 0, 38.8), 16.1, 16.85, .3)), e.add("lcd", new Za(84.1, 47.3).translate(0, 40.8, 16.88)), e.add("key", $(gp(9, 9, [
 		4.5,
 		2,
 		4.5,
 		4.5
 	], -52.2, 23.799999999999997), 16.2, 17.2, .4));
-	for (let t of [-51.2, 51.3]) Ep(e, "face", [
+	for (let t of [-51.2, 51.3]) Tp(e, "face", [
 		[0, 1.5],
 		[1.5, 0],
 		[0, -1.5],
 		[-1.5, 0]
 	].map(([e, n]) => [t + e, 48.8 + n]), .7, 16.54);
-	return Ep(e, "key", [[-52.6, 57.8], [52.8, 56.8]], .9, 16.54), bp(e, 130, 70, 0, t, 16.92, (e, t) => {
-		xp(e, "SONY", .8, 29.4, `700 3.6px ${gp}`, "#cfcfd3"), e.strokeStyle = "#dedee2", e.lineWidth = .42, e.lineCap = "butt", e.lineJoin = "miter";
+	return Tp(e, "key", [[-52.6, 57.8], [52.8, 56.8]], .9, 16.54), yp(e, 130, 70, 0, t, 16.92, (e, t) => {
+		bp(e, "SONY", .8, 29.4, `700 3.6px ${hp}`, "#cfcfd3"), e.strokeStyle = "#dedee2", e.lineWidth = .42, e.lineCap = "butt", e.lineJoin = "miter";
 		let n = 24.7 - 1.35, r = 24.7, i = 26.05, a = (t) => {
 			e.beginPath(), e.moveTo(t, i), e.lineTo(t, r), e.lineTo(t + 5.6, r), e.lineTo(t + 5.6, n), e.lineTo(t, n), e.stroke();
 		};
 		a(-9), e.beginPath(), e.moveTo(3.2, n), e.lineTo(-2.4, n), e.lineTo(-2.4, r), e.lineTo(3.2, r), e.lineTo(3.2, i), e.lineTo(-2.4, i), e.stroke(), a(4.2);
-	}, 24), Dp(e, "psp-go", 69 / 2);
+	}, 24), Ep(e, "psp-go", 69 / 2);
 }
-var Np = {
-	"ps-one": Op,
-	dualshock: kp,
-	gba: Ap,
-	"ps-vita": jp,
-	"psp-go": Mp
-}, Pp = -16, Fp = new U(1, 0, 0), Ip = new U(0, 1, 0), Lp = new U(0, 0, 1), Rp = (e, t) => new zt().setFromAxisAngle(e, t), zp = {
+var Mp = {
+	"ps-one": Dp,
+	dualshock: Op,
+	gba: kp,
+	"ps-vita": Ap,
+	"psp-go": jp
+}, Np = -16, Pp = new U(1, 0, 0), Fp = new U(0, 1, 0), Ip = new U(0, 0, 1), Lp = (e, t) => new zt().setFromAxisAngle(e, t), Rp = {
 	"ps-one": [193, 144],
 	dualshock: [157, 96],
 	gba: [145, 82],
 	"ps-vita": [184, 85],
 	"psp-go": [128, 108]
-}, Bp = class {
+}, zp = class {
 	constructor(e, t) {
 		this.ctx = e, this.row = t, this.x = t.x0 + 10, this.last = null, this.seg = 0, this.mine = [];
 	}
@@ -16915,7 +16915,7 @@ var Np = {
 		let { rnd: r } = this.ctx, i = this.x, a = 0;
 		for (let i of this.ctx.take(e, t)) {
 			let e = i.userData.spec;
-			e.t > this.room || e.h > this.row.h - 4 ? this.ctx.back(i) : (this._put(i, new U(this.x + e.t / 2, this.row.y + e.h / 2, Pp - n - e.d / 2 - r() * 9)), this.x += e.t + .5, a++);
+			e.t > this.room || e.h > this.row.h - 4 ? this.ctx.back(i) : (this._put(i, new U(this.x + e.t / 2, this.row.y + e.h / 2, Np - n - e.d / 2 - r() * 9)), this.x += e.t + .5, a++);
 		}
 		return a && (this.last = {
 			x0: i,
@@ -16924,14 +16924,14 @@ var Np = {
 		}), this;
 	}
 	withProp(e, t, n, r = 0) {
-		let i = this.ctx.take(e, t), a = i.reduce((e, t) => e + t.userData.spec.t + .5, 0), o = Math.max(a, zp[n][0] * .82);
+		let i = this.ctx.take(e, t), a = i.reduce((e, t) => e + t.userData.spec.t + .5, 0), o = Math.max(a, Rp[n][0] * .82);
 		if (i.reverse().forEach((e) => this.ctx.back(e)), o > this.room) return this.up(e, t);
 		let s = this.x;
 		this.x = s + (o - a) / 2, this.up(e, t, { push: 30 });
 		let c = this.ctx.makeProp(n);
 		if (c) {
 			let e = new Ln();
-			e.add(c), c.rotation.x = -.24, this._put(e, new U(s + o / 2, this.row.y, -20), Rp(Ip, r));
+			e.add(c), c.rotation.x = -.24, this._put(e, new U(s + o / 2, this.row.y, -20), Lp(Fp, r));
 		}
 		return this.x = s + o + 6, this;
 	}
@@ -16947,7 +16947,7 @@ var Np = {
 		let r = n.userData.spec, i = t + this.ctx.rnd() * .06, a = r.h * Math.sin(i) + r.t * Math.cos(i);
 		if (a > this.room) return this.ctx.back(n), this;
 		let o = this.x + r.h * Math.sin(i);
-		return this._put(n, new U(o + r.t / 2 * Math.cos(i) - r.h / 2 * Math.sin(i), this.row.y + r.t / 2 * Math.sin(i) + r.h / 2 * Math.cos(i), Pp - r.d / 2 - 4), Rp(Lp, i)), this.x += a + 1, this;
+		return this._put(n, new U(o + r.t / 2 * Math.cos(i) - r.h / 2 * Math.sin(i), this.row.y + r.t / 2 * Math.sin(i) + r.h / 2 * Math.cos(i), Np - r.d / 2 - 4), Lp(Ip, i)), this.x += a + 1, this;
 	}
 	pile(e) {
 		let { rnd: t } = this.ctx, n = e.flatMap(([e, t]) => this.ctx.take(e, t));
@@ -16958,7 +16958,7 @@ var Np = {
 		n.sort((e, t) => t.userData.spec.h * t.userData.spec.d - e.userData.spec.h * e.userData.spec.d);
 		for (let e of n) {
 			let n = e.userData.spec;
-			a + n.t > this.row.y + this.row.h - 6 ? this.ctx.back(e) : (this._put(e, new U(i + (t() - .5) * 12, a + n.t / 2, Pp - n.d / 2 - t() * 14), Rp(Ip, (t() - .5) * .2).multiply(Rp(Lp, Math.PI / 2))), a += n.t + .3);
+			a + n.t > this.row.y + this.row.h - 6 ? this.ctx.back(e) : (this._put(e, new U(i + (t() - .5) * 12, a + n.t / 2, Np - n.d / 2 - t() * 14), Lp(Fp, (t() - .5) * .2).multiply(Lp(Ip, Math.PI / 2))), a += n.t + .3);
 		}
 		return this.last = {
 			x0: this.x,
@@ -16972,22 +16972,22 @@ var Np = {
 		let [t] = this.ctx.take(e, 1);
 		if (!t) return this;
 		let n = t.userData.spec, r = .16;
-		return n.d > this.room ? (this.ctx.back(t), this) : (t.userData.ensureCover(), this._put(t, new U(this.x + n.d / 2, this.row.y + n.h / 2 * Math.cos(r) + n.t / 2 * Math.sin(r), -70 - n.h / 2 * Math.sin(r)), Rp(Fp, -.16).multiply(Rp(Ip, -Math.PI / 2 + (this.ctx.rnd() - .5) * .12))), this.x += n.d + 6, this);
+		return n.d > this.room ? (this.ctx.back(t), this) : (t.userData.ensureCover(), this._put(t, new U(this.x + n.d / 2, this.row.y + n.h / 2 * Math.cos(r) + n.t / 2 * Math.sin(r), -70 - n.h / 2 * Math.sin(r)), Lp(Pp, -.16).multiply(Lp(Fp, -Math.PI / 2 + (this.ctx.rnd() - .5) * .12))), this.x += n.d + 6, this);
 	}
 	prop(e, t = "stand", { turn: n = 0, overlap: r = 0 } = {}) {
 		let i = this.ctx.makeProp(e);
 		if (!i) return this;
-		let [a, o] = zp[e], s = new Ln();
-		if (s.add(i), s.userData.prop = e, t === "on" && this.last?.top) return i.rotation.x = -.1, this._put(s, new U(this.last.cx, this.last.top, -84), Rp(Ip, n)), this;
-		if (t === "against" && this.last) return i.rotation.x = -.2, this._put(s, new U((this.last.x0 + this.last.x1) / 2, this.row.y, Pp - this.last.push + 22), Rp(Ip, n)), this;
+		let [a, o] = Rp[e], s = new Ln();
+		if (s.add(i), s.userData.prop = e, t === "on" && this.last?.top) return i.rotation.x = -.1, this._put(s, new U(this.last.cx, this.last.top, -84), Lp(Fp, n)), this;
+		if (t === "against" && this.last) return i.rotation.x = -.2, this._put(s, new U((this.last.x0 + this.last.x1) / 2, this.row.y, Np - this.last.push + 22), Lp(Fp, n)), this;
 		if (a - r > this.room) return this;
 		if (t === "propped") {
 			let t = e === "ps-one" ? .98 : .9;
-			i.rotation.x = t, i.position.y = o / 2 * Math.sin(t) + 1, this._put(s, new U(this.x - r + a / 2, this.row.y, e === "ps-one" ? -150 : -100), Rp(Ip, n));
-		} else i.rotation.x = -.14, this._put(s, new U(this.x - r + a / 2, this.row.y, -96), Rp(Ip, n));
+			i.rotation.x = t, i.position.y = o / 2 * Math.sin(t) + 1, this._put(s, new U(this.x - r + a / 2, this.row.y, e === "ps-one" ? -150 : -100), Lp(Fp, n));
+		} else i.rotation.x = -.14, this._put(s, new U(this.x - r + a / 2, this.row.y, -96), Lp(Fp, n));
 		return this.x += a - r + 8, this;
 	}
-}, Vp = {
+}, Bp = {
 	tidy(e, t) {
 		e.up("ps1").gap(40).prop("ps-one", "propped", { turn: .1 }).prop("dualshock", "propped", {
 			turn: -.22,
@@ -17013,9 +17013,9 @@ var Np = {
 		}).gap(24).up("book", 4).lean("book", .18).gap(8).pile([["book", 2]]), t.face("gba").up("gba").gap(6).prop("gba", "stand", { turn: .08 }).gap(10).face("vita").up("vita").gap(6).prop("ps-vita", "stand", { turn: -.06 }).gap(10).withProp("psp", 9, "psp-go", .08);
 	}
 };
-function Hp(e, t, n, r) {
+function Vp(e, t, n, r) {
 	var i;
-	let a = Vp[e] || Vp.browsed, o = 0;
+	let a = Bp[e] || Bp.browsed, o = 0;
 	for (let t of e || "browsed") o = o * 31 + t.charCodeAt(0) >>> 0;
 	let s = () => (o = o * 1664525 + 1013904223 >>> 0) / 4294967296, c = {};
 	for (let e of n) (c[i = e.userData.spec.type] || (c[i] = [])).push(e);
@@ -17030,22 +17030,22 @@ function Hp(e, t, n, r) {
 			return (c[t = e.userData.spec.type] || (c[t] = [])).unshift(e);
 		},
 		makeProp: (e) => l.has(e) ? null : (l.add(e), r(e))
-	}, f = t.map((e) => new Bp(d, e));
+	}, f = t.map((e) => new zp(d, e));
 	a(f[0], f[1] || f[0]);
 	for (let e of Object.keys(c)) for (let t of [...f].sort((e, t) => t.room - e.room)) t.up(e);
-	for (let e of Object.keys(zp)) l.has(e) || [...f].sort((e, t) => t.room - e.room)[0].gap(10).prop(e, e === "ps-one" || e === "dualshock" ? "propped" : "stand");
+	for (let e of Object.keys(Rp)) l.has(e) || [...f].sort((e, t) => t.room - e.room)[0].gap(10).prop(e, e === "ps-one" || e === "dualshock" ? "propped" : "stand");
 	f.forEach((e) => e.justify());
 	let p = Object.values(c).flat();
 	for (let e of p) console.warn(`retro-shelf: no room on the shelf for "${e.userData.spec.title}"`);
 	return d.out;
 }
 // src/shelf-element.js
-var Up = [
+var Hp = [
 	"pvm-20m4e",
 	"pvm-9042qm",
 	"kv-9pr1",
 	"kv-5200"
-], Wp = -14, Gp = {
+], Up = -14, Wp = {
 	pyramid: {
 		"pvm-20m4e": { x: 0 },
 		"pvm-9042qm": {
@@ -17147,8 +17147,8 @@ var Up = [
 			z: 96
 		}
 	}
-}, Kp = (e, t, n) => Math.min(n, Math.max(t, e)), qp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, Jp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
-function Yp() {
+}, Gp = (e, t, n) => Math.min(n, Math.max(t, e)), Kp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, qp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
+function Jp() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 160;
 	let t = e.getContext("2d"), n = 23, r = () => (n = n * 1664525 + 1013904223 >>> 0) / 4294967296;
@@ -17159,7 +17159,7 @@ function Yp() {
 	let i = new Oi(e);
 	return i.colorSpace = Je, i;
 }
-function Xp(e, t) {
+function Yp(e, t) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 256;
 	let r = n.getContext("2d");
@@ -17184,7 +17184,7 @@ function Xp(e, t) {
 		metalness: 0
 	};
 }
-function Zp(e, t = !1) {
+function Xp(e, t = !1) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 512;
 	let r = n.getContext("2d");
@@ -17217,7 +17217,7 @@ function Zp(e, t = !1) {
 	let o = new Oi(n);
 	return o.colorSpace = Je, o.wrapS = o.wrapT = d, o.repeat.set(e, t ? 5e3 / 9e3 * e : e), o.anisotropy = 8, o;
 }
-var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Qp {
+var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Zp {
 	static get observedAttributes() {
 		return [
 			"stack",
@@ -17247,7 +17247,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			e.key === "Escape" && (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
 		};
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Vf}${Jp}</style>
+		e.innerHTML = `<style>${Bf}${qp}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div></div><div class="spacer"></div></div>
       <div class="ui">
         <button class="back" part="back" type="button" hidden>&larr; Back</button>
@@ -17353,10 +17353,10 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			reduced: this._reduced,
 			el: this
 		});
-		for (let e of Up) {
+		for (let e of Hp) {
 			let t = new Ln();
 			t.userData.unit = e, this._world.add(t);
-			let n = new Gf();
+			let n = new Wf();
 			n.setAttribute("model", e), n._attachHost(a(t), e), n._parent = t, n.addEventListener("pvm-power", () => this._syncGlow());
 			for (let t of [
 				"pvm-power",
@@ -17381,9 +17381,9 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		}));
 	}
 	_applyPowerAttr() {
-		let e = this.getAttribute("power"), t = e === null || e === "all" ? Up : e.split(/[\s,]+/);
+		let e = this.getAttribute("power"), t = e === null || e === "all" ? Hp : e.split(/[\s,]+/);
 		this._sound.muted = !0;
-		for (let e of Up) this._units[e].power = t.includes(e);
+		for (let e of Hp) this._units[e].power = t.includes(e);
 		this._sound.muted = this.hasAttribute("muted");
 	}
 	_applyGrain() {
@@ -17428,15 +17428,15 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			width: 0,
 			depth: 520,
 			cells: []
-		} : mp({
+		} : pp({
 			cols: 1,
 			rows: 2,
 			cellW: e === "wide" ? 980 : 860
 		});
 		if (t || this._furniture.add(s.group), t || i) {
-			let e = new K(new Za(6e4, 6e4).rotateX(-Math.PI / 2), new q(i ? this.getAttribute("floor") === "carpet" ? Xp(this.getAttribute("floor-color") || "#55682f", 200) : {
+			let e = new K(new Za(6e4, 6e4).rotateX(-Math.PI / 2), new q(i ? this.getAttribute("floor") === "carpet" ? Yp(this.getAttribute("floor-color") || "#55682f", 200) : {
 				color: 9079434,
-				map: Zp(6e4 / 1400),
+				map: Xp(6e4 / 1400),
 				roughness: .5,
 				metalness: 0
 			} : {
@@ -17450,7 +17450,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		if (this.hasAttribute("wall") || c !== null) {
 			let e = new K(new Za(9e3, 5e3), new q({
 				color: 10132122,
-				map: Zp(9e3 / 1400, !0),
+				map: Xp(9e3 / 1400, !0),
 				roughness: .88
 			}));
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
@@ -17464,14 +17464,14 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			}));
 			e.position.set(0, .5, -s.depth / 2), e.raycast = () => {}, this._furniture.add(e);
 		}
-		let l = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), u = Gp[e === "tall" && l[1] ? l[1] : l[0]] || Gp.pyramid;
+		let l = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), u = Wp[e === "tall" && l[1] ? l[1] : l[0]] || Wp.pyramid;
 		this._dark = i;
 		let d = {}, f = s.height, p = -s.width / 2, m = s.width / 2, h = (e) => {
 			if (e in d) return d[e];
 			let n = u[e], r = Tf[e].META.size, a = n.on ? h(n.on) + Tf[n.on].META.size.h : s.height, o = this._units[e]._parent;
-			return o.position.set(n.x, a, Wp - r.d / 2 + (n.z || 0)), o.rotation.y = Rt.degToRad(n.ry || 0), o.updateMatrixWorld(!0), f = Math.max(f, a + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, p = Math.min(p, n.x - r.w / 2), m = Math.max(m, n.x + r.w / 2), d[e] = a;
+			return o.position.set(n.x, a, Up - r.d / 2 + (n.z || 0)), o.rotation.y = Rt.degToRad(n.ry || 0), o.updateMatrixWorld(!0), f = Math.max(f, a + (e === "kv-5200" ? 269 : r.h)), this._units[e]._m.shadow.visible = !i && t && !n.on, p = Math.min(p, n.x - r.w / 2), m = Math.max(m, n.x + r.w / 2), d[e] = a;
 		};
-		if (Up.forEach(h), this._buildGlow(), this._bounds = {
+		if (Hp.forEach(h), this._buildGlow(), this._bounds = {
 			w: Math.max(-p, m) * 2,
 			h: f
 		}, c !== null) {
@@ -17498,7 +17498,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			}
 		}
 		if (this._smoke = [], this.hasAttribute("smoke")) {
-			let e = new G(c || (c === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = Yp(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
+			let e = new G(c || (c === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = Jp(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
 			for (let i = 0; i < 14; i++) {
 				let o = i < 9, s = 900 + a() * 1100, c = new Zr({
 					map: n,
@@ -17583,7 +17583,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 				"psp-go": 11126527
 			};
 			for (let [e, a, o, s] of n) {
-				let n = Np[e](), c = new Ln();
+				let n = Mp[e](), c = new Ln();
 				if (c.add(n), r[e]) {
 					n.rotation.x = -Math.PI / 2, n.traverse((t) => {
 						t.name === "lcd" && (t.material = new Zr({ color: r[e] }));
@@ -17612,10 +17612,10 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			h: e.getAttribute("height"),
 			binding: e.getAttribute("binding")
 		})).map((e) => {
-			let t = fp(e);
+			let t = dp(e);
 			return t.userData.el = e.el, t;
 		});
-		for (let e of Hp(this.getAttribute("arrange") || "browsed", s.cells, g, (e) => Np[e]())) {
+		for (let e of Vp(this.getAttribute("arrange") || "browsed", s.cells, g, (e) => Mp[e]())) {
 			if (e.userData.spec) {
 				e.userData.home = {
 					pos: e.position.clone(),
@@ -17629,7 +17629,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		this._buildA11y(), this._fit(), this._focusKey && this._aim();
 	}
 	_buildGlow() {
-		for (let e of Up) {
+		for (let e of Hp) {
 			let t = this._units[e], n = t._parent, r = t._m.picture;
 			if (t._glow && (n.remove(t._glow, t._glow.target), t._glow.dispose(), t._glow = null), t._m.crtMaterial.uniforms.uRoom.value = this._room ?? 1, !this._dark) continue;
 			let i = this.querySelector(`[slot="${e}"]`), a = i ? getComputedStyle(i).backgroundColor : "", o = new G(!a || a === "transparent" || a.endsWith(", 0)") ? "#cfe0ff" : a), s = o.getHSL({});
@@ -17659,8 +17659,8 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			let n = document.createElement("button");
 			n.type = "button", n.textContent = e, n.addEventListener("click", t), this._sr.append(n);
 		};
-		for (let t of Up) e(`Look at the ${Tf[t].META.name}`, () => this.focusTV(t)), e(`Read the ${Tf[t].META.name} page full screen`, () => this.openReader(t)), this._sr.append(this._units[t]._sr);
-		this._items.forEach((t, n) => e(`${Kf[t.userData.spec.type].name}: ${t.userData.spec.title}`, () => this.select(n)));
+		for (let t of Hp) e(`Look at the ${Tf[t].META.name}`, () => this.focusTV(t)), e(`Read the ${Tf[t].META.name} page full screen`, () => this.openReader(t)), this._sr.append(this._units[t]._sr);
+		this._items.forEach((t, n) => e(`${Gf[t.userData.spec.type].name}: ${t.userData.spec.title}`, () => this.select(n)));
 	}
 	_resize() {
 		if (!this._renderer) return;
@@ -17696,7 +17696,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		let t = !1;
 		for (let [n, r] of this._tweens) {
 			let i = Math.min((e - r.start) / r.dur, 1);
-			r.fn(qp(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
+			r.fn(Kp(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
 		}
 		let n = this._over, r = this._camera, i = n.top - n.viewH / 2 - this._wall.scrollTop / n.pxPerMm, a = this._par.x * 26, o = this._par.y * 16, s = this._f, c = this._focus;
 		if (c && s > 0) {
@@ -17885,7 +17885,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		});
 		let d = n.userData.el, f = (e) => this._card.querySelector(e);
 		for (let e of this.querySelectorAll("retro-item[slot=\"card\"]")) e.removeAttribute("slot");
-		d.setAttribute("slot", "card"), f(".card-type").textContent = Kf[r.type].name, f(".card-title").textContent = r.title, f(".card-sub").textContent = r.subtitle, f(".card-sub").hidden = !r.subtitle;
+		d.setAttribute("slot", "card"), f(".card-type").textContent = Gf[r.type].name, f(".card-title").textContent = r.title, f(".card-sub").textContent = r.subtitle, f(".card-sub").hidden = !r.subtitle;
 		let p = f(".card-link"), m = d.getAttribute("href");
 		p.hidden = !m, m && (p.href = m, p.textContent = d.getAttribute("link-text") || "Open"), this._card.hidden = !1, this._hint.classList.add("gone"), this.dispatchEvent(new CustomEvent("shelf-select", {
 			detail: {
@@ -17964,7 +17964,7 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		}
 		if (t && (t.moved = Math.max(t.moved, Math.hypot(e.clientX - t.x, e.clientY - t.y))), e.pointerType !== "mouse" || !this._ready) return;
 		let n = this._view.getBoundingClientRect();
-		if (this._par.x = Kp((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -Kp((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
+		if (this._par.x = Gp((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -Gp((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
 			let t = this._pick(e);
 			this._wall.style.cursor = t.control || t.item !== void 0 || t.unit && t.unit !== this._focusKey ? "pointer" : t.screen ? "zoom-in" : "", this._hover(t.unit || null);
 		}
@@ -17992,8 +17992,8 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 		let n = t.hit;
 		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
-}, em = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", tm = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", nm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", rm = 560, im = -.2, am = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
-function om(e, t, n) {
+}, $p = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", em = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", tm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", nm = 560, rm = -.2, im = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
+function am(e, t, n) {
 	let r = 6.5, i = n ? n * r * 2 + (n - 1) * 3 : 0, a = {
 		nav: [],
 		extra: []
@@ -18054,14 +18054,14 @@ function om(e, t, n) {
 		r: 7
 	});
 }
-function sm(e, t, n) {
+function om(e, t, n) {
 	return qu([ud([
 		Z(ld(e, 0, 0, 40), 0),
 		Z(ld(e, 0, 0, 40), t - n),
 		Z(ld(e - n, 0, 0, 40), t)
 	]), Q(ld(e - n, 0, 0, 40), [], t)]);
 }
-function cm(e, t) {
+function sm(e, t) {
 	let n = document.createElement("canvas");
 	n.width = e, n.height = t;
 	let r = new Oi(n);
@@ -18071,14 +18071,14 @@ function cm(e, t) {
 		r
 	];
 }
-var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
+var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["for", "name"];
 	}
 	constructor() {
 		super();
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${am}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
+		e.innerHTML = `<style>${im}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
       <div class="keys" role="navigation" aria-label="${this.getAttribute("aria-label") || "Site"}"><slot></slot></div>
       <div class="keys" aria-live="polite"></div>`, this._canvas = e.querySelector("canvas"), this._pad = e.querySelector(".pad"), this._live = e.querySelectorAll(".keys")[1], this._hover = -1, this._sceneTV = null, this._pressed = -1, this._note = null, this._reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !1;
 		let t = this._pad;
@@ -18164,7 +18164,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 		let n = new as(16773596, 2.2);
 		n.position.set(-120, 300, 260), t.add(n);
 		let r = new as(1089605, 1.4);
-		r.position.set(60, 200, -220), t.add(r), this._camera = new Qo(7, 1, 10, 2e4), this._ray = new Cs(), this._group = new Ln(), this._group.rotation.x = im, t.add(this._group), this._mat = {
+		r.position.set(60, 200, -220), t.add(r), this._camera = new Qo(7, 1, 10, 2e4), this._ray = new Cs(), this._group = new Ln(), this._group.rotation.x = rm, t.add(this._group), this._mat = {
 			body: new q({
 				color: 1841945,
 				roughness: .48,
@@ -18184,7 +18184,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 			}),
 			led: new Zr({ color: 3804170 })
 		};
-		let [i, a, o] = cm(1024, 2);
+		let [i, a, o] = sm(1024, 2);
 		this._lcd = {
 			c: i,
 			g: a,
@@ -18203,7 +18203,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 				tv: t,
 				action: e.dataset.action || null,
 				label: e.dataset.label || e.textContent.trim(),
-				channel: t ? e.dataset.channel || lm(++r) : ""
+				channel: t ? e.dataset.channel || cm(++r) : ""
 			};
 		});
 	}
@@ -18212,7 +18212,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 		this._body && (this._group.traverse((e) => {
 			e.geometry?.dispose(), e.material?.map && e.material !== this._mat.lcd && (e.material.map.dispose(), e.material.dispose());
 		}), this._group.clear()), this._keys = this._readKeys();
-		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = om(e, t, n), i = this._group;
+		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = am(e, t, n), i = this._group;
 		this._body = new K(dd(r.W, r.H, 12, r.r, 3), this._mat.body), this._body.position.z = -12, i.add(this._body);
 		let a = new K(ud([Z(X(r.W + .3, r.H + .3, r.r), -5.4), Z(X(r.W + .3, r.H + .3, r.r), -5.9)]), this._mat.bezel);
 		i.add(a);
@@ -18227,21 +18227,21 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 		let l = Math.round(1024 * o.h / o.w);
 		if (this._lcd.c.height !== l) {
 			this._lcd.t.dispose();
-			let [e, t, n] = cm(1024, l);
+			let [e, t, n] = sm(1024, l);
 			this._lcd = {
 				c: e,
 				g: t,
 				t: n
 			}, this._mat.lcd.map = n, this._mat.lcd.needsUpdate = !0;
 		}
-		this._glow.position.set(o.x, o.y * Math.cos(im), 24);
-		let u = new K(sm(1.3, .8, .3), this._mat.led);
+		this._glow.position.set(o.x, o.y * Math.cos(rm), 24);
+		let u = new K(om(1.3, .8, .3), this._mat.led);
 		u.position.set(r.led.x, r.led.y, 0), i.add(u), this._ledMesh = u;
 		let d = 0, f = 0;
 		for (let e of this._keys) {
 			let t = e.tv ? r.nav[d++] : r.extra[f++], n = new Ln();
 			n.position.set(t.x, t.y, 0);
-			let a = 4.5, o = new K(e.tv ? dd(t.w, t.h, a, 4, 1.6) : sm(t.r, a, 1.4), this._mat.key), s = new K(e.tv ? Q(X(t.w + 2.4, t.h + 2.4, 5), [X(t.w, t.h, 4).reverse()], .05) : Q(ld(t.r + 1.2, 0, 0, 40), [ld(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = cm(Math.round(c * 16), Math.round(l * 16)), h = new K(new Za(c, l), new q({
+			let a = 4.5, o = new K(e.tv ? dd(t.w, t.h, a, 4, 1.6) : om(t.r, a, 1.4), this._mat.key), s = new K(e.tv ? Q(X(t.w + 2.4, t.h + 2.4, 5), [X(t.w, t.h, 4).reverse()], .05) : Q(ld(t.r + 1.2, 0, 0, 40), [ld(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = sm(Math.round(c * 16), Math.round(l * 16)), h = new K(new Za(c, l), new q({
 				map: m,
 				transparent: !0,
 				roughness: .8,
@@ -18266,7 +18266,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 	}
 	_resize() {
 		if (!this._renderer) return;
-		let e = this.clientWidth < rm;
+		let e = this.clientWidth < nm;
 		e !== this.hasAttribute("narrow") || !this._keys ? (e ? this.setAttribute("narrow", "") : this.removeAttribute("narrow"), this._rebuild()) : (this._fit(), this._render());
 	}
 	_fit() {
@@ -18275,7 +18275,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 		this._renderer.setSize(e, t, !1);
 		let r = this._camera;
 		r.aspect = e / t;
-		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(im) + 16 * Math.abs(Math.sin(im)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
+		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(rm) + 16 * Math.abs(Math.sin(rm)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
 		r.position.set(0, 0, s), r.lookAt(0, 0, 0), r.updateProjectionMatrix(), r.updateMatrixWorld(), this._group.updateMatrixWorld(!0);
 		let c = new or().setFromObject(this._group), l = [];
 		for (let e of [c.min.x, c.max.x]) for (let t of [c.min.y, c.max.y]) for (let n of [c.min.z, c.max.z]) l.push(new U(e, t, n).project(r));
@@ -18330,24 +18330,24 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 			let a = t.w, o = t.h, s = "#d8d3c7";
 			if (r.fillStyle = s, r.strokeStyle = s, r.textAlign = "center", t.tv) {
 				let n = t.tv === (e.reading || e.focused);
-				r.font = `500 ${o * .24}px ${tm}`;
+				r.font = `500 ${o * .24}px ${em}`;
 				let i = r.measureText(t.channel).width, c = o * .075, l = a / 2 + c + .6, u = o * .34;
 				r.fillStyle = "#9d988d", r.textBaseline = "middle", r.fillText(t.channel, l, u), r.beginPath(), r.arc(l - i / 2 - 1.4 - c, u, c, 0, Math.PI * 2), r.fillStyle = this._tvColor(t.tv), r.globalAlpha = n ? 1 : .55, n && (r.shadowColor = r.fillStyle, r.shadowBlur = 2.5), r.fill(), r.shadowBlur = 0, r.globalAlpha = 1, r.fillStyle = s, r.textBaseline = "alphabetic";
 				let d = o * .36;
-				r.font = `700 ${d}px ${em}`;
+				r.font = `700 ${d}px ${$p}`;
 				let f = t.label.toUpperCase(), p = r.measureText(f).width;
-				p > a * .9 && (d *= a * .9 / p, r.font = `700 ${d}px ${em}`), r.fillText(f, a / 2, o * .84);
+				p > a * .9 && (d *= a * .9 / p, r.font = `700 ${d}px ${$p}`), r.fillText(f, a / 2, o * .84);
 			} else {
 				r.lineWidth = a * .09, r.lineCap = "round", r.lineJoin = "round";
 				let n = a / 2, i = o / 2, s = a * .22;
-				r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${em}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i)), r.globalAlpha = 1;
+				r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${$p}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i)), r.globalAlpha = 1;
 			}
 			i.needsUpdate = !0;
 		}
 		this._render();
 	}
 	_text() {
-		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${lm(t.getHours())}:${lm(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
+		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${cm(t.getHours())}:${cm(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
 		if (a) {
 			if (a.tv) {
 				let t = this._shelf?.canRead?.(a.tv) ?? !0, n = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? t ? "Press again to read it full screen" : "Press a channel key on the set" : null;
@@ -18403,7 +18403,7 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 		let o = t.createLinearGradient(0, 0, 0, i);
 		o.addColorStop(0, "#87a061"), o.addColorStop(.18, "#a3bc7b"), o.addColorStop(1, "#93ad6b"), t.fillStyle = o, t.fillRect(0, 0, r, i);
 		let s = r * .035, c = i * .27, l = i * .32;
-		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `400 ${i * .21}px ${nm}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `400 ${l}px ${nm}`, t.textAlign = "left";
+		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `400 ${i * .21}px ${tm}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `400 ${l}px ${tm}`, t.textAlign = "left";
 		let u = r - 2 * s, d = a.sub ? `${a.main} · ${a.sub}` : a.main, f = t.measureText(d).width;
 		d !== this._mqText && (this._mqText = d, this._mq0 = performance.now());
 		let p = 0;
@@ -18446,8 +18446,8 @@ var lm = (e) => String(e).padStart(2, "0"), um = class extends HTMLElement {
 	}
 };
 // src/index.js
-function dm() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Gf), customElements.get("retro-shelf") || customElements.define("retro-shelf", $p), customElements.get("retro-pager") || customElements.define("retro-pager", um));
+function um() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Wf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Qp), customElements.get("retro-pager") || customElements.define("retro-pager", lm));
 }
-dm();
-export { Vp as ARRANGEMENTS, Kf as ITEM_TYPES, Tf as MODELS, Np as PROPS, um as RetroPagerElement, $p as RetroShelfElement, Gp as STACKS, Gf as SonyPVMElement, fp as buildItem, mp as buildShelf, dm as define };
+um();
+export { Bp as ARRANGEMENTS, Gf as ITEM_TYPES, Tf as MODELS, Mp as PROPS, lm as RetroPagerElement, Qp as RetroShelfElement, Wp as STACKS, Wf as SonyPVMElement, dp as buildItem, pp as buildShelf, um as define };

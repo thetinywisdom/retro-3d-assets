@@ -21,7 +21,6 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const linear = (t) => t;
-const easeSine = (t) => (1 - Math.cos(Math.PI * t)) / 2;
 
 // ---------------------------------------------------------------------------
 // YouTube players on a channel follow the set's volume and mute.
@@ -753,10 +752,16 @@ export class SonyPVMElement extends Base {
     const want = on && this.state.power;
     this._bl.on = want;
     this._tween('backlight', this._bl.v, want ? 1 : 0, this._reduced ? 0 : duration, (v) => { this._bl.v = v; this._applyBacklight(); }, { ease: easeInOut });
-    if (want && !this._reduced && !this._tweens.has('backlight-pulse')) {
-      const breathe = (up) => this._tween('backlight-pulse', up ? 0 : 1, up ? 1 : 0, period / 2, (x) => { this._bl.p = x; this._applyBacklight(); },
-        { ease: easeSine, done: () => { if (this._bl.on || this._bl.v > 0) breathe(!up); } });
-      breathe(true);
+    // the breathing runs on a light timer (about 12 updates a second), not every frame, so a set that is
+    // backlit all the time costs little
+    if (want && !this._reduced && !this._blTimer) {
+      const t0 = performance.now();
+      this._blTimer = setInterval(() => {
+        if (!this._bl.on && this._bl.v <= 0) { clearInterval(this._blTimer); this._blTimer = 0; return; }
+        const phase = ((performance.now() - t0) % period) / period;
+        this._bl.p = (1 - Math.cos(2 * Math.PI * phase)) / 2;          // eased in and out at both ends
+        this._applyBacklight();
+      }, 80);
     }
   }
 
