@@ -22,6 +22,73 @@ const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const linear = (t) => t;
 
+// ---------------------------------------------------------------------------
+// YouTube players on a channel follow the set's volume and mute.
+// Talks to the player through its postMessage interface (the embed URL needs
+// enablejsapi=1). A player asked to start with sound that the browser keeps
+// silent is started muted instead, and unmuted on the visitor's next click or
+// key press.
+// ---------------------------------------------------------------------------
+const YT = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//;
+const isYouTube = (f) => YT.test(f.getAttribute('src') || f.dataset.held || '');
+const players = new Set();
+const ytPost = (f, msg) => { try { f.contentWindow?.postMessage(JSON.stringify(msg), '*'); } catch {} };
+const ytCmd = (f, func, args = []) => ytPost(f, { event: 'command', func, args });
+
+function ytLevel(f, vol, quiet) {
+  const y = f._yt;
+  if (!y) return;
+  y.vol = vol; y.quiet = quiet;
+  if (quiet || vol <= 0) ytCmd(f, 'mute');
+  else if (!y.blocked) { ytCmd(f, 'unMute'); ytCmd(f, 'setVolume', [Math.round(vol * 100)]); }
+}
+
+function ytWire(f, level) {
+  if (f._yt) return;
+  f._yt = { state: -1, level };
+  players.add(f);
+  f.addEventListener('load', () => {
+    if (!YT.test(f.src)) return;
+    const y = f._yt;
+    y.state = -1; y.blocked = false;
+    clearTimeout(y.t);
+    for (const t of [250, 900, 2000]) {
+      setTimeout(() => {
+        ytPost(f, { event: 'listening', id: 1, channel: 'widget' });
+        const { vol, quiet } = y.level();
+        ytLevel(f, vol, quiet);
+      }, t);
+    }
+    // the browser refused to start it with sound: play it muted until the visitor does something
+    y.t = setTimeout(() => {
+      const { vol, quiet } = y.level();
+      if (y.state !== 1 && !quiet && vol > 0) { y.blocked = true; ytCmd(f, 'mute'); ytCmd(f, 'playVideo'); }
+    }, 3200);
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('message', (e) => {
+    if (!/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(e.origin)) return;
+    let d;
+    try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch { return; }
+    const state = d?.info?.playerState;
+    if (state === undefined) return;
+    for (const f of players) if (f.contentWindow === e.source && f._yt) f._yt.state = state;
+  });
+  const wake = () => {
+    for (const f of players) {
+      const y = f._yt;
+      if (!y?.blocked || !f.isConnected || !YT.test(f.src)) continue;
+      y.blocked = false;
+      const { vol, quiet } = y.level();
+      ytLevel(f, vol, quiet);
+    }
+  };
+  window.addEventListener('pointerdown', wake, true);
+  window.addEventListener('keydown', wake, true);
+}
+
 export const STYLE = /* css */ `
 :host { display: block; position: relative; width: 100%; height: 480px; }
 :host([hidden]) { display: none; }
@@ -865,11 +932,21 @@ export class SonyPVMElement extends Base {
     this._screenEl.classList.toggle('blue-only', b('blue-only'));
     this._roll.classList.toggle('rolling', b('sync') && power);
 
-    // VOLUME drives any media in the content
-    const vol = power ? k('volume') : 0;
-    for (const m of (this._host?.el || this).querySelectorAll('video, audio')) {
-      try { m.volume = vol; } catch {}
+    // VOLUME (and the host's mute) drives the media on this set: <video>, <audio> and YouTube players
+    const vol = power ? k('volume') : 0, quiet = !!this._sound?.muted;
+    for (const n of this._content()) {
+      for (const m of n.matches('video, audio') ? [n] : n.querySelectorAll('video, audio')) {
+        try { m.volume = vol; m.muted = quiet; } catch {}
+      }
+      for (const f of n.matches('iframe') ? [n] : n.querySelectorAll('iframe')) if (isYouTube(f)) ytLevel(f, vol, quiet);
     }
+  }
+
+  /** Elements placed on this set's channels (its own children, or the host's slotted pages). */
+  _content() {
+    const out = [];
+    for (const wrap of Object.values(this._inputs || {})) out.push(...wrap.querySelector('slot').assignedElements());
+    return out;
   }
 
   /**
@@ -883,6 +960,7 @@ export class SonyPVMElement extends Base {
       const nodes = wrap.querySelector('slot').assignedElements();
       for (const n of nodes) {
         for (const f of n.matches('iframe') ? [n] : n.querySelectorAll('iframe')) {
+          if (isYouTube(f)) ytWire(f, () => ({ vol: this.state.power ? this._val('volume') : 0, quiet: !!this._sound?.muted }));
           if (live && f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; }
           else if (!live && !f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; }
         }

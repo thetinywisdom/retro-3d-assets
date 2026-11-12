@@ -252,7 +252,7 @@ export class RetroShelfElement extends Base {
   }
 
   attributeChangedCallback(name, _o, v) {
-    if (name === 'muted') this._sound.muted = v !== null;
+    if (name === 'muted') { this._sound.muted = v !== null; for (const u of Object.values(this._units || {})) u._applyPicture?.(); }
     if (name === 'grain') this._applyGrain();
     if (!this._renderer) return;
     if (['stack', 'layout', 'arrange', 'scene', 'lighting', 'wall', 'backlight', 'consoles', 'floor', 'floor-color', 'smoke', 'front-light'].includes(name)) this._rebuild();
