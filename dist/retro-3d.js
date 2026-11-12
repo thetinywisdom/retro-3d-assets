@@ -18050,9 +18050,14 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 			"pvm-input"
 		];
 		if (this._shelf) for (let e of t) this._shelf.removeEventListener(e, this._onShelf);
-		if (this._shelf = null, e) return;
+		if (this._nowMo?.disconnect(), this._shelf = null, e) return;
 		let n = this.getAttribute("for");
 		if (this._shelf = (n ? document.getElementById(n) : document.querySelector("retro-shelf")) || null, this._shelf) for (let e of t) this._shelf.addEventListener(e, this._onShelf);
+		this._nowMo?.disconnect(), this._shelf && (this._nowMo = new MutationObserver(() => this._draw()), this._nowMo.observe(this._shelf, {
+			subtree: !0,
+			attributes: !0,
+			attributeFilter: ["data-now-playing"]
+		}));
 	}
 	_init() {
 		let e;
@@ -18285,9 +18290,21 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 			right: n,
 			main: this._note
 		};
-		let o = e.reading || e.focused, s = o && this._keys?.find((e) => e.tv === o), c = this._shelf?.hint || "Tap a TV to look closer", l = o && this._channels?.[o], u = l ? "CH " + l.replace(/^ch-/, "").toUpperCase().padStart(2, "0") : null;
+		let o = e.reading || e.focused, s = o && this._keys?.find((e) => e.tv === o), c = this._shelf?.hint || "Tap a TV to look closer", l = o && this._channels?.[o], u = l ? "CH " + l.replace(/^ch-/, "").toUpperCase().padStart(2, "0") : null, d = o && this._shelf?.tv?.(o)?._meta?.inputs?.[0];
+		if (l && l !== d) {
+			let e = this._shelf.querySelector(`[slot="${o}:${l}"]`);
+			return e ? {
+				left: `${u}  NOW PLAYING`,
+				right: e.dataset.kind || "",
+				main: e.dataset.nowPlaying || e.title || "On air"
+			} : {
+				left: u,
+				right: n,
+				main: "No signal on this channel"
+			};
+		}
 		return {
-			left: s ? `TV ${s.channel}  ${s.label}` : r,
+			left: (s && s.label.toUpperCase() !== "TV" ? `TV ${s.channel}  ${s.label}` : s ? `TV ${s.channel}` : null) || r,
 			right: u || n,
 			main: c
 		};

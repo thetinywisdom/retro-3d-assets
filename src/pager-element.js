@@ -169,11 +169,18 @@ export class RetroPagerElement extends HTMLElement {
   _bind(off = false) {
     const evs = ['shelf-hover', 'shelf-hint', 'shelf-focus', 'shelf-read', 'shelf-ready', 'pvm-input'];
     if (this._shelf) for (const t of evs) this._shelf.removeEventListener(t, this._onShelf);
+    this._nowMo?.disconnect();
     this._shelf = null;
     if (off) return;
     const id = this.getAttribute('for');
     this._shelf = (id ? document.getElementById(id) : document.querySelector('retro-shelf')) || null;
     if (this._shelf) for (const t of evs) this._shelf.addEventListener(t, this._onShelf);
+    // pages say what they are playing in data-now-playing (it can change once a player reports its title)
+    this._nowMo?.disconnect();
+    if (this._shelf) {
+      this._nowMo = new MutationObserver(() => this._draw());
+      this._nowMo.observe(this._shelf, { subtree: true, attributes: true, attributeFilter: ['data-now-playing'] });
+    }
   }
 
   // ---------------------------------------------------------------- scene --
@@ -471,9 +478,16 @@ export class RetroPagerElement extends HTMLElement {
     const on = st.reading || st.focused;
     const cur = on && this._keys?.find((x) => x.tv === on);
     const hint = this._shelf?.hint || 'Tap a TV to look closer';
-    // a TV that changes channel shows the one on air
+    // a TV that changes channel shows the one on air, and what is playing on it
     const tuned = on && this._channels?.[on], chan = tuned ? 'CH ' + tuned.replace(/^ch-/, '').toUpperCase().padStart(2, '0') : null;
-    return { left: cur ? `TV ${cur.channel}  ${cur.label}` : name, right: chan || clock, main: hint };
+    const first = on && this._shelf?.tv?.(on)?._meta?.inputs?.[0];
+    if (tuned && tuned !== first) {
+      const page = this._shelf.querySelector(`[slot="${on}:${tuned}"]`);
+      if (page) return { left: `${chan}  NOW PLAYING`, right: page.dataset.kind || '', main: page.dataset.nowPlaying || page.title || 'On air' };
+      return { left: chan, right: clock, main: 'No signal on this channel' };
+    }
+    const curName = cur && cur.label.toUpperCase() !== 'TV' ? `TV ${cur.channel}  ${cur.label}` : cur ? `TV ${cur.channel}` : null;
+    return { left: curName || name, right: chan || clock, main: hint };
   }
 
   _draw() {
