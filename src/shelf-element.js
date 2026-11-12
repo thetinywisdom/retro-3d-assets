@@ -458,7 +458,7 @@ export class RetroShelfElement extends Base {
     }
     this._smoke = [];
     if (this.hasAttribute('smoke')) {
-      // slow drifting haze: big soft sheets that pick up the backlight colour
+      // still haze: big soft sheets that pick up the backlight colour
       const tint = new THREE.Color(back || (back === '' ? '#10a045' : '#8a8f8c'));
       const strength = Math.max(0.2, Math.min(3, parseFloat(this.getAttribute('smoke')) || 1));
       const map = smokeTexture();
@@ -473,7 +473,12 @@ export class RetroShelfElement extends Base {
         puff.rotation.z = (rnd() - 0.5) * 0.8;
         puff.raycast = () => {};
         puff.renderOrder = 5;
-        puff.userData = { x: puff.position.x, y: puff.position.y, r: puff.rotation.z, speed: 0.04 + rnd() * 0.07, phase: rnd() * 6.28, sway: 90 + rnd() * 180, o: mat.opacity };
+        // still: each sheet is posed once, at a random point of the drift it used to have
+        const phase = rnd() * 6.28, sway = 90 + rnd() * 180;
+        puff.position.x += Math.sin(phase) * sway;
+        puff.position.y += Math.sin(phase * 2) * 30;
+        puff.rotation.z += Math.sin(phase) * 0.25;
+        mat.opacity *= 0.75 + 0.25 * Math.sin(phase * 3);
         this._furniture.add(puff);
         this._smoke.push(puff);
       }
@@ -648,18 +653,10 @@ export class RetroShelfElement extends Base {
       cam.lookAt(px * 0.4, y + py * 0.4, 0);
     }
     cam.updateMatrixWorld();
-    for (const p of this._smoke || []) {
-      const d = p.userData, t = now / 1000;
-      p.position.x = d.x + Math.sin(t * d.speed + d.phase) * d.sway;
-      p.position.y = d.y + Math.sin(t * d.speed * 0.7 + d.phase * 2) * 30;
-      p.rotation.z = d.r + Math.sin(t * d.speed * 0.5 + d.phase) * 0.25;
-      p.material.opacity = d.o * (0.75 + 0.25 * Math.sin(t * d.speed * 1.7 + d.phase * 3));
-    }
     for (const u of Object.values(this._units)) if (u._tick(now, cam)) active = true;
     this._renderer.render(this._scene, cam);
     this._css.render(this._scene, cam);
     if (active) this.invalidate();
-    else if (this._smoke?.length && !this._reduced) { clearTimeout(this._smokeT); this._smokeT = setTimeout(() => this.invalidate(), 70); }  // keep the haze drifting at a low frame rate
   }
 
   // ---------------------------------------------------------------- focus --

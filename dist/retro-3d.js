@@ -17334,15 +17334,9 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 					opacity: (o ? .13 : .04) * t,
 					toneMapped: !1
 				}), l = new J(new Ya(s, s * .6), c);
-				l.position.set((a() - .5) * r * 4.2, o ? 120 + a() * f * .9 : 40 + a() * 160, o ? -330 - a() * 380 : 140 + a() * 420), l.rotation.z = (a() - .5) * .8, l.raycast = () => {}, l.renderOrder = 5, l.userData = {
-					x: l.position.x,
-					y: l.position.y,
-					r: l.rotation.z,
-					speed: .04 + a() * .07,
-					phase: a() * 6.28,
-					sway: 90 + a() * 180,
-					o: c.opacity
-				}, this._furniture.add(l), this._smoke.push(l);
+				l.position.set((a() - .5) * r * 4.2, o ? 120 + a() * f * .9 : 40 + a() * 160, o ? -330 - a() * 380 : 140 + a() * 420), l.rotation.z = (a() - .5) * .8, l.raycast = () => {}, l.renderOrder = 5;
+				let u = a() * 6.28, d = 90 + a() * 180;
+				l.position.x += Math.sin(u) * d, l.position.y += Math.sin(u * 2) * 30, l.rotation.z += Math.sin(u) * .25, c.opacity *= .75 + .25 * Math.sin(u * 3), this._furniture.add(l), this._smoke.push(l);
 			}
 		}
 		if (o) {
@@ -17535,12 +17529,8 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			r.position.set(a + (c.pos.x - a) * s, e + (c.pos.y - e) * s, n.d + (c.pos.z - n.d) * s), r.lookAt(a * .4 + (c.look.x - a * .4) * s, i + o * .4 + (c.look.y - i - o * .4) * s, c.look.z * s);
 		} else r.position.set(a, i + o + n.d * Math.tan(this._pitch || 0), n.d), r.lookAt(a * .4, i + o * .4, 0);
 		r.updateMatrixWorld();
-		for (let t of this._smoke || []) {
-			let n = t.userData, r = e / 1e3;
-			t.position.x = n.x + Math.sin(r * n.speed + n.phase) * n.sway, t.position.y = n.y + Math.sin(r * n.speed * .7 + n.phase * 2) * 30, t.rotation.z = n.r + Math.sin(r * n.speed * .5 + n.phase) * .25, t.material.opacity = n.o * (.75 + .25 * Math.sin(r * n.speed * 1.7 + n.phase * 3));
-		}
 		for (let n of Object.values(this._units)) n._tick(e, r) && (t = !0);
-		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t ? this.invalidate() : this._smoke?.length && !this._reduced && (clearTimeout(this._smokeT), this._smokeT = setTimeout(() => this.invalidate(), 70));
+		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
 	}
 	_aim() {
 		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen ? new W(r.cx, r.cy, r.z) : new W(0, n.h / 2, n.d / 2), a = this._fillScreen ? r.w : n.w, o = this._fillScreen ? r.h : n.h, s = this._fillScreen ? 1.04 : 1.12, c = Math.max(o / 2 * s / this._tan.v, a / 2 * s / this._tan.h), l = t.localToWorld(i.clone()), u = t.localToWorld(i.clone().add(new W(0, 0, c)));

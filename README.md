@@ -30,7 +30,7 @@ One straight-on camera. The first tap on a TV moves in to it. A tap on its scree
 | `lighting` | `dark`: the room is almost pitch black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV). `dim`: the same with a little room light left on |
 | `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is a dim green; `backlight="#ff3355"` picks a colour |
 | `floor` | Floor in the dark room: `concrete` (default, slight sheen) or `carpet` (matt, no reflections). `floor-color="#55682f"` sets the carpet colour; the default is moss green |
-| `smoke` | Slowly drifting haze that picks up the backlight colour. `smoke="2"` is thicker, `smoke="0.5"` thinner. It keeps the scene redrawing at a low frame rate, and stands still for visitors who have reduced motion turned on |
+| `smoke` | Still haze that picks up the backlight colour. `smoke="2"` is thicker, `smoke="0.5"` thinner. It does not move, so it costs nothing after the first frame |
 | `grain` | Fine, still film grain over the whole view, TV screens included. `grain="2"` is heavier, `grain="0.5"` lighter |
 | `front-light` | In the dark room, a faint soft lamp from the viewer's side so the TV buttons can be made out. On by default; `front-light="2"` is brighter, `front-light="0"` turns it off |
 | `consoles` | With `scene="floor"`: lays the PS one, controller, Game Boy Advance, PS Vita and PSP Go face up on the floor in front of the TVs, handheld screens lit |

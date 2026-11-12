@@ -50,7 +50,7 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 
 - **Units are millimetres.** +x right, +y up, +z towards the viewer. Models sit on y = 0. Real published dimensions are used throughout; keep that.
 - **The picture is real HTML.** A `CSS3DRenderer` layer sits behind the WebGL canvas and holds each TV's page, transformed onto the tube's picture plane. The glass material is drawn with blending off and writes premultiplied colour plus alpha, so it punches a see-through window and layers scanlines, vignette and reflections on top. The canvas never takes pointer events; everything is ray-cast from the stage.
-- **Render on demand.** Call `invalidate()` after changing anything; there is no free-running loop. The one exception is smoke, which re-invalidates on a 70 ms timer.
+- **Render on demand.** Call `invalidate()` after changing anything; there is no free-running loop.
 - **Slots.** In `<retro-shelf>` a TV's page is the child with `slot="<model id>"`; extra inputs are `slot="<model id>:<input>"`. The full-screen reader moves that same element to `slot="reader"` and back.
 - **Controls are declared in `META.controls`** with a `role` (`power`, `degauss`, `underscan`, `volume`, `channel`, ...). Behaviour is keyed by role in `element.js`, so a new model needs no element changes if it reuses roles.
 - **Dark room lighting.** With `lighting="dark"` each powered TV carries a forward `SpotLight` plus a weak `PointLight`, coloured from the computed background of its page (`_buildGlow`). Room light is nearly zero; `front-light` is a faint directional fill.
@@ -62,7 +62,7 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 - New CRT: copy a file in `src/models/`, build it with `Kit`, register it in `src/models/index.js`.
 - New shelf arrangement: add a function to `ARRANGEMENTS` in `src/arrange.js`.
 - New TV stack: add an entry to `STACKS` in `src/shelf-element.js` (`x`, optional `z`, `ry` in degrees, `on` = the set it stands on).
-- Respect `prefers-reduced-motion` (tweens become instant, smoke stops) and keep the hidden real buttons in `.sr` in sync when adding controls.
+- Respect `prefers-reduced-motion` (tweens become instant) and keep the hidden real buttons in `.sr` in sync when adding controls.
 - Platform and brand marks are plain lettering drawn in code, not real logo artwork. Keep it that way.
 
 ## Accuracy notes
