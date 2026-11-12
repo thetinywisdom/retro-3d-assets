@@ -23,6 +23,8 @@ export const META = {
   id: 'kv-5200',
   name: 'Sony KV-5200',
   size: { w: W, h: BODY_H + 30, d: D },
+  // when the camera moves in, frame the picture and the channel keys, not the carry handle above
+  focus: { cy: BODY_H / 2, h: BODY_H, z: FZ_LOW - 6 },          // the plane of the picture and keys, behind the hood
   inputs: CH.map((c) => 'ch-' + c),
   inputOf: (s) => s.radio.channel,
   noSignal: 'noise',

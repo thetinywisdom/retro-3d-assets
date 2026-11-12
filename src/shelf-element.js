@@ -687,19 +687,43 @@ export class RetroShelfElement extends Base {
   // ---------------------------------------------------------------- focus --
   /** Point the focus pose at the current set: its whole front, or just its picture. */
   _aim() {
-    const u = this._units[this._focusKey], g = u._parent, size = u._meta.size, pic = u._m.picture;
-    const centre = this._fillScreen ? new THREE.Vector3(pic.cx, pic.cy, pic.z) : new THREE.Vector3(0, size.h / 2, size.d / 2);
-    const w = this._fillScreen ? pic.w : size.w, h = this._fillScreen ? pic.h : size.h;
-    const m = this._fillScreen ? 1.04 : 1.12;
-    const dist = Math.max((h / 2) * m / this._tan.v, (w / 2) * m / this._tan.h);
+    const u = this._units[this._focusKey], g = u._parent, size = u._meta.size, pic = u._m.picture, fill = this._fillScreen;
+    // what to frame: the picture, or the set's front (a model can narrow it with META.focus, e.g. leave out a handle)
+    const box = fill ? { cx: pic.cx, cy: pic.cy, z: pic.z, w: pic.w, h: pic.h }
+      : Object.assign({ cx: 0, cy: size.h / 2, z: size.d / 2, w: size.w, h: size.h }, u._meta.focus || {});
+    // the space to frame it in: a safe margin at the sides and top, and room at the bottom for anything
+    // laid over the scene there (the page's --focus-inset-bottom, e.g. a navigation dock)
+    const W = this.clientWidth || 1, H = this.clientHeight || 1;
+    const inset = fill ? 0 : Math.min(H * 0.45, this._insetBottom());
+    const edge = fill ? 0 : Math.min(40, Math.max(16, W * 0.04));
+    const availW = Math.max(1, W - 2 * edge), availH = Math.max(1, H - inset - 2 * edge);
+    const m = fill ? 1.04 : 1;
+    const dist = Math.max((box.h / 2) * m / (this._tan.v * availH / H), (box.w / 2) * m / (this._tan.h * availW / W));
+    const centre = new THREE.Vector3(box.cx, box.cy, box.z);
     const look = g.localToWorld(centre.clone());
     const pos = g.localToWorld(centre.clone().add(new THREE.Vector3(0, 0, dist)));
+    // lower the camera so the set sits in the middle of the space above the inset, still seen straight on
+    const lift = (inset / H) * dist * this._tan.v;
+    look.y -= lift; pos.y -= lift;
     this._focus = { pos, look };
     this.invalidate();
   }
 
-  /** Move the camera in to one set. Its page becomes usable. */
-  focusTV(id) {
+  /** --focus-inset-bottom as pixels (it can be any length, calc() and env() included, so let CSS resolve it). */
+  _insetBottom() {
+    if (!this._probe) {
+      this._probe = document.createElement('div');
+      this._probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;width:0;height:var(--focus-inset-bottom, 0px)';
+      this.shadowRoot.append(this._probe);
+    }
+    return this._probe.getBoundingClientRect().height || 0;
+  }
+
+  /**
+   * Move the camera in to one set. Its page becomes usable.
+   * options.duration (ms) sets how long the move takes; it eases in and out either way.
+   */
+  focusTV(id, options = {}) {
     if (!this._units[id] || !this._ready) return;
     if (this._selected >= 0) this.close(true);
     const from = this._focus && this._f > 0 ? { pos: this._focus.pos.clone(), look: this._focus.look.clone() } : null;
@@ -711,9 +735,9 @@ export class RetroShelfElement extends Base {
       // glide from one set to the next
       const tmp = { pos: from.pos.clone(), look: from.look.clone() };
       this._focus = tmp;
-      this._tween('focus', 650, (t) => { tmp.pos.lerpVectors(from.pos, to.pos, t); tmp.look.lerpVectors(from.look, to.look, t); this._f = f0 + (1 - f0) * t; }, () => { this._focus = to; });
+      this._tween('focus', options.duration ?? 650, (t) => { tmp.pos.lerpVectors(from.pos, to.pos, t); tmp.look.lerpVectors(from.look, to.look, t); this._f = f0 + (1 - f0) * t; }, () => { this._focus = to; });
     } else {
-      this._tween('focus', 850, (t) => { this._f = f0 + (1 - f0) * t; });
+      this._tween('focus', options.duration ?? 850, (t) => { this._f = f0 + (1 - f0) * t; });
     }
     this._setScreenLive(id, true);
     this._wall.classList.add('locked');

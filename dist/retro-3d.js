@@ -13923,6 +13923,11 @@ var Yd = /* @__PURE__ */ t({
 		h: 235,
 		d: Zd
 	},
+	focus: {
+		cy: Qd / 2,
+		h: Qd,
+		z: 118
+	},
 	inputs: af.map((e) => "ch-" + e),
 	inputOf: (e) => e.radio.channel,
 	noSignal: "noise",
@@ -17644,33 +17649,48 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
 	}
 	_aim() {
-		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen ? new U(r.cx, r.cy, r.z) : new U(0, n.h / 2, n.d / 2), a = this._fillScreen ? r.w : n.w, o = this._fillScreen ? r.h : n.h, s = this._fillScreen ? 1.04 : 1.12, c = Math.max(o / 2 * s / this._tan.v, a / 2 * s / this._tan.h), l = t.localToWorld(i.clone()), u = t.localToWorld(i.clone().add(new U(0, 0, c)));
-		this._focus = {
-			pos: u,
-			look: l
+		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen, a = i ? {
+			cx: r.cx,
+			cy: r.cy,
+			z: r.z,
+			w: r.w,
+			h: r.h
+		} : Object.assign({
+			cx: 0,
+			cy: n.h / 2,
+			z: n.d / 2,
+			w: n.w,
+			h: n.h
+		}, e._meta.focus || {}), o = this.clientWidth || 1, s = this.clientHeight || 1, c = i ? 0 : Math.min(s * .45, this._insetBottom()), l = i ? 0 : Math.min(40, Math.max(16, o * .04)), u = Math.max(1, o - 2 * l), d = Math.max(1, s - c - 2 * l), f = i ? 1.04 : 1, p = Math.max(a.h / 2 * f / (this._tan.v * d / s), a.w / 2 * f / (this._tan.h * u / o)), m = new U(a.cx, a.cy, a.z), h = t.localToWorld(m.clone()), g = t.localToWorld(m.clone().add(new U(0, 0, p))), _ = c / s * p * this._tan.v;
+		h.y -= _, g.y -= _, this._focus = {
+			pos: g,
+			look: h
 		}, this.invalidate();
 	}
-	focusTV(e) {
+	_insetBottom() {
+		return this._probe || (this._probe = document.createElement("div"), this._probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:0;height:var(--focus-inset-bottom, 0px)", this.shadowRoot.append(this._probe)), this._probe.getBoundingClientRect().height || 0;
+	}
+	focusTV(e, t = {}) {
 		if (!this._units[e] || !this._ready) return;
 		this._selected >= 0 && this.close(!0);
-		let t = this._focus && this._f > 0 ? {
+		let n = this._focus && this._f > 0 ? {
 			pos: this._focus.pos.clone(),
 			look: this._focus.look.clone()
 		} : null;
 		this._focusKey && this._setScreenLive(this._focusKey, !1), this._focusKey = e, this._aim();
-		let n = this._focus, r = this._f;
-		if (t) {
+		let r = this._focus, i = this._f;
+		if (n) {
 			let e = {
-				pos: t.pos.clone(),
-				look: t.look.clone()
+				pos: n.pos.clone(),
+				look: n.look.clone()
 			};
-			this._focus = e, this._tween("focus", 650, (i) => {
-				e.pos.lerpVectors(t.pos, n.pos, i), e.look.lerpVectors(t.look, n.look, i), this._f = r + (1 - r) * i;
+			this._focus = e, this._tween("focus", t.duration ?? 650, (t) => {
+				e.pos.lerpVectors(n.pos, r.pos, t), e.look.lerpVectors(n.look, r.look, t), this._f = i + (1 - i) * t;
 			}, () => {
-				this._focus = n;
+				this._focus = r;
 			});
-		} else this._tween("focus", 850, (e) => {
-			this._f = r + (1 - r) * e;
+		} else this._tween("focus", t.duration ?? 850, (e) => {
+			this._f = i + (1 - i) * e;
 		});
 		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: e },
