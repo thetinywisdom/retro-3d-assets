@@ -280,6 +280,12 @@ export class RetroShelfElement extends Base {
       u._applyPicture();
     }
     if (this._focusKey) this._setScreenLive(this._focusKey, true);
+    this._applyStandby();
+  }
+
+  /** A no-reader TV (a channel TV) only plays while the camera is on it: elsewhere it is in standby. */
+  _applyStandby() {
+    for (const [id, u] of Object.entries(this._units || {})) if (!this.canRead(id)) u.setStandby?.(this._focusKey !== id);
   }
 
   // ----------------------------------------------------------------- init --
@@ -754,6 +760,7 @@ export class RetroShelfElement extends Base {
       this._tween('focus', options.duration ?? 850, (t) => { this._f = f0 + (1 - f0) * t; });
     }
     this._setScreenLive(id, true);
+    this._applyStandby();
     this._wall.classList.add('locked');
     this._back.hidden = false; this._readBtn.hidden = !this.canRead(id);
     // say what the next tap does, briefly
@@ -771,6 +778,7 @@ export class RetroShelfElement extends Base {
     if (this._reading) this.closeReader();
     this._setScreenLive(this._focusKey, false);
     this._focusKey = null;
+    this._applyStandby();
     const f0 = this._f;
     this._tween('focus', 750, (t) => { this._f = f0 * (1 - t); });
     this._wall.classList.remove('locked');

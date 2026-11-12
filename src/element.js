@@ -55,14 +55,15 @@ function ytWire(f, level) {
     for (const t of [250, 900, 2000]) {
       setTimeout(() => {
         ytPost(f, { event: 'listening', id: 1, channel: 'widget' });
-        const { vol, quiet } = y.level();
-        ytLevel(f, vol, quiet);
+        const { vol, quiet, standby } = y.level();
+        if (standby) ytCmd(f, 'pauseVideo');                      // loaded while the set is in standby: wait
+        else ytLevel(f, vol, quiet);
       }, t);
     }
     // the browser refused to start it with sound: play it muted until the visitor does something
     y.t = setTimeout(() => {
-      const { vol, quiet } = y.level();
-      if (y.state !== 1 && !quiet && vol > 0) { y.blocked = true; ytCmd(f, 'mute'); ytCmd(f, 'playVideo'); }
+      const { vol, quiet, standby } = y.level();
+      if (!standby && y.state !== 1 && !quiet && vol > 0) { y.blocked = true; ytCmd(f, 'mute'); ytCmd(f, 'playVideo'); }
     }, 3200);
   });
 }
@@ -996,20 +997,38 @@ export class SonyPVMElement extends Base {
    * their channel comes back; <video> and <audio> are paused.
    */
   _holdMedia(onAir) {
+    const standby = !!this._standby;
     for (const [id, wrap] of Object.entries(this._inputs)) {
       const live = id === onAir;
       const nodes = wrap.querySelector('slot').assignedElements();
       for (const n of nodes) {
         for (const f of n.matches('iframe') ? [n] : n.querySelectorAll('iframe')) {
-          if (isYouTube(f)) ytWire(f, () => ({ vol: this.state.power ? this._val('volume') : 0, quiet: !!this._sound?.muted }));
-          if (live && f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; }
-          else if (!live && !f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; }
+          const yt = isYouTube(f);
+          if (yt) ytWire(f, () => ({ vol: this.state.power ? this._val('volume') : 0, quiet: !!this._sound?.muted, standby: !!this._standby }));
+          // in standby the channel on air keeps its place: YouTube pauses; other players (Spotify) cannot be
+          // paused from here, so they are unloaded like the channels off air
+          const keep = live && (!standby || yt);
+          if (keep && f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; }
+          else if (!keep && !f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; }
+          // tell YouTube only when standby changes, so a video the visitor paused stays paused
+          if (yt && live && f._yt && f._yt.standby !== standby) { if (f._yt.standby !== undefined || standby) ytCmd(f, standby ? 'pauseVideo' : 'playVideo'); f._yt.standby = standby; }
         }
         for (const m of n.matches('video, audio') ? [n] : n.querySelectorAll('video, audio')) {
-          if (!live) { try { m.pause(); } catch {} } else if (m.autoplay) { m.play?.().catch(() => {}); }
+          if (!live || standby) { try { m.pause(); } catch {} } else if (m.autoplay) { m.play?.().catch(() => {}); }
         }
       }
     }
+  }
+
+  /**
+   * Standby: the picture stays but nothing on the set plays (YouTube and audio pause where they are,
+   * other embedded players are unloaded). A host uses it for a set the camera is not on.
+   */
+  setStandby(on) {
+    on = !!on;
+    if (on === !!this._standby) return;
+    this._standby = on;
+    this._applyPicture();
   }
 
   _setSrc(url, quiet = false) {

@@ -14546,12 +14546,12 @@ function zf(e, t) {
 				id: 1,
 				channel: "widget"
 			});
-			let { vol: n, quiet: r } = t.level();
-			Rf(e, n, r);
+			let { vol: n, quiet: r, standby: i } = t.level();
+			i ? Lf(e, "pauseVideo") : Rf(e, n, r);
 		}, n);
 		t.t = setTimeout(() => {
-			let { vol: n, quiet: r } = t.level();
-			t.state !== 1 && !r && n > 0 && (t.blocked = !0, Lf(e, "mute"), Lf(e, "playVideo"));
+			let { vol: n, quiet: r, standby: i } = t.level();
+			!i && t.state !== 1 && !r && n > 0 && (t.blocked = !0, Lf(e, "mute"), Lf(e, "playVideo"));
 		}, 3200);
 	}));
 }
@@ -15138,19 +15138,29 @@ var Wf = class extends Vf {
 		return e;
 	}
 	_holdMedia(e) {
-		for (let [t, n] of Object.entries(this._inputs)) {
-			let r = t === e, i = n.querySelector("slot").assignedElements();
-			for (let e of i) {
-				for (let t of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) Pf(t) && zf(t, () => ({
-					vol: this.state.power ? this._val("volume") : 0,
-					quiet: !!this._sound?.muted
-				})), r && t.dataset.held ? (t.src = t.dataset.held, delete t.dataset.held) : !r && !t.dataset.held && t.getAttribute("src") && t.getAttribute("src") !== "about:blank" && (t.dataset.held = t.getAttribute("src"), t.src = "about:blank");
-				for (let t of e.matches("video, audio") ? [e] : e.querySelectorAll("video, audio")) if (r) t.autoplay && t.play?.().catch(() => {});
-				else try {
-					t.pause();
+		let t = !!this._standby;
+		for (let [n, r] of Object.entries(this._inputs)) {
+			let i = n === e, a = r.querySelector("slot").assignedElements();
+			for (let e of a) {
+				for (let n of e.matches("iframe") ? [e] : e.querySelectorAll("iframe")) {
+					let e = Pf(n);
+					e && zf(n, () => ({
+						vol: this.state.power ? this._val("volume") : 0,
+						quiet: !!this._sound?.muted,
+						standby: !!this._standby
+					}));
+					let r = i && (!t || e);
+					r && n.dataset.held ? (n.src = n.dataset.held, delete n.dataset.held) : !r && !n.dataset.held && n.getAttribute("src") && n.getAttribute("src") !== "about:blank" && (n.dataset.held = n.getAttribute("src"), n.src = "about:blank"), e && i && n._yt && n._yt.standby !== t && ((n._yt.standby !== void 0 || t) && Lf(n, t ? "pauseVideo" : "playVideo"), n._yt.standby = t);
+				}
+				for (let n of e.matches("video, audio") ? [e] : e.querySelectorAll("video, audio")) if (!i || t) try {
+					n.pause();
 				} catch {}
+				else n.autoplay && n.play?.().catch(() => {});
 			}
 		}
+	}
+	setStandby(e) {
+		e = !!e, e !== !!this._standby && (this._standby = e, this._applyPicture());
 	}
 	_setSrc(e, t = !1) {
 		let n = this._inputs[this._meta.inputs[0]];
@@ -17330,8 +17340,11 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 	_applyNoReader() {
 		if (this._ready) {
 			for (let [e, t] of Object.entries(this._units)) t._alwaysSwitch = !this.canRead(e), t._applyPicture();
-			this._focusKey && this._setScreenLive(this._focusKey, !0);
+			this._focusKey && this._setScreenLive(this._focusKey, !0), this._applyStandby();
 		}
+	}
+	_applyStandby() {
+		for (let [e, t] of Object.entries(this._units || {})) this.canRead(e) || t.setStandby?.(this._focusKey !== e);
 	}
 	_init() {
 		let e;
@@ -17767,7 +17780,7 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		} else this._tween("focus", t.duration ?? 850, (e) => {
 			this._f = i + (1 - i) * e;
 		});
-		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
+		this._setScreenLive(e, !0), this._applyStandby(), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: e },
 			bubbles: !0,
 			composed: !0
@@ -17775,7 +17788,7 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 	}
 	unfocus() {
 		if (!this._focusKey) return;
-		this._reading && this.closeReader(), this._setScreenLive(this._focusKey, !1), this._focusKey = null;
+		this._reading && this.closeReader(), this._setScreenLive(this._focusKey, !1), this._focusKey = null, this._applyStandby();
 		let e = this._f;
 		this._tween("focus", 750, (t) => {
 			this._f = e * (1 - t);

@@ -39,7 +39,7 @@ One straight-on camera. The first tap on a TV moves in to it. A tap on its scree
 | `brand` | Replace the maker's badge on every TV (`brand=""` removes it) |
 | `power` | Which TVs start switched on: `all` (default) or a list of model ids |
 | `--focus-inset-bottom` (CSS property) | Room to keep free at the bottom when the camera moves in to a TV, for a dock or toolbar laid over the scene, e.g. `retro-shelf { --focus-inset-bottom: 128px }`. The TV is framed in the space above it, with a safe margin at the sides and top |
-| `no-reader` | TVs that never open full screen and stay at TV zoom, for example `no-reader="kv-5200"`. Once the camera is in on one, its picture takes clicks (so embedded players can be used), and its channel keys switch channels even with only one page (empty channels show static) |
+| `no-reader` | TVs that never open full screen and stay at TV zoom, for example `no-reader="kv-5200"`. Such a TV only plays while the camera is on it: elsewhere it goes into standby (YouTube and audio pause where they are, other players are unloaded). Once the camera is in on one, its picture takes clicks (so embedded players can be used), and its channel keys switch channels even with only one page (empty channels show static) |
 | `muted` | No sounds |
 
 TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-5200`. More pages for a TV's other inputs or channels use `slot="<model id>:<input>"`, for example `slot="kv-5200:ch-5"`.
