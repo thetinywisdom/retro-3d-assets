@@ -20,7 +20,7 @@ Interactive 3D retro hardware as web components, in one file (`dist/retro-3d.js`
 </retro-shelf>
 ```
 
-One straight-on camera. Tapping a TV moves in to it and its page becomes usable (a "Fill screen" button goes closer). Tapping a case or a book slides it out, turns its cover to face you and shows a card. The shelf is two long levels with no dividers; on a narrow screen it is a little narrower, and if the whole unit is taller than the element, ordinary scrolling moves the camera down it.
+One straight-on camera. The first tap on a TV moves in to it. A tap on its screen (or the "Read full screen" button) then opens that TV's page full screen as ordinary, scrollable page content, with a button and `Esc` to go back to the TV. The page element itself is moved into the full-screen view, so style it for both sizes: it has `slot="reader"` while it is open. Tapping a case or a book slides it out, turns its cover to face you and shows a card. The shelf is two long levels with no dividers; on a narrow screen it is a little narrower, and if the whole unit is taller than the element, ordinary scrolling moves the camera down it.
 
 | Attribute | Meaning |
 | --- | --- |
@@ -43,11 +43,11 @@ TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-52
 
 `<retro-item>` attributes: `type` (`ps1`, `gba`, `vita`, `psp`, `book`), `title`, `subtitle`, `color`, `cover` (image for the front), `href` and `link-text` (button on the card), and for books `thickness` and `height` in mm. Its content is the card text. Japanese titles are set vertically on the spine. Books thicker than 27 mm are drawn as cloth hardbacks and thinner ones as paperbacks; `binding="hard"` or `binding="paper"` overrides that. Items that do not fit on the shelf are skipped with a console warning.
 
-Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, and every `pvm-*` event from the TVs with `detail.tv` added.
+Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, and every `pvm-*` event from the TVs with `detail.tv` added.
 
-Methods: `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
+Methods: `openReader(id)`, `closeReader()`; `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
 
-Parts for styling: `card`, `back`, `fill`, `hint`.
+Parts for styling: `card`, `back`, `fill` (the Read button), `reader`, `reader-close`, `hint`.
 
 The consoles use the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5). Their body outlines are traced from straight-on reference images (`src/props/outlines.js`), and button, screen and label positions were measured from perspective-corrected photos scaled by each LCD's known size. Backs and undersides are plain. Case sizes (mm): PS1 jewel case 142 × 125 × 10.4, GBA carton 125 × 125 × 23, PS Vita case 105 × 135 × 12, PSP case 99 × 168 × 14. The platform names printed on the cases are plain lettering, not the real logos.
 

@@ -95,7 +95,14 @@ const STYLE = /* css */ `
 .card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }
 .card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }
 .card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }
-.card[hidden], .fill[hidden] { display: none; }
+.card[hidden], .fill[hidden], .reader[hidden] { display: none; }
+.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }
+.reader.open { opacity: 1; }
+.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }
+.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }
+.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }
+.reader .reader-close { position: fixed; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }
 .ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
 .fallback { display: none; padding: 16px; color: inherit; }
 :host(.nogl) .wall, :host(.nogl) .ui { display: none; }
@@ -192,27 +199,30 @@ export class RetroShelfElement extends Base {
     this._selected = -1;
     this._par = { x: 0, y: 0 };
     this._frame = this._frame.bind(this);
-    this._onKey = (e) => { if (e.key === 'Escape') (this._selected >= 0 ? this.close() : this.unfocus()); };
+    this._onKey = (e) => { if (e.key === 'Escape') (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus()); };
     const root = this.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${SCREEN_STYLE}${STYLE}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div></div><div class="spacer"></div></div>
       <div class="ui">
         <button class="back" part="back" type="button" hidden>&larr; Back</button>
-        <button class="fill" part="fill" type="button" hidden>Fill screen</button>
+        <button class="fill" part="fill" type="button" hidden>Read full screen</button>
         <div class="card" part="card" hidden>
           <span class="card-type"></span><h3 class="card-title"></h3><p class="card-sub"></p>
           <div class="card-body"><slot name="card"></slot></div>
           <div class="card-row"><a class="card-link" hidden>Open</a><button class="card-close" type="button">Put it back</button></div>
         </div>
+        <div class="reader" part="reader" hidden><div class="reader-page"><slot name="reader"></slot></div>
+          <button class="reader-close back" part="reader-close" type="button">&larr; Back to the TV</button></div>
         <div class="hint" part="hint">Tap a TV, a game or a book</div>
       </div>
       <div class="sr" role="group" aria-label="Shelf"></div>
       <div class="fallback"><slot name="fallback">This page needs WebGL to show the 3D shelf.</slot></div>`;
     const q = (s) => root.querySelector(s);
     this._wall = q('.wall'); this._view = q('.view'); this._cssLayer = q('.css'); this._canvas = q('canvas'); this._spacer = q('.spacer');
-    this._back = q('.back'); this._fill = q('.fill'); this._card = q('.card'); this._hint = q('.hint'); this._sr = q('.sr');
+    this._back = q('.back'); this._readBtn = q('.fill'); this._reader = q('.reader'); this._card = q('.card'); this._hint = q('.hint'); this._sr = q('.sr');
     this._back.addEventListener('click', () => this.unfocus());
-    this._fill.addEventListener('click', () => this._setFill(!this._fillScreen));
+    this._readBtn.addEventListener('click', () => this.openReader());
+    q('.reader-close').addEventListener('click', () => this.closeReader());
     q('.card-close').addEventListener('click', () => this.close());
     const w = this._wall;
     w.addEventListener('pointerdown', (e) => this._onDown(e));
@@ -378,6 +388,7 @@ export class RetroShelfElement extends Base {
     const spread = floorOnly && this.hasAttribute('consoles');
     this._floorPad = spread ? 330 : floorOnly ? 190 : 0;
     this._hint.textContent = floorOnly ? 'Tap a TV to look closer' : 'Tap a TV, a game or a book';
+    this._hintHome = undefined;
     this._pitch = floorOnly ? (spread ? 0.27 : 0.12) : 0;      // look down a little at things on the floor
     // two long levels, no dividers; narrower on a tall (phone) view
     const shelf = floorOnly ? { height: 0, width: 0, depth: 520, cells: [] } : buildShelf({ cols: 1, rows: 2, cellW: mode === 'wide' ? 980 : 860 });
@@ -568,7 +579,7 @@ export class RetroShelfElement extends Base {
   _buildA11y() {
     this._sr.textContent = '';
     const btn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); this._sr.append(b); };
-    for (const id of TVS) { btn(`Look at the ${MODELS[id].META.name}`, () => this.focusTV(id)); this._sr.append(this._units[id]._sr); }
+    for (const id of TVS) { btn(`Look at the ${MODELS[id].META.name}`, () => this.focusTV(id)); btn(`Read the ${MODELS[id].META.name} page full screen`, () => this.openReader(id)); this._sr.append(this._units[id]._sr); }
     this._items.forEach((m, i) => btn(`${ITEM_TYPES[m.userData.spec.type].name}: ${m.userData.spec.title}`, () => this.select(i)));
   }
 
@@ -684,20 +695,28 @@ export class RetroShelfElement extends Base {
     }
     this._setScreenLive(id, true);
     this._wall.classList.add('locked');
-    this._back.hidden = false; this._fill.hidden = false;
-    this._hint.classList.add('gone');
+    this._back.hidden = false; this._readBtn.hidden = false;
+    // say what the next tap does, briefly
+    this._hintHome ??= this._hint.textContent;
+    this._hint.textContent = 'Tap the screen to read it full screen';
+    this._hint.classList.remove('gone');
+    clearTimeout(this._hintT);
+    this._hintT = setTimeout(() => this._hint.classList.add('gone'), 3200);
     this.dispatchEvent(new CustomEvent('shelf-focus', { detail: { tv: id }, bubbles: true, composed: true }));
   }
 
   /** Back to the whole shelf. */
   unfocus() {
     if (!this._focusKey) return;
+    if (this._reading) this.closeReader();
     this._setScreenLive(this._focusKey, false);
     this._focusKey = null;
     const f0 = this._f;
     this._tween('focus', 750, (t) => { this._f = f0 * (1 - t); });
     this._wall.classList.remove('locked');
-    this._back.hidden = true; this._fill.hidden = true;
+    this._back.hidden = true; this._readBtn.hidden = true;
+    clearTimeout(this._hintT);
+    this._hint.classList.add('gone');
     this._setFill(false, true);
     this.dispatchEvent(new CustomEvent('shelf-focus', { detail: { tv: null }, bubbles: true, composed: true }));
   }
@@ -705,14 +724,12 @@ export class RetroShelfElement extends Base {
   _setScreenLive(id, live) {
     const u = this._units[id];
     u.state.focused = live;
-    u._screenEl.style.pointerEvents = live ? 'auto' : 'none';
     u._m.crtMaterial.uniforms.uGlare.value = live ? 0.35 : 1;
     this.invalidate();
   }
 
   _setFill(on, quiet = false) {
     this._fillScreen = on;
-    this._fill.textContent = on ? 'Show the whole TV' : 'Fill screen';
     if (quiet || !this._focusKey) return;
     const from = { pos: this._focus.pos.clone(), look: this._focus.look.clone() };
     this._aim();
@@ -720,6 +737,47 @@ export class RetroShelfElement extends Base {
     this._focus = tmp;
     const f0 = this._f;
     this._tween('focus', 500, (t) => { tmp.pos.lerpVectors(from.pos, to.pos, t); tmp.look.lerpVectors(from.look, to.look, t); this._f = f0 + (1 - f0) * t; }, () => { this._focus = to; });
+  }
+
+  // --------------------------------------------------------------- reader --
+  /**
+   * Show the focused TV's page full screen, as ordinary readable page content.
+   * The page element is moved from the TV's slot to the reader's, so it is the
+   * same element (state, scroll position and any running media are kept).
+   */
+  openReader(id = this._focusKey) {
+    if (!id || this._reading) return;
+    if (id !== this._focusKey) this.focusTV(id);
+    const page = this.querySelector(`[slot="${id}"]`);
+    if (!page) return;
+    this._reading = { id, page };
+    const bg = getComputedStyle(page).backgroundColor;
+    this._reader.style.background = bg && !bg.endsWith(', 0)') && bg !== 'transparent' ? bg : '#0b0b0b';
+    this._reader.hidden = false;
+    this._setFill(true);                                        // push the camera in to the glass as the page fades up
+    requestAnimationFrame(() => this._reader.classList.add('open'));
+    clearTimeout(this._readT);
+    this._readT = setTimeout(() => {
+      page.setAttribute('slot', 'reader');
+      this._reader.querySelector('.reader-page').scrollTop = 0;
+      this._reader.querySelector('.reader-close').focus({ preventScroll: true });
+    }, this._reduced ? 0 : 260);
+    this._back.hidden = true; this._readBtn.hidden = true;
+    this._hint.classList.add('gone');
+    this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: id, open: true }, bubbles: true, composed: true }));
+  }
+
+  /** Close the full-screen page and return to the TV. */
+  closeReader() {
+    const r = this._reading;
+    if (!r) return;
+    this._reading = null;
+    clearTimeout(this._readT);
+    r.page.setAttribute('slot', r.id);
+    this._reader.classList.remove('open');
+    this._readT = setTimeout(() => { this._reader.hidden = true; }, this._reduced ? 0 : 300);
+    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = false; }
+    this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: r.id, open: false }, bubbles: true, composed: true }));
   }
 
   // ---------------------------------------------------------------- items --
@@ -786,9 +844,7 @@ export class RetroShelfElement extends Base {
     return out;
   }
 
-  _inLiveScreen(e) {
-    return this._focusKey && e.composedPath().includes(this._units[this._focusKey]._screenEl);
-  }
+  _inLiveScreen() { return false; }
 
   _onDown(e) {
     if (!this._ready || e.button > 0 || this._inLiveScreen(e)) return;
@@ -817,7 +873,7 @@ export class RetroShelfElement extends Base {
     this._par.y = -clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
     if (!d && !this._inLiveScreen(e)) {
       const h = this._pick(e);
-      this._wall.style.cursor = h.control || h.item !== undefined || (h.unit && h.unit !== this._focusKey) ? 'pointer' : '';
+      this._wall.style.cursor = h.control || h.item !== undefined || (h.unit && h.unit !== this._focusKey) ? 'pointer' : h.screen ? 'zoom-in' : '';
     }
     this.invalidate();
   }
@@ -836,7 +892,11 @@ export class RetroShelfElement extends Base {
     const h = d.hit;
     if (this._selected >= 0) { if (h.item === this._selected) return; this.close(); if (h.item === undefined) return; }
     if (h.item !== undefined) this.select(h.item);
-    else if (h.unit) { if (h.unit !== this._focusKey) this.focusTV(h.unit); }
+    else if (h.unit) {
+      // first tap moves in to the set; a tap on its screen then opens the page full screen
+      if (h.unit !== this._focusKey) this.focusTV(h.unit);
+      else if (h.screen) this.openReader();
+    }
     else if (this._focusKey) this.unfocus();
   }
 }

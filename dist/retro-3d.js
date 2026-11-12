@@ -16986,7 +16986,7 @@ var Pp = [
 			z: 96
 		}
 	}
-}, Lp = (e, t, n) => Math.min(n, Math.max(t, e)), Rp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, zp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden] { display: none; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
+}, Lp = (e, t, n) => Math.min(n, Math.max(t, e)), Rp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, zp = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
 function Bp() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 160;
@@ -17082,25 +17082,27 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			x: 0,
 			y: 0
 		}, this._frame = this._frame.bind(this), this._onKey = (e) => {
-			e.key === "Escape" && (this._selected >= 0 ? this.close() : this.unfocus());
+			e.key === "Escape" && (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
 		};
 		let e = this.attachShadow({ mode: "open" });
 		e.innerHTML = `<style>${Mf}${zp}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div></div><div class="spacer"></div></div>
       <div class="ui">
         <button class="back" part="back" type="button" hidden>&larr; Back</button>
-        <button class="fill" part="fill" type="button" hidden>Fill screen</button>
+        <button class="fill" part="fill" type="button" hidden>Read full screen</button>
         <div class="card" part="card" hidden>
           <span class="card-type"></span><h3 class="card-title"></h3><p class="card-sub"></p>
           <div class="card-body"><slot name="card"></slot></div>
           <div class="card-row"><a class="card-link" hidden>Open</a><button class="card-close" type="button">Put it back</button></div>
         </div>
+        <div class="reader" part="reader" hidden><div class="reader-page"><slot name="reader"></slot></div>
+          <button class="reader-close back" part="reader-close" type="button">&larr; Back to the TV</button></div>
         <div class="hint" part="hint">Tap a TV, a game or a book</div>
       </div>
       <div class="sr" role="group" aria-label="Shelf"></div>
       <div class="fallback"><slot name="fallback">This page needs WebGL to show the 3D shelf.</slot></div>`;
 		let t = (t) => e.querySelector(t);
-		this._wall = t(".wall"), this._view = t(".view"), this._cssLayer = t(".css"), this._canvas = t("canvas"), this._spacer = t(".spacer"), this._back = t(".back"), this._fill = t(".fill"), this._card = t(".card"), this._hint = t(".hint"), this._sr = t(".sr"), this._back.addEventListener("click", () => this.unfocus()), this._fill.addEventListener("click", () => this._setFill(!this._fillScreen)), t(".card-close").addEventListener("click", () => this.close());
+		this._wall = t(".wall"), this._view = t(".view"), this._cssLayer = t(".css"), this._canvas = t("canvas"), this._spacer = t(".spacer"), this._back = t(".back"), this._readBtn = t(".fill"), this._reader = t(".reader"), this._card = t(".card"), this._hint = t(".hint"), this._sr = t(".sr"), this._back.addEventListener("click", () => this.unfocus()), this._readBtn.addEventListener("click", () => this.openReader()), t(".reader-close").addEventListener("click", () => this.closeReader()), t(".card-close").addEventListener("click", () => this.close());
 		let n = this._wall;
 		n.addEventListener("pointerdown", (e) => this._onDown(e)), n.addEventListener("pointermove", (e) => this._onMove(e)), n.addEventListener("pointerup", (e) => this._onUp(e)), n.addEventListener("pointercancel", () => {
 			this._releaseButton(), this._drag = null;
@@ -17245,7 +17247,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		let e = this._builtMode = this._mode(), t = this.getAttribute("scene") === "floor", n = this.getAttribute("lighting"), r = n === "dim", i = n === "dark" || r, a = this.hasAttribute("front-light") ? Math.max(0, parseFloat(this.getAttribute("front-light")) || 0) : 1;
 		this._key.intensity = r ? .22 : i ? 0 : 2.1, this._fill.intensity = r ? .3 : i ? .24 * a : .5, this._fill.color.set(i ? 16773596 : 14674175), this._fill.position.set(i ? 150 : 700, i ? 520 : 300, i ? 1600 : 1200), this._scene.environmentIntensity = r ? .16 : i ? .014 : .6, this._room = r ? .3 : i ? .06 : 1;
 		let o = t && this.hasAttribute("consoles");
-		this._floorPad = o ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._pitch = t ? o ? .27 : .12 : 0;
+		this._floorPad = o ? 330 : t ? 190 : 0, this._hint.textContent = t ? "Tap a TV to look closer" : "Tap a TV, a game or a book", this._hintHome = void 0, this._pitch = t ? o ? .27 : .12 : 0;
 		let s = t ? {
 			height: 0,
 			width: 0,
@@ -17488,7 +17490,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 			let n = document.createElement("button");
 			n.type = "button", n.textContent = e, n.addEventListener("click", t), this._sr.append(n);
 		};
-		for (let t of Pp) e(`Look at the ${wf[t].META.name}`, () => this.focusTV(t)), this._sr.append(this._units[t]._sr);
+		for (let t of Pp) e(`Look at the ${wf[t].META.name}`, () => this.focusTV(t)), e(`Read the ${wf[t].META.name} page full screen`, () => this.openReader(t)), this._sr.append(this._units[t]._sr);
 		this._items.forEach((t, n) => e(`${Lf[t.userData.spec.type].name}: ${t.userData.spec.title}`, () => this.select(n)));
 	}
 	_resize() {
@@ -17569,7 +17571,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		} else this._tween("focus", 850, (e) => {
 			this._f = r + (1 - r) * e;
 		});
-		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._fill.hidden = !1, this._hint.classList.add("gone"), this.dispatchEvent(new CustomEvent("shelf-focus", {
+		this._setScreenLive(e, !0), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !1, this._hintHome ?? (this._hintHome = this._hint.textContent), this._hint.textContent = "Tap the screen to read it full screen", this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: e },
 			bubbles: !0,
 			composed: !0
@@ -17577,11 +17579,11 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 	}
 	unfocus() {
 		if (!this._focusKey) return;
-		this._setScreenLive(this._focusKey, !1), this._focusKey = null;
+		this._reading && this.closeReader(), this._setScreenLive(this._focusKey, !1), this._focusKey = null;
 		let e = this._f;
 		this._tween("focus", 750, (t) => {
 			this._f = e * (1 - t);
-		}), this._wall.classList.remove("locked"), this._back.hidden = !0, this._fill.hidden = !0, this._setFill(!1, !0), this.dispatchEvent(new CustomEvent("shelf-focus", {
+		}), this._wall.classList.remove("locked"), this._back.hidden = !0, this._readBtn.hidden = !0, clearTimeout(this._hintT), this._hint.classList.add("gone"), this._setFill(!1, !0), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: null },
 			bubbles: !0,
 			composed: !0
@@ -17589,10 +17591,10 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 	}
 	_setScreenLive(e, t) {
 		let n = this._units[e];
-		n.state.focused = t, n._screenEl.style.pointerEvents = t ? "auto" : "none", n._m.crtMaterial.uniforms.uGlare.value = t ? .35 : 1, this.invalidate();
+		n.state.focused = t, n._m.crtMaterial.uniforms.uGlare.value = t ? .35 : 1, this.invalidate();
 	}
 	_setFill(e, t = !1) {
-		if (this._fillScreen = e, this._fill.textContent = e ? "Show the whole TV" : "Fill screen", t || !this._focusKey) return;
+		if (this._fillScreen = e, t || !this._focusKey) return;
 		let n = {
 			pos: this._focus.pos.clone(),
 			look: this._focus.look.clone()
@@ -17609,6 +17611,40 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		}, () => {
 			this._focus = r;
 		});
+	}
+	openReader(e = this._focusKey) {
+		if (!e || this._reading) return;
+		e !== this._focusKey && this.focusTV(e);
+		let t = this.querySelector(`[slot="${e}"]`);
+		if (!t) return;
+		this._reading = {
+			id: e,
+			page: t
+		};
+		let n = getComputedStyle(t).backgroundColor;
+		this._reader.style.background = n && !n.endsWith(", 0)") && n !== "transparent" ? n : "#0b0b0b", this._reader.hidden = !1, this._setFill(!0), requestAnimationFrame(() => this._reader.classList.add("open")), clearTimeout(this._readT), this._readT = setTimeout(() => {
+			t.setAttribute("slot", "reader"), this._reader.querySelector(".reader-page").scrollTop = 0, this._reader.querySelector(".reader-close").focus({ preventScroll: !0 });
+		}, this._reduced ? 0 : 260), this._back.hidden = !0, this._readBtn.hidden = !0, this._hint.classList.add("gone"), this.dispatchEvent(new CustomEvent("shelf-read", {
+			detail: {
+				tv: e,
+				open: !0
+			},
+			bubbles: !0,
+			composed: !0
+		}));
+	}
+	closeReader() {
+		let e = this._reading;
+		e && (this._reading = null, clearTimeout(this._readT), e.page.setAttribute("slot", e.id), this._reader.classList.remove("open"), this._readT = setTimeout(() => {
+			this._reader.hidden = !0;
+		}, this._reduced ? 0 : 300), this._focusKey && (this._setFill(!1), this._back.hidden = !1, this._readBtn.hidden = !1), this.dispatchEvent(new CustomEvent("shelf-read", {
+			detail: {
+				tv: e.id,
+				open: !1
+			},
+			bubbles: !0,
+			composed: !0
+		})));
 	}
 	select(e) {
 		let t = typeof e == "number" ? e : this._items.findIndex((t) => t.userData.el === e), n = this._items[t];
@@ -17664,8 +17700,8 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		for (let e = n.object; e; e = e.parent) e.userData.item !== void 0 && (r.item = e.userData.item), e.userData.unit && (r.unit = e.userData.unit);
 		return r;
 	}
-	_inLiveScreen(e) {
-		return this._focusKey && e.composedPath().includes(this._units[this._focusKey]._screenEl);
+	_inLiveScreen() {
+		return !1;
 	}
 	_onDown(e) {
 		if (!this._ready || e.button > 0 || this._inLiveScreen(e)) return;
@@ -17705,7 +17741,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		let n = this._view.getBoundingClientRect();
 		if (this._par.x = Lp((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -Lp((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
 			let t = this._pick(e);
-			this._wall.style.cursor = t.control || t.item !== void 0 || t.unit && t.unit !== this._focusKey ? "pointer" : "";
+			this._wall.style.cursor = t.control || t.item !== void 0 || t.unit && t.unit !== this._focusKey ? "pointer" : t.screen ? "zoom-in" : "";
 		}
 		this.invalidate();
 	}
@@ -17722,7 +17758,7 @@ var Up = typeof HTMLElement < "u" ? HTMLElement : class {}, Wp = class extends U
 		}
 		if (t.knob || t.moved > 8) return;
 		let n = t.hit;
-		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit !== this._focusKey && this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
+		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
 };
 // src/index.js
