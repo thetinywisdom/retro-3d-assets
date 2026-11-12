@@ -17726,6 +17726,15 @@ var Qp = typeof HTMLElement < "u" ? HTMLElement : class {}, $p = class extends Q
 			look: h
 		}, this.invalidate();
 	}
+	controlPoint(e, t) {
+		let n = this._units[e]?._m?.controls?.[t];
+		if (!n?.mesh || !this._camera) return null;
+		let r = new or().setFromObject(n.mesh).getCenter(new U()).project(this._camera), i = this._view.getBoundingClientRect();
+		return {
+			x: i.left + (r.x + 1) / 2 * i.width,
+			y: i.top + (1 - r.y) / 2 * i.height
+		};
+	}
 	_insetBottom() {
 		return this._probe || (this._probe = document.createElement("div"), this._probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:0;height:var(--focus-inset-bottom, 0px)", this.shadowRoot.append(this._probe)), this._probe.getBoundingClientRect().height || 0;
 	}

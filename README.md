@@ -48,7 +48,7 @@ TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-52
 
 Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, `shelf-hover` `{ tv }` (the TV under the mouse, or `null`), `shelf-hint` `{ text }` (what the next tap does), and every `pvm-*` event from the TVs with `detail.tv` added.
 
-Methods: `focusTV(id, { duration })` (the move eases in and out; `duration` in ms), `canRead(id)` (false for a `no-reader` TV), `openReader(id)` (also switches pages while one is open), `closeReader()`, `page(id)` (that TV's page element, wherever it is), `hint` (the current hint text); `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
+Methods: `controlPoint(tv, controlId)` (where a set's key appears on screen, in client pixels, e.g. to point at it), `focusTV(id, { duration })` (the move eases in and out; `duration` in ms), `canRead(id)` (false for a `no-reader` TV), `openReader(id)` (also switches pages while one is open), `closeReader()`, `page(id)` (that TV's page element, wherever it is), `hint` (the current hint text); `shelf.tv('kv-5200')` returns that TV with the full `<sony-pvm>` API below; `focusTV(id)`, `unfocus()`, `select(indexOrElement)`, `close()`.
 
 Parts for styling: `card`, `back`, `fill` (the Read button), `reader`, `reader-close`, `hint`.
 

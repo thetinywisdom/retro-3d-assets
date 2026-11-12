@@ -709,6 +709,18 @@ export class RetroShelfElement extends Base {
     this.invalidate();
   }
 
+  /**
+   * Where one of a set's controls appears on screen, in client pixels ({ x, y }), or null:
+   * for pointing at a key from the page (a hint, a tooltip).
+   */
+  controlPoint(tv, id) {
+    const rec = this._units[tv]?._m?.controls?.[id];
+    if (!rec?.mesh || !this._camera) return null;
+    const v = new THREE.Box3().setFromObject(rec.mesh).getCenter(new THREE.Vector3()).project(this._camera);
+    const r = this._view.getBoundingClientRect();
+    return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
+  }
+
   /** --focus-inset-bottom as pixels (it can be any length, calc() and env() included, so let CSS resolve it). */
   _insetBottom() {
     if (!this._probe) {
