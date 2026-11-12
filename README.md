@@ -75,7 +75,7 @@ The children are the real buttons: they stay in the page, off screen, for keyboa
 | `data-action="sound"` | Toggles `muted` on the shelf |
 | `data-action="info"` | Shows its `data-info` on the LCD until the next key or TV |
 
-Other attributes: `for` (id of the `<retro-shelf>`; the first one on the page if left out), `name` (top line of the LCD; the host name by default), `data-label` (word on the key), `data-channel` (number on the key; 01, 02, … by default), `data-color` (key dot colour). The element is 128 px tall, or 176 px below 560 px wide, where the keys go on two rows; give it a position, for example `position: fixed; bottom: 0; left: 0; right: 0`. The pager itself takes pointer events; the empty space around it does not. Long LCD text scrolls (it is cut off instead with reduced motion). Event: `pager-press` `{ tv, action }`.
+Other attributes: `for` (id of the `<retro-shelf>`; the first one on the page if left out), `name` (top line of the LCD; the host name by default), `data-label` (word on the key), `data-channel` (number on the key; 01, 02, … by default), `data-color` (key dot colour). The element is 128 px tall, or 176 px below 560 px wide, where the keys go on two rows; give it a position, for example `position: fixed; bottom: 0; left: 0; right: 0`. The pager itself takes pointer events; the empty space around it does not. Long LCD text scrolls round continuously (it is cut off instead with reduced motion). The LCD is lettered in DotGothic16 when the page loads that font (Google Fonts), otherwise in a monospace. Event: `pager-press` `{ tv, action }`.
 
 ## `<sony-pvm>`
 

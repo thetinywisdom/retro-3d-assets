@@ -23,6 +23,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const LEGEND = '"Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif';
 const MONO = '"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace';
+// LCD lettering: a dot-matrix face (with Japanese) when the page offers it, else a monospace
+const DOTS = '"DotGothic16", "IBM Plex Mono", ui-monospace, monospace';
 const NARROW = 560;            // element width (CSS px) below which the keys go on two rows
 const TILT = -0.2;             // top edge leans away, as if propped on the floor
 
@@ -31,7 +33,7 @@ const STYLE = /* css */ `
 :host([narrow]) { height: 176px; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }
 .pad { position: absolute; pointer-events: auto; touch-action: manipulation; }
-.keys { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 `;
 
 /** Where each part goes, for a given number of TV keys and extra keys. */
@@ -39,7 +41,7 @@ function layout(narrow, nNav, nExtra) {
   const R = 6.5, eg = 3, extraW = nExtra ? nExtra * R * 2 + (nExtra - 1) * eg : 0;
   const parts = { nav: [], extra: [] };
   if (!narrow) {
-    const m = 9, lcdW = 108, kw = 24, kh = 22, kg = 4, H = 44;
+    const m = 13, lcdW = 108, kw = 24, kh = 22, kg = 4, H = 52;
     const navW = nNav * kw + Math.max(0, nNav - 1) * kg;
     const W = m + lcdW + m + navW + (nExtra ? m + extraW : 0) + m;
     let x = -W / 2 + m;
@@ -48,10 +50,10 @@ function layout(narrow, nNav, nExtra) {
     for (let i = 0; i < nNav; i++) parts.nav.push({ x: x + kw / 2 + i * (kw + kg), y: 0, w: kw, h: kh });
     x += navW + m;
     for (let i = 0; i < nExtra; i++) parts.extra.push({ x: x + R + i * (2 * R + eg), y: 0, r: R });
-    parts.led = { x: W / 2 - 22, y: H / 2 - 7 };
-    return Object.assign(parts, { W, H, r: 18 });
+    parts.led = { x: W / 2 - 12, y: H / 2 - 7.5 };
+    return Object.assign(parts, { W, H, r: 7 });
   }
-  const m = 8, H = 66, lcdW = 78, gap = 5, kh = 20, kg = 4;
+  const m = 11, H = 74, lcdW = 78, gap = 6, kh = 20, kg = 4;
   const W = Math.max(m + lcdW + (nExtra ? gap + extraW : 0) + m, 132);
   const kw = (W - 2 * m - Math.max(0, nNav - 1) * kg) / Math.max(1, nNav);
   const top = H / 2 - m - 12, bottom = -H / 2 + m + kh / 2;
@@ -59,8 +61,8 @@ function layout(narrow, nNav, nExtra) {
   parts.lcd = { x: -W / 2 + m + lw / 2, y: top, w: lw, h: 24 };
   for (let i = 0; i < nExtra; i++) parts.extra.push({ x: W / 2 - m - extraW + R + i * (2 * R + eg), y: top, r: R });
   for (let i = 0; i < nNav; i++) parts.nav.push({ x: -W / 2 + m + kw / 2 + i * (kw + kg), y: bottom, w: kw, h: kh });
-  parts.led = { x: W / 2 - 13, y: H / 2 - 4.5 };
-  return Object.assign(parts, { W, H, r: 14 });
+  parts.led = { x: W / 2 - 10, y: H / 2 - 6.5 };
+  return Object.assign(parts, { W, H, r: 7 });
 }
 
 /** Round key: a short cylinder with a softened top, standing on z = 0. */
@@ -144,6 +146,7 @@ export class RetroPagerElement extends HTMLElement {
     this._bind();
     this._clock = setInterval(() => this._draw(), 20000);
     document.fonts?.ready.then(() => { this._paintLegends(); this._draw(); });
+    document.fonts?.load?.('16px "DotGothic16"', 'A').then(() => this._draw(), () => {});
     this._resize();
   }
 
@@ -481,13 +484,13 @@ export class RetroPagerElement extends HTMLElement {
     const top = H * 0.27, mainSize = H * 0.32;
     g.fillStyle = ink;
     g.textBaseline = 'alphabetic';
-    g.font = `500 ${H * 0.2}px ${MONO}`;
+    g.font = `400 ${H * 0.21}px ${DOTS}`;
     g.globalAlpha = 0.72;
     g.textAlign = 'left'; g.fillText(txt.left.toUpperCase(), px, top);
     g.textAlign = 'right'; g.fillText(txt.right, W - px, top);
     g.globalAlpha = 1;
     // main line: scrolls like a pager when it is too long
-    g.font = `500 ${mainSize}px ${MONO}`;
+    g.font = `400 ${mainSize}px ${DOTS}`;
     g.textAlign = 'left';
     const avail = W - 2 * px, msg = txt.sub ? `${txt.main} · ${txt.sub}` : txt.main;
     const tw = g.measureText(msg).width;
@@ -500,13 +503,14 @@ export class RetroPagerElement extends HTMLElement {
         while (s.length > 1 && g.measureText(s + '…').width > avail) s = s.slice(0, -1);
         g.fillText(s + '…', px, H * 0.8);
       } else {
-        const speed = W * 0.11, travel = tw - avail, hold = 1400, cycle = hold * 2 + (travel / speed) * 1000;
-        const e = (performance.now() - this._mq0) % cycle;
-        off = Math.min(Math.max(e - hold, 0) / 1000 * speed, travel);
+        // runs round continuously, like a pager: the text, a gap, the text again
+        const speed = W * 0.14, loop = tw + avail * 0.35;
+        off = ((performance.now() - this._mq0) / 1000 * speed) % loop;
         g.save(); g.beginPath(); g.rect(px, 0, avail, H); g.clip();
         g.fillText(msg, px - off, H * 0.8);
+        g.fillText(msg, px - off + loop, H * 0.8);
         g.restore();
-        this._mqT = setTimeout(() => this._draw(), 50);
+        this._mqT = setTimeout(() => this._draw(), 33);
       }
     } else g.fillText(msg, px, H * 0.8);
     // pixel grid and a faint shadow under the bezel

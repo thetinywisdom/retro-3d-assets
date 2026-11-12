@@ -17803,76 +17803,76 @@ var Wp = typeof HTMLElement < "u" ? HTMLElement : class {}, Gp = class extends W
 		let n = t.hit;
 		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
-}, Kp = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", qp = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", Jp = 560, Yp = -.2, Xp = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }\n";
-function Zp(e, t, n) {
+}, Kp = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", qp = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", Jp = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Yp = 560, Xp = -.2, Zp = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
+function Qp(e, t, n) {
 	let r = 6.5, i = n ? n * r * 2 + (n - 1) * 3 : 0, a = {
 		nav: [],
 		extra: []
 	};
 	if (!e) {
-		let e = t * 24 + Math.max(0, t - 1) * 4, o = 126 + e + (n ? 9 + i : 0) + 9, s = -o / 2 + 9;
+		let e = t * 24 + Math.max(0, t - 1) * 4, o = 134 + e + (n ? 13 + i : 0) + 13, s = -o / 2 + 13;
 		a.lcd = {
 			x: s + 54,
 			y: 0,
 			w: 108,
 			h: 30
-		}, s += 117;
+		}, s += 121;
 		for (let e = 0; e < t; e++) a.nav.push({
 			x: s + 12 + e * 28,
 			y: 0,
 			w: 24,
 			h: 22
 		});
-		s += e + 9;
+		s += e + 13;
 		for (let e = 0; e < n; e++) a.extra.push({
 			x: s + r + e * 16,
 			y: 0,
 			r
 		});
 		return a.led = {
-			x: o / 2 - 22,
-			y: 15
+			x: o / 2 - 12,
+			y: 18.5
 		}, Object.assign(a, {
 			W: o,
-			H: 44,
-			r: 18
+			H: 52,
+			r: 7
 		});
 	}
-	let o = Math.max(86 + (n ? 5 + i : 0) + 8, 132), s = (o - 16 - Math.max(0, t - 1) * 4) / Math.max(1, t), c = o - 16 - (n ? 5 + i : 0);
+	let o = Math.max(89 + (n ? 6 + i : 0) + 11, 132), s = (o - 22 - Math.max(0, t - 1) * 4) / Math.max(1, t), c = o - 22 - (n ? 6 + i : 0);
 	a.lcd = {
-		x: -o / 2 + 8 + c / 2,
-		y: 13,
+		x: -o / 2 + 11 + c / 2,
+		y: 14,
 		w: c,
 		h: 24
 	};
 	for (let e = 0; e < n; e++) a.extra.push({
-		x: o / 2 - 8 - i + r + e * 16,
-		y: 13,
+		x: o / 2 - 11 - i + r + e * 16,
+		y: 14,
 		r
 	});
 	for (let e = 0; e < t; e++) a.nav.push({
-		x: -o / 2 + 8 + s / 2 + e * (s + 4),
-		y: -15,
+		x: -o / 2 + 11 + s / 2 + e * (s + 4),
+		y: -16,
 		w: s,
 		h: 20
 	});
 	return a.led = {
-		x: o / 2 - 13,
-		y: 28.5
+		x: o / 2 - 10,
+		y: 30.5
 	}, Object.assign(a, {
 		W: o,
-		H: 66,
-		r: 14
+		H: 74,
+		r: 7
 	});
 }
-function Qp(e, t, n) {
+function $p(e, t, n) {
 	return qu([ud([
 		Z(ld(e, 0, 0, 40), 0),
 		Z(ld(e, 0, 0, 40), t - n),
 		Z(ld(e - n, 0, 0, 40), t)
 	]), Q(ld(e - n, 0, 0, 40), [], t)]);
 }
-function $p(e, t) {
+function em(e, t) {
 	let n = document.createElement("canvas");
 	n.width = e, n.height = t;
 	let r = new Oi(n);
@@ -17882,14 +17882,14 @@ function $p(e, t) {
 		r
 	];
 }
-var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
+var tm = (e) => String(e).padStart(2, "0"), nm = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["for", "name"];
 	}
 	constructor() {
 		super();
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Xp}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
+		e.innerHTML = `<style>${Zp}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
       <div class="keys" role="navigation" aria-label="${this.getAttribute("aria-label") || "Site"}"><slot></slot></div>
       <div class="keys" aria-live="polite"></div>`, this._canvas = e.querySelector("canvas"), this._pad = e.querySelector(".pad"), this._live = e.querySelectorAll(".keys")[1], this._hover = -1, this._sceneTV = null, this._pressed = -1, this._note = null, this._reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !1;
 		let t = this._pad;
@@ -17928,7 +17928,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 			]
 		}), this._bind(), this._clock = setInterval(() => this._draw(), 2e4), document.fonts?.ready.then(() => {
 			this._paintLegends(), this._draw();
-		}), this._resize();
+		}), document.fonts?.load?.("16px \"DotGothic16\"", "A").then(() => this._draw(), () => {}), this._resize();
 	}
 	disconnectedCallback() {
 		this._ro?.disconnect(), this._mo?.disconnect(), clearInterval(this._clock), clearTimeout(this._mqT), this._bind(!0);
@@ -17970,7 +17970,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		let n = new as(16773596, 2.2);
 		n.position.set(-120, 300, 260), t.add(n);
 		let r = new as(1089605, 1.4);
-		r.position.set(60, 200, -220), t.add(r), this._camera = new Qo(7, 1, 10, 2e4), this._ray = new Cs(), this._group = new Ln(), this._group.rotation.x = Yp, t.add(this._group), this._mat = {
+		r.position.set(60, 200, -220), t.add(r), this._camera = new Qo(7, 1, 10, 2e4), this._ray = new Cs(), this._group = new Ln(), this._group.rotation.x = Xp, t.add(this._group), this._mat = {
 			body: new q({
 				color: 1841945,
 				roughness: .48,
@@ -17990,7 +17990,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 			}),
 			led: new Zr({ color: 3804170 })
 		};
-		let [i, a, o] = $p(1024, 2);
+		let [i, a, o] = em(1024, 2);
 		this._lcd = {
 			c: i,
 			g: a,
@@ -18009,7 +18009,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 				tv: t,
 				action: e.dataset.action || null,
 				label: e.dataset.label || e.textContent.trim(),
-				channel: t ? e.dataset.channel || em(++r) : ""
+				channel: t ? e.dataset.channel || tm(++r) : ""
 			};
 		});
 	}
@@ -18018,7 +18018,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		this._body && (this._group.traverse((e) => {
 			e.geometry?.dispose(), e.material?.map && e.material !== this._mat.lcd && (e.material.map.dispose(), e.material.dispose());
 		}), this._group.clear()), this._keys = this._readKeys();
-		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = Zp(e, t, n), i = this._group;
+		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = Qp(e, t, n), i = this._group;
 		this._body = new K(dd(r.W, r.H, 12, r.r, 3), this._mat.body), this._body.position.z = -12, i.add(this._body);
 		let a = new K(ud([Z(X(r.W + .3, r.H + .3, r.r), -5.4), Z(X(r.W + .3, r.H + .3, r.r), -5.9)]), this._mat.bezel);
 		i.add(a);
@@ -18033,21 +18033,21 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		let l = Math.round(1024 * o.h / o.w);
 		if (this._lcd.c.height !== l) {
 			this._lcd.t.dispose();
-			let [e, t, n] = $p(1024, l);
+			let [e, t, n] = em(1024, l);
 			this._lcd = {
 				c: e,
 				g: t,
 				t: n
 			}, this._mat.lcd.map = n, this._mat.lcd.needsUpdate = !0;
 		}
-		this._glow.position.set(o.x, o.y * Math.cos(Yp), 24);
-		let u = new K(Qp(1.3, .8, .3), this._mat.led);
+		this._glow.position.set(o.x, o.y * Math.cos(Xp), 24);
+		let u = new K($p(1.3, .8, .3), this._mat.led);
 		u.position.set(r.led.x, r.led.y, 0), i.add(u), this._ledMesh = u;
 		let d = 0, f = 0;
 		for (let e of this._keys) {
 			let t = e.tv ? r.nav[d++] : r.extra[f++], n = new Ln();
 			n.position.set(t.x, t.y, 0);
-			let a = 4.5, o = new K(e.tv ? dd(t.w, t.h, a, 4, 1.6) : Qp(t.r, a, 1.4), this._mat.key), s = new K(e.tv ? Q(X(t.w + 2.4, t.h + 2.4, 5), [X(t.w, t.h, 4).reverse()], .05) : Q(ld(t.r + 1.2, 0, 0, 40), [ld(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = $p(Math.round(c * 16), Math.round(l * 16)), h = new K(new Za(c, l), new q({
+			let a = 4.5, o = new K(e.tv ? dd(t.w, t.h, a, 4, 1.6) : $p(t.r, a, 1.4), this._mat.key), s = new K(e.tv ? Q(X(t.w + 2.4, t.h + 2.4, 5), [X(t.w, t.h, 4).reverse()], .05) : Q(ld(t.r + 1.2, 0, 0, 40), [ld(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = em(Math.round(c * 16), Math.round(l * 16)), h = new K(new Za(c, l), new q({
 				map: m,
 				transparent: !0,
 				roughness: .8,
@@ -18072,7 +18072,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 	}
 	_resize() {
 		if (!this._renderer) return;
-		let e = this.clientWidth < Jp;
+		let e = this.clientWidth < Yp;
 		e !== this.hasAttribute("narrow") || !this._keys ? (e ? this.setAttribute("narrow", "") : this.removeAttribute("narrow"), this._rebuild()) : (this._fit(), this._render());
 	}
 	_fit() {
@@ -18081,7 +18081,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		this._renderer.setSize(e, t, !1);
 		let r = this._camera;
 		r.aspect = e / t;
-		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(Yp) + 16 * Math.abs(Math.sin(Yp)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
+		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(Xp) + 16 * Math.abs(Math.sin(Xp)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
 		r.position.set(0, 0, s), r.lookAt(0, 0, 0), r.updateProjectionMatrix(), r.updateMatrixWorld(), this._group.updateMatrixWorld(!0);
 		let c = new or().setFromObject(this._group), l = [];
 		for (let e of [c.min.x, c.max.x]) for (let t of [c.min.y, c.max.y]) for (let n of [c.min.z, c.max.z]) l.push(new U(e, t, n).project(r));
@@ -18153,7 +18153,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		this._render();
 	}
 	_text() {
-		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${em(t.getHours())}:${em(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
+		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${tm(t.getHours())}:${tm(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
 		if (a) {
 			if (a.tv) {
 				let t = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? "Press again to read it full screen" : null;
@@ -18197,7 +18197,7 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 		let o = t.createLinearGradient(0, 0, 0, i);
 		o.addColorStop(0, "#87a061"), o.addColorStop(.18, "#a3bc7b"), o.addColorStop(1, "#93ad6b"), t.fillStyle = o, t.fillRect(0, 0, r, i);
 		let s = r * .035, c = i * .27, l = i * .32;
-		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `500 ${i * .2}px ${qp}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `500 ${l}px ${qp}`, t.textAlign = "left";
+		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `400 ${i * .21}px ${Jp}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `400 ${l}px ${Jp}`, t.textAlign = "left";
 		let u = r - 2 * s, d = a.sub ? `${a.main} · ${a.sub}` : a.main, f = t.measureText(d).width;
 		d !== this._mqText && (this._mqText = d, this._mq0 = performance.now());
 		let p = 0;
@@ -18207,8 +18207,8 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 				for (; e.length > 1 && t.measureText(e + "…").width > u;) e = e.slice(0, -1);
 				t.fillText(e + "…", s, i * .8);
 			} else {
-				let e = r * .11, n = f - u, a = 1400, o = a * 2 + n / e * 1e3, c = (performance.now() - this._mq0) % o;
-				p = Math.min(Math.max(c - a, 0) / 1e3 * e, n), t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), 50);
+				let e = r * .14, n = f + u * .35;
+				p = (performance.now() - this._mq0) / 1e3 * e % n, t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.fillText(d, s - p + n, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), 33);
 			}
 		} else t.fillText(d, s, i * .8);
 		t.fillStyle = "rgba(20, 30, 10, 0.07)";
@@ -18236,8 +18236,8 @@ var em = (e) => String(e).padStart(2, "0"), tm = class extends HTMLElement {
 	}
 };
 // src/index.js
-function nm() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Lf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Gp), customElements.get("retro-pager") || customElements.define("retro-pager", tm));
+function rm() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Lf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Gp), customElements.get("retro-pager") || customElements.define("retro-pager", nm));
 }
-nm();
-export { Np as ARRANGEMENTS, Rf as ITEM_TYPES, Tf as MODELS, Tp as PROPS, tm as RetroPagerElement, Gp as RetroShelfElement, Lp as STACKS, Lf as SonyPVMElement, ip as buildItem, op as buildShelf, nm as define };
+rm();
+export { Np as ARRANGEMENTS, Rf as ITEM_TYPES, Tf as MODELS, Tp as PROPS, nm as RetroPagerElement, Gp as RetroShelfElement, Lp as STACKS, Lf as SonyPVMElement, ip as buildItem, op as buildShelf, rm as define };
