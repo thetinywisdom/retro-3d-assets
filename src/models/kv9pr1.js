@@ -51,12 +51,12 @@ export function buildMonitor() {
     rings.push(ring(prof(R * (1 - Math.cos(t))), FZ - R + R * Math.sin(t)));
   }
   k.add('shell', loft(rings));
-  const bz = { w: 206, h: 158, cy: BASE_H + 2.5 + 79 };
+  const bz = { w: 206, h: 158, cy: CY };                                  // centred in the shell: 6.5 mm above and below
   const bezelOut = rr(bz.w, bz.h, 10, 0, bz.cy);
   k.add('shell', plate(prof(R), [bezelOut], FZ));
 
   // ---- dark bezel: flat face, then a slope down to the tube -------------------
-  const open = { w: 180, h: 127, cy: bz.cy - bz.h / 2 + 12 + 63.5 };
+  const open = { w: 180, h: 127, cy: bz.cy };                           // and the screen centred in the frame
   const bezelZ = FZ + 0.8;
   k.add('bezel', loft([ring(bezelOut, FZ), ring(bezelOut, bezelZ)]));
   const openOut = rr(open.w, open.h, 4, 0, open.cy);
@@ -67,7 +67,7 @@ export function buildMonitor() {
   k.crt({ cx: 0, cy: open.cy, edgeZ: bezelZ - 10, glassW: glass.w, glassH: glass.h, picW: 158, picH: 118.5, RH: 520, RV: 2400, corner: 7 });
 
   const brand = { w: 28, h: 5.6, style: '#f3f1ea' };
-  brand.mesh = k.decal(makeBrandTexture(brand), brand.w + 1.2, brand.h + 1.2, 0, bz.cy - bz.h / 2 + 6.2, bezelZ + 0.06,
+  brand.mesh = k.decal(makeBrandTexture(brand), brand.w + 1.2, brand.h + 1.2, 0, bz.cy - bz.h / 2 + 7.6, bezelZ + 0.06,
     { alphaTest: 0.4, transparent: false, depthWrite: true, emissive: 0x555555 });
   brand.mesh.name = 'brand-badge';
 

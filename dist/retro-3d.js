@@ -14219,13 +14219,13 @@ function Sf() {
 	let a = {
 		w: 206,
 		h: 158,
-		cy: 94.5
+		cy: vf
 	}, o = Z(a.w, a.h, 10, 0, a.cy);
 	t.add("shell", ld(r(5), [o], mf));
 	let s = {
 		w: 180,
 		h: 127,
-		cy: a.cy - a.h / 2 + 12 + 63.5
+		cy: a.cy
 	}, c = 148.8;
 	t.add("bezel", cd([Q(o, mf), Q(o, c)]));
 	let l = Z(s.w, s.h, 4, 0, s.cy);
@@ -14251,7 +14251,7 @@ function Sf() {
 		h: 5.6,
 		style: "#f3f1ea"
 	};
-	d.mesh = t.decal(Zu(d), d.w + 1.2, d.h + 1.2, 0, a.cy - a.h / 2 + 6.2, 148.86, {
+	d.mesh = t.decal(Zu(d), d.w + 1.2, d.h + 1.2, 0, a.cy - a.h / 2 + 7.6, 148.86, {
 		alphaTest: .4,
 		transparent: !1,
 		depthWrite: !0,
