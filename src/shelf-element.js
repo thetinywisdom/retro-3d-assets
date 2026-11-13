@@ -537,7 +537,7 @@ export class RetroShelfElement extends Base {
         hold.add(obj);
         if (LCD[name]) {
           obj.rotation.x = -Math.PI / 2;                       // screen up, top edge away from the viewer
-          obj.traverse((o) => { if (o.name === 'lcd') o.material = new THREE.MeshBasicMaterial({ color: LCD[name] }); });
+          obj.traverse((o) => { if (o.name === 'lcd' && !o.material.map) o.material = new THREE.MeshBasicMaterial({ color: LCD[name] }); });
           const glow = new THREE.PointLight(LCD[name], dark ? 15000 : 0, 0, 2);
           glow.position.set(0, 90, name === 'psp-go' ? -75 : -42);
           hold.add(glow);

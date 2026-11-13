@@ -76,7 +76,7 @@ How closely each model follows a reference matters to the owner. Do not present 
 - **PVM-9042QM, KV-5200:** dimensions from Sony documents, layout measured from perspective-corrected photos. The KV-5200's channel keys are numbered 1–12 at the owner's request; the real set reads 2–13.
 - **KV-9PR1:** no manual; size estimated from photos. Top control strip is a reconstruction. The frame and screen are centred vertically at the owner's request (not as in the photos).
 - **PVM-20M4E:** cabinet size from the published spec only; front layout is reconstructed.
-- **Consoles:** outlines traced, controls measured from photos; backs are plain.
+- **Consoles:** outlines traced, controls measured from photos; backs are plain. The PS Vita was also styled against a Sketchfab model by rose3d (Editorial licence, viewed as a reference only, nothing copied); its home screen is a generic invented one.
 - **Cases and books:** real case sizes; printed designs are drawn from memory of the packaging, not matched to photos.
 
 ## Git

@@ -291,53 +291,116 @@ export function buildGBA() {
 // ---------------------------------------------------------------------------
 export function buildVita() {
   const k = new Kit('PS Vita');
-  k.mat('shell', { color: 0x17171a, roughness: 0.6 });
-  k.mat('face', { color: 0x08080a, roughness: 0.25 });
-  k.mat('key', { color: 0x1d1d20, roughness: 0.42 });
-  k.mat('stick', { color: 0x101012, roughness: 0.7 });
-  k.mat('lcd', { color: 0x30333b, roughness: 0.35 });
-  const H = 85.1, T = 14, z = T;
-  k.add('shell', solid(outline('vita', 1, H / 85.9), 0, T, 3.2, 5, 5));
-  // glossy front panel and the 5-inch LCD (LCD centre is 3.8 mm above the body centre)
-  const oy = 3.8;
-  k.add('face', slab(rr(121.5, 81.5, 5, 0, 1.3), T - 0.6, T + 0.5, 0.45));
-  k.add('lcd', new THREE.PlaneGeometry(110.7, 62.3).translate(0, oy, T + 0.53));
-  // D-pad
-  const dx = -74.5, dy = 10.5 + oy;
-  for (const d of [[0, 1], [0, -1], [1, 0], [-1, 0]]) k.add('key', slab(arrowKey(dx, dy, d, 1.6, 10, 6.2), z, z + 1.7, 0.6));
-  // sticks
-  for (const [sx, sy] of [[-70, -10.7 + oy], [68.8, -10.4 + oy]]) {
-    k.add('face', plate(circle(8.2, sx, sy, 32), [], z + 0.04));
-    k.add('stick', slab(circle(3.2, sx, sy, 16), z, z + 2.6, 0.3));
-    k.add('stick', slab(circle(6.2, sx, sy, 28), z + 2.2, z + 4.6, 1.3));
+  k.mat('shell', { color: 0x15171b, roughness: 0.58 });
+  k.mat('rail', { color: 0x0b0c0e, roughness: 0.35 });
+  k.mat('face', { color: 0x050506, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.08 }, THREE.MeshPhysicalMaterial);
+  k.mat('dish', { color: 0x0a0b0d, roughness: 0.3 });
+  k.mat('key', { color: 0x26282d, roughness: 0.3 });
+  k.mat('stick', { color: 0x0e0f11, roughness: 0.78 });
+  k.mat('clear', { color: 0x4a4e55, roughness: 0.15, transparent: true, opacity: 0.78 });
+  const H = 85.1, T = 14, z = T, oy = 3.8;                 // LCD centre is 3.8 mm above the body centre
+  const body = outline('vita', 1, H / 85.9);
+
+  // L / R: smoky translucent shoulder keys tucked behind the top corners
+  for (const s of [-1, 1]) {
+    k.add('clear', solid(rr4(30, 9, [4.5, 4.5, 2, 2]).map((q) => q.clone().rotateAround(new THREE.Vector2(), -s * 0.27).add(new THREE.Vector2(s * 67.5, 34.2))), 3.2, 10.4, 2, 2));
   }
-  // face buttons, small top-right key, PS, SELECT, START
+  // body: soft back, tighter front edge, and the darker rail that runs round the middle
+  k.add('shell', solid(body, 0, T, 2.6, 5.5, 6));
+  k.add('rail', loft([ring(inset(body, -0.12), 6.3), ring(inset(body, -0.12), 7.5)]));
+  // top edge: power, volume +/-; bottom edge: multi-use port
+  for (const [x, w] of [[-52, 9], [42, 7], [52, 7]]) k.add('key', new THREE.BoxGeometry(w, 1.4, 2.4).translate(x, H / 2 + 0.2, 8.2));
+  k.add('rail', new THREE.BoxGeometry(9, 1.2, 3).translate(0, -H / 2 + 0.1, 7));
+
+  // glass front panel with the lit 5-inch screen behind it
+  k.add('face', slab(rr(121.5, 81.5, 4.2, 0, 1.3), T - 0.6, T + 0.55, 0.5));
+  k.mat('lcd', { map: makeDrawTexture(110.7, 62.3, 14, vitaHome) }, THREE.MeshBasicMaterial);
+  k.add('lcd', new THREE.PlaneGeometry(110.7, 62.3).translate(0, oy, T + 0.58));
+
+  // D-pad: four separate keys on a round pad
+  const dx = -74.5, dy = 10.5 + oy;
+  k.add('dish', plate(circle(11.4, dx, dy, 40), [], z + 0.04));
+  for (const d of [[0, 1], [0, -1], [1, 0], [-1, 0]]) k.add('key', slab(arrowKey(dx, dy, d, 1.5, 10, 6.4), z, z + 1.9, 0.75));
+
+  // analog sticks: dished caps with a raised rim, each in its own well
+  const cap = [[0, 4.3], [3.6, 4.4], [5.4, 4.9], [6.3, 4.75], [6.5, 4.2], [6.3, 3.5], [3.4, 2.6], [3, 0]].map(([r, h]) => new THREE.Vector2(r, h));
+  for (const [sx, sy] of [[-70, -10.7 + oy], [68.8, -10.4 + oy]]) {
+    k.add('dish', plate(circle(8.7, sx, sy, 36), [], z + 0.04));
+    k.add('rail', new THREE.TorusGeometry(8.7, 0.35, 8, 40).translate(sx, sy, z + 0.1));
+    k.add('stick', new THREE.LatheGeometry(cap, 36).rotateX(Math.PI / 2).translate(sx, sy, z));
+  }
+
+  // face buttons in a shallow round dish
   const bx = 73.8, by = 10.8 + oy;
-  for (const [ox, o2] of [[0, 8], [8, 0], [0, -8], [-8, 0]]) k.add('key', slab(circle(3.7, bx + ox, by + o2, 22), z, z + 1.6, 0.6));
-  k.add('key', slab(circle(3, 65.6, 23.3 + oy, 20), z, z + 0.9, 0.4));
-  k.add('key', slab(circle(4.1, -71.5, -26 + oy, 22), z, z + 0.9, 0.4));
-  for (const x of [65.6, 74.6]) k.add('key', slab(circle(3.7, x, -26.2 + oy, 22), z, z + 0.9, 0.4));
-  // speakers
-  for (const [sx, sy] of [[-84, -10.7 + oy], [82.3, -10.7 + oy]]) dots(k, 'face', [[0, 0], [2.2, 1.3], [2.2, -1.3], [-2.2, 1.3], [-2.2, -1.3], [0, 2.6], [0, -2.6]].map(([a, b]) => [sx + a, sy + b]), 0.6, z + 0.05);
-  print(k, 190, 90, 0, 0, T + 0.56, (g, font) => {
-    txt(g, 'SONY', -48, 34.6 + oy, `700 4.3px ${SERIF}`, '#d2d2d6');
-    // PS VITA wordmark: light, wide capitals
-    g.save(); g.translate(-0.8, -(-36.8 + oy)); g.scale(1.42, 1);
-    txt(g, 'PS VITA', 0, 0, `200 5.6px ${font}`, '#dcdce0');
+  k.add('dish', plate(circle(13.4, bx, by, 44), [], z + 0.04));
+  k.add('rail', new THREE.TorusGeometry(13.4, 0.3, 8, 48).translate(bx, by, z + 0.08));
+  for (const [ox, o2] of [[0, 8.1], [8.1, 0], [0, -8.1], [-8.1, 0]]) k.add('key', slab(circle(3.95, bx + ox, by + o2, 28), z, z + 1.9, 0.8));
+  // small key above them, PS, SELECT, START
+  k.add('dish', slab(circle(3.1, 65.6, 23.3 + oy, 22), z, z + 0.7, 0.35));
+  k.add('key', slab(circle(4.2, -71.5, -26 + oy, 26), z, z + 1, 0.45));
+  for (const x of [65.6, 74.6]) k.add('key', slab(circle(3.8, x, -26.2 + oy, 26), z, z + 1, 0.45));
+  // speakers: seven holes each
+  for (const [sx, sy] of [[-84, -10.7 + oy], [82.3, -10.7 + oy]]) dots(k, 'dish', [[0, 0], [2.3, 1.35], [2.3, -1.35], [-2.3, 1.35], [-2.3, -1.35], [0, 2.7], [0, -2.7]].map(([a, b]) => [sx + a, sy + b]), 0.68, z + 0.05);
+
+  print(k, 190, 90, 0, 0, T + 0.6, (g, font) => {
+    txt(g, 'SONY', -47.5, 34.7 + oy, `700 4.3px ${SERIF}`, '#e4e4e8');
+    // wordmark: thin slanted capitals, PS tight against VITA
+    g.save(); g.translate(0, -(-36.9 + oy)); g.transform(1.36, 0, -0.26, 1, 0, 0);
+    txt(g, 'PS', -7.6, 0, `300 6px ${font}`, '#ececf0');
+    txt(g, 'VITA', 4.4, 0, `300 6px ${font}`, '#ececf0');
     g.restore();
-  }, 20);
-  print(k, 190, 90, 0, 0, z + 1.66, (g, font) => {
-    symbols(g, bx, by, 8, 1.8, ['#c4c4c8', '#c4c4c8', '#c4c4c8', '#c4c4c8'], 0.38);
-    g.strokeStyle = '#9a9a9e'; g.lineWidth = 0.3;
+  }, 22);
+  print(k, 190, 90, 0, 0, z + 1.96, (g) => {
+    symbols(g, bx, by, 8.1, 1.95, ['#e9e9ec', '#e9e9ec', '#e9e9ec', '#e9e9ec'], 0.42);
+    g.strokeStyle = '#c9c9cd'; g.lineWidth = 0.32; g.lineJoin = 'round';
     for (const [ox, o2, r] of [[0, 1, 0], [0, -1, Math.PI], [1, 0, Math.PI / 2], [-1, 0, -Math.PI / 2]]) {
-      g.save(); g.translate(dx + ox * 6.6, -(dy + o2 * 6.6)); g.rotate(r); g.beginPath(); g.moveTo(-1.1, 0.6); g.lineTo(0, -0.6); g.lineTo(1.1, 0.6); g.closePath(); g.stroke(); g.restore();
+      g.save(); g.translate(dx + ox * 6.5, -(dy + o2 * 6.5)); g.rotate(r); g.beginPath(); g.moveTo(-1.15, 0.65); g.lineTo(0, -0.65); g.lineTo(1.15, 0.65); g.closePath(); g.stroke(); g.restore();
     }
-  }, 20);
-  print(k, 190, 90, 0, 0, z + 0.96, (g, font) => {
-    txt(g, 'SELECT', 65.6, -26.2 + oy, `700 1.5px ${font}`, '#e6e6ea');
-    txt(g, 'START', 74.6, -26.2 + oy, `700 1.5px ${font}`, '#e6e6ea');
-  }, 24);
+  }, 22);
+  print(k, 190, 90, 0, 0, z + 1.06, (g, font) => {
+    txt(g, 'SELECT', 65.6, -26.2 + oy, `700 1.55px ${font}`, '#ececf0');
+    txt(g, 'START', 74.6, -26.2 + oy, `700 1.55px ${font}`, '#ececf0');
+    txt(g, 'PS', -71.5, -26 + oy, `800 3.4px ${font}`, '#ececf0');
+  }, 26);
   return done(k, 'ps-vita', H / 2);
+}
+
+/** A generic home screen for the Vita's display: status bar and a honeycomb of round app bubbles. */
+function vitaHome(g, font) {
+  const W = 110.7, Hh = 62.3;
+  const bg = g.createRadialGradient(W * 0.5, Hh * 0.45, 4, W * 0.5, Hh * 0.5, W * 0.62);
+  bg.addColorStop(0, '#2a4f9c'); bg.addColorStop(0.55, '#122354'); bg.addColorStop(1, '#03060f');
+  g.fillStyle = bg; g.fillRect(0, 0, W, Hh);
+  // status bar
+  g.fillStyle = '#f1f3f8'; g.textBaseline = 'middle'; g.textAlign = 'right';
+  g.font = `600 3.2px ${font}`; g.fillText('2:00', 88, 3.4);
+  g.font = `600 2px ${font}`; g.textAlign = 'left'; g.fillText('PM', 88.7, 3.6);
+  g.fillStyle = '#58d657'; g.fillRect(93.2, 2.4, 5.6, 2.2);
+  g.fillStyle = '#f1f3f8'; g.beginPath(); g.moveTo(53.5, 4.6); g.lineTo(55.6, 2.3); g.lineTo(57.7, 4.6); g.closePath(); g.fill(); g.fillRect(54.2, 4.2, 2.8, 1.6);
+  g.fillStyle = '#2b8ee6'; g.beginPath(); g.moveTo(99.5, 0); g.lineTo(W, 0); g.lineTo(W, 8.2); g.quadraticCurveTo(100.5, 8.6, 99.5, 0); g.fill();
+  g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.font = `700 4px ${font}`; g.fillText('1', 105.6, 3.6);
+  // page marker on the left, arrow on the right
+  for (const [y, a] of [[29, 0.9], [32, 0.4]]) { g.fillStyle = `rgba(255,255,255,${a})`; g.beginPath(); g.arc(4.4, y, 0.7, 0, 7); g.fill(); }
+  g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.moveTo(98.4, 28.6); g.lineTo(102.2, 31); g.lineTo(98.4, 33.4); g.closePath(); g.fill();
+  // bubbles: 3 / 2 / 3
+  const apps = [[30.5, 15.5, '#3bb0c9', 'Comics'], [50.5, 14.5, '#e0703a', 'Sketches'], [70.5, 15.5, '#e8c84a', 'Gallery'],
+    [40.5, 32, '#d9d4c8', 'Notes'], [60.5, 31.5, '#7c8a99', 'Music'], [25, 49, '#22252c', 'Photos'], [46, 49.5, '#6fb7e6', 'Travel'], [67, 49.5, '#d24c4c', 'Radio']];
+  for (const [x, y, col, label] of apps) {
+    const r = 6.4;
+    const gr = g.createRadialGradient(x - 2, y - 2.6, 0.5, x, y, r);
+    gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.25, col); gr.addColorStop(1, '#000000');
+    g.globalAlpha = 0.35; g.fillStyle = '#000'; g.beginPath(); g.arc(x + 0.5, y + 0.8, r, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    g.globalAlpha = 0.55; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 0.35; g.beginPath(); g.arc(x, y, r - 0.2, 0, 7); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(x, y, 2.1, 0, 7); g.fill();
+    g.fillStyle = col; g.beginPath(); g.arc(x + 0.6, y - 0.5, 1.3, 0, 7); g.fill();
+    g.fillStyle = '#f3f5fa'; g.font = `600 2.5px ${font}`; g.textAlign = 'center'; g.fillText(label, x, y + r + 2.4);
+  }
+  // soft glass sheen across the top left
+  const sh = g.createLinearGradient(0, 0, W * 0.6, Hh);
+  sh.addColorStop(0, 'rgba(255,255,255,0.10)'); sh.addColorStop(0.4, 'rgba(255,255,255,0)');
+  g.fillStyle = sh; g.fillRect(0, 0, W, Hh);
 }
 
 // ---------------------------------------------------------------------------
