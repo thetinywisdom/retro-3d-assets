@@ -1021,16 +1021,23 @@ export class RetroShelfElement extends Base {
     if (!this._focusKey || this._reading) return;                 // the room scrolls as usual
     e.preventDefault();
     const now = performance.now();
-    // one gesture, one TV: a trackpad keeps sending wheel events after a flick, so after a move ignore
-    // them until they have stopped for a moment
-    if (now < (this._wheelBlock || 0)) { this._wheelBlock = now + 250; return; }
-    this._wheelAcc = (this._wheelAcc || 0) + (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY);
+    const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY, mag = Math.abs(dy);
+    // one gesture, one TV: a trackpad keeps sending fading wheel events (momentum) after a flick, so after
+    // a move those are ignored until they stop. A new gesture during that tail still counts: momentum only
+    // fades, so a sudden stronger event, or one in the other direction, is the visitor scrolling again.
+    const fresh = mag > Math.max(8, (this._wheelLast || 0) * 1.6) || (this._wheelDir && Math.sign(dy) !== this._wheelDir);
+    this._wheelLast = mag;
+    if (dy) this._wheelDir = Math.sign(dy);
+    if (now < (this._wheelBlock || 0) && !(fresh && now > (this._wheelMin || 0))) { this._wheelBlock = now + 250; return; }
+    if (now < (this._wheelBlock || 0)) this._wheelAcc = 0;          // a new gesture in the tail: start counting afresh
+    this._wheelAcc = (this._wheelAcc || 0) + dy;
     clearTimeout(this._wheelT);
     this._wheelT = setTimeout(() => { this._wheelAcc = 0; }, 350);
     if (Math.abs(this._wheelAcc) < 25) return;
     const moved = this.stepTV(this._wheelAcc > 0 ? 1 : -1);
     this._wheelAcc = 0;
     this._wheelBlock = now + (moved ? 700 : 250);
+    this._wheelMin = now + 350;                                     // never two moves from one burst
   }
 
   _onSwipe(e) {

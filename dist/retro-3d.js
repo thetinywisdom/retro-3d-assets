@@ -18027,16 +18027,16 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 	_onWheel(e) {
 		if (!this._focusKey || this._reading) return;
 		e.preventDefault();
-		let t = performance.now();
-		if (t < (this._wheelBlock || 0)) {
+		let t = performance.now(), n = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY, r = Math.abs(n), i = r > Math.max(8, (this._wheelLast || 0) * 1.6) || this._wheelDir && Math.sign(n) !== this._wheelDir;
+		if (this._wheelLast = r, n && (this._wheelDir = Math.sign(n)), t < (this._wheelBlock || 0) && !(i && t > (this._wheelMin || 0))) {
 			this._wheelBlock = t + 250;
 			return;
 		}
-		if (this._wheelAcc = (this._wheelAcc || 0) + (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY), clearTimeout(this._wheelT), this._wheelT = setTimeout(() => {
+		if (t < (this._wheelBlock || 0) && (this._wheelAcc = 0), this._wheelAcc = (this._wheelAcc || 0) + n, clearTimeout(this._wheelT), this._wheelT = setTimeout(() => {
 			this._wheelAcc = 0;
 		}, 350), Math.abs(this._wheelAcc) < 25) return;
-		let n = this.stepTV(this._wheelAcc > 0 ? 1 : -1);
-		this._wheelAcc = 0, this._wheelBlock = t + (n ? 700 : 250);
+		let a = this.stepTV(this._wheelAcc > 0 ? 1 : -1);
+		this._wheelAcc = 0, this._wheelBlock = t + (a ? 700 : 250), this._wheelMin = t + 350;
 	}
 	_onSwipe(e) {
 		let t = this._swipe;
