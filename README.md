@@ -72,7 +72,7 @@ The children are the real buttons: they stay in the page, off screen, for keyboa
 
 | Key | Press |
 | --- | --- |
-| `data-tv="<model id>"` | Moves in to that TV; pressed again, opens its page full screen (not for a `no-reader` TV, whose current channel the LCD shows instead). While a page is open, switches straight to this TV's page. The key stays down while its TV is in view, and its dot takes the colour of the page |
+| `data-tv="<model id>"` | Moves in to that TV. While a page is open full screen, closes it first and moves in to this TV. It never opens a page full screen (tapping the TV's screen does). For a `no-reader` TV the LCD shows its current channel. The key stays down while its TV is in view, and its dot takes the colour of the page |
 | `data-action="back"` | Closes the full-screen page, or moves back out to the room |
 | `data-action="sound"` | Toggles `muted` on the shelf |
 | `data-action="info"` | Shows its `data-info` on the LCD until the next key or TV |

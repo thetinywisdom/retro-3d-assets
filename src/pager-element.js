@@ -10,7 +10,8 @@
 //
 // The children are the real, focusable buttons (kept off screen); the pager
 // draws one key for each. Keys with data-tv move the <retro-shelf> camera to
-// that set, and a second press opens its page full screen. The LCD shows what
+// that set (closing a page open full screen first); they never open a page
+// full screen themselves, tapping the TV's screen does that. The LCD shows what
 // the key under the pointer does (or the TV under the pointer in the shelf),
 // and otherwise the shelf's own hint, so "Tap a TV to look closer" is always
 // on screen.
@@ -483,7 +484,7 @@ export class RetroPagerElement extends HTMLElement {
     if (k) {
       if (k.tv) {
         const readable = this._shelf?.canRead?.(k.tv) ?? true;
-        const go = k.tv === st.reading ? 'Reading now' : k.tv === st.focused ? (readable ? 'Press again to read it full screen' : 'Press a channel key on the set') : null;
+        const go = k.tv === st.reading ? 'Press to go back to the TV' : k.tv === st.focused ? (readable ? 'Tap the screen to read it full screen' : 'Press a channel key on the set') : null;
         return { left: `TV ${k.channel}  ${k.label}`, right: k.tv.toUpperCase(), main: k.el.dataset.info || k.label, sub: go };
       }
       if (k.action === 'back') return { left: 'BACK', right: clock, main: st.reading ? 'Back to the TV' : st.focused ? 'Back to the room' : 'You are in the room' };
@@ -575,11 +576,10 @@ export class RetroPagerElement extends HTMLElement {
     const s = this._shelf, st = this._state(), tv = el.dataset.tv, act = el.dataset.action;
     this._note = null;
     if (tv && s) {
-      const readable = s.canRead?.(tv) ?? true;
-      if (st.reading && readable) s.openReader(tv);
-      else if (st.reading) { s.closeReader(); s.focusTV(tv); }
-      else if (st.focused === tv) { if (readable) s.openReader(tv); }
-      else s.focusTV(tv);
+      // a TV key always takes you out to the room, in on that TV: it closes a page open full screen, and
+      // never opens one (tapping the TV's screen does that)
+      if (st.reading) s.closeReader();
+      if (s._focusKey !== tv) s.focusTV(tv);
     } else if (act === 'back' && s) {
       if (st.reading) s.closeReader();
       else if (st.focused) s.unfocus();

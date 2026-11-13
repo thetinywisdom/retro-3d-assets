@@ -18672,7 +18672,7 @@ var jm = class extends HTMLElement {
 		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${km(t.getHours())}:${km(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
 		if (a) {
 			if (a.tv) {
-				let t = this._shelf?.canRead?.(a.tv) ?? !0, n = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? t ? "Press again to read it full screen" : "Press a channel key on the set" : null;
+				let t = this._shelf?.canRead?.(a.tv) ?? !0, n = a.tv === e.reading ? "Press to go back to the TV" : a.tv === e.focused ? t ? "Tap the screen to read it full screen" : "Press a channel key on the set" : null;
 				return {
 					left: `TV ${a.channel}  ${a.label}`,
 					right: a.tv.toUpperCase(),
@@ -18754,11 +18754,7 @@ var jm = class extends HTMLElement {
 	}
 	_activate(e) {
 		let t = this._shelf, n = this._state(), r = e.dataset.tv, i = e.dataset.action;
-		if (this._note = null, r && t) {
-			let e = t.canRead?.(r) ?? !0;
-			n.reading && e ? t.openReader(r) : n.reading ? (t.closeReader(), t.focusTV(r)) : n.focused === r ? e && t.openReader(r) : t.focusTV(r);
-		} else i === "back" && t ? n.reading ? t.closeReader() : n.focused && t.unfocus() : i === "sound" && t ? (t.toggleAttribute("muted"), this._paintLegends()) : i === "info" && (this._note = e.dataset.info || e.textContent.trim());
-		this.dispatchEvent(new CustomEvent("pager-press", {
+		this._note = null, r && t ? (n.reading && t.closeReader(), t._focusKey !== r && t.focusTV(r)) : i === "back" && t ? n.reading ? t.closeReader() : n.focused && t.unfocus() : i === "sound" && t ? (t.toggleAttribute("muted"), this._paintLegends()) : i === "info" && (this._note = e.dataset.info || e.textContent.trim()), this.dispatchEvent(new CustomEvent("pager-press", {
 			detail: {
 				tv: r || null,
 				action: i || null
