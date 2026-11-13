@@ -84,6 +84,15 @@ function canvasTexture(w, h) {
 
 const pad2 = (n) => String(n).padStart(2, '0');
 
+/** A colour made light enough to read as lit (dark page colours like navy would not look like a lamp). */
+function brighten(css) {
+  const c = new THREE.Color();
+  try { c.setStyle(css); } catch { return css; }
+  const hsl = {}; c.getHSL(hsl);
+  if (hsl.l < 0.62) c.setHSL(hsl.h, Math.min(1, hsl.s * 1.1), 0.62);
+  return '#' + c.getHexString();
+}
+
 export class RetroPagerElement extends HTMLElement {
   static get observedAttributes() { return ['for', 'name']; }
 
@@ -299,13 +308,13 @@ export class RetroPagerElement extends HTMLElement {
       const well = new THREE.Mesh(k.tv ? plate(rr(p.w + 2.4, p.h + 2.4, 5), [rr(p.w, p.h, 4).reverse()], 0.05) : plate(circle(p.r + 1.2, 0, 0, 40), [circle(p.r, 0, 0, 40).reverse()], 0.05), this._mat.bezel);
       const lw = k.tv ? p.w - 3.2 : (p.r - 1.4) * 2, lh = k.tv ? p.h - 3.2 : lw;
       const [lc2, lg2, lt2] = canvasTexture(Math.round(lw * 16), Math.round(lh * 16));
-      const legend = new THREE.Mesh(new THREE.PlaneGeometry(lw, lh), new THREE.MeshStandardMaterial({ map: lt2, transparent: true, roughness: 0.8, alphaTest: 0.02 }));
+      const legend = new THREE.Mesh(new THREE.PlaneGeometry(lw, lh), new THREE.MeshStandardMaterial({ map: lt2, transparent: true, roughness: 0.8, alphaTest: 0.02, emissive: 0xffffff, emissiveMap: lt2, emissiveIntensity: 0 }));
       legend.position.z = depth + 0.05;
       const top = new THREE.Group();
       top.add(cap, legend);
       hold.add(well, top);
       g.add(hold);
-      Object.assign(k, { top, cap, w: lw, h: lh, legend: { c: lc2, g: lg2, t: lt2 } });
+      Object.assign(k, { top, cap, w: lw, h: lh, legend: { c: lc2, g: lg2, t: lt2, mat: legend.material } });
       for (const m of [cap, legend]) m.userData.key = this._keys.indexOf(k);
     }
     this._paintLegends();
@@ -408,20 +417,24 @@ export class RetroPagerElement extends HTMLElement {
       const w = k.w, h = k.h, ink = '#d8d3c7';
       g.fillStyle = ink; g.strokeStyle = ink; g.textAlign = 'center';
       if (k.tv) {
+        // the key of the TV in view shines: its dot, number and word light up (and glow, see emissive below)
         const lit = k.tv === (st.reading || st.focused);
+        const dotColor = lit ? brighten(this._tvColor(k.tv)) : this._tvColor(k.tv);
         g.font = `500 ${h * 0.24}px ${MONO}`;
         const chW = g.measureText(k.channel).width, dotR = h * 0.075;
         const cx = w / 2 + dotR + 0.6, cy = h * 0.34;
-        g.fillStyle = '#9d988d';
+        g.fillStyle = lit ? '#fff2d2' : '#9d988d';
+        if (lit) { g.shadowColor = 'rgba(255, 236, 190, 0.9)'; g.shadowBlur = 2; }
         g.textBaseline = 'middle';
         g.fillText(k.channel, cx, cy);
         g.beginPath(); g.arc(cx - chW / 2 - 1.4 - dotR, cy, dotR, 0, Math.PI * 2);
-        g.fillStyle = this._tvColor(k.tv);
+        g.fillStyle = dotColor;
         g.globalAlpha = lit ? 1 : 0.55;
-        if (lit) { g.shadowColor = g.fillStyle; g.shadowBlur = 2.5; }
+        if (lit) { g.shadowColor = dotColor; g.shadowBlur = 3; }
         g.fill();
-        g.shadowBlur = 0; g.globalAlpha = 1;
-        g.fillStyle = ink;
+        g.globalAlpha = 1;
+        g.fillStyle = lit ? '#fff8e6' : ink;
+        if (lit) { g.shadowColor = 'rgba(255, 236, 190, 0.85)'; g.shadowBlur = 2.2; } else g.shadowBlur = 0;
         g.textBaseline = 'alphabetic';
         let size = h * 0.36;
         g.font = `700 ${size}px ${LEGEND}`;
@@ -429,6 +442,8 @@ export class RetroPagerElement extends HTMLElement {
         const lw = g.measureText(label).width;
         if (lw > w * 0.9) { size *= (w * 0.9) / lw; g.font = `700 ${size}px ${LEGEND}`; }
         g.fillText(label, w / 2, h * 0.84);
+        g.shadowBlur = 0;
+        k.legend.mat.emissiveIntensity = lit ? 1.1 : 0;
       } else {
         g.lineWidth = w * 0.09; g.lineCap = 'round'; g.lineJoin = 'round';
         const cx = w / 2, cy = h / 2, u = w * 0.22;

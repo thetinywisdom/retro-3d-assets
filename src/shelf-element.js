@@ -199,7 +199,13 @@ export class RetroShelfElement extends Base {
     this._selected = -1;
     this._par = { x: 0, y: 0 };
     this._frame = this._frame.bind(this);
-    this._onKey = (e) => { if (e.key === 'Escape') (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus()); };
+    this._onKey = (e) => {
+      if (e.key === 'Escape') (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
+      // in on a TV: the arrow keys and Page Up / Down move to the TV above or below
+      else if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp'].includes(e.key) && this._focusKey && !this._reading && !e.target?.closest?.('input, textarea, select')) {
+        if (this.stepTV(e.key === 'ArrowDown' || e.key === 'PageDown' ? 1 : -1)) e.preventDefault();
+      }
+    };
     const root = this.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${SCREEN_STYLE}${STYLE}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div></div><div class="spacer"></div></div>
@@ -230,6 +236,10 @@ export class RetroShelfElement extends Base {
     w.addEventListener('pointerup', (e) => this._onUp(e));
     w.addEventListener('pointercancel', () => { this._releaseButton(); this._drag = null; });
     w.addEventListener('pointerleave', () => this._hover(null));
+    // in on a TV, scrolling or swiping up and down moves to the TV above or below
+    w.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
+    w.addEventListener('touchstart', (e) => { this._swipe = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() } : null; }, { passive: true });
+    w.addEventListener('touchend', (e) => this._onSwipe(e), { passive: true });
     w.addEventListener('scroll', () => { if (this._selected >= 0) this.close(); this.invalidate(); }, { passive: true });
   }
 
@@ -984,6 +994,50 @@ export class RetroShelfElement extends Base {
       this._hover(h.unit || null);
     }
     this.invalidate();
+  }
+
+  /** The sets from the top of the room to the bottom (as they stand), for moving between them. */
+  _order() {
+    const v = new THREE.Vector3();
+    return Object.keys(this._units).map((id) => {
+      const u = this._units[id];
+      u._parent.getWorldPosition(v);
+      return { id, y: v.y + u._meta.size.h / 2, x: v.x };
+    }).sort((a, b) => b.y - a.y || a.x - b.x).map((o) => o.id);
+  }
+
+  /** In on a TV: move to the next one down (dir 1) or up (-1). Returns false at the top or bottom. */
+  stepTV(dir) {
+    if (!this._focusKey || this._reading) return false;
+    const order = this._order(), j = order.indexOf(this._focusKey) + Math.sign(dir);
+    if (j < 0 || j >= order.length) return false;
+    this.focusTV(order[j]);
+    return true;
+  }
+
+  _onWheel(e) {
+    if (!this._focusKey || this._reading) return;                 // the room scrolls as usual
+    e.preventDefault();
+    const now = performance.now();
+    // one gesture, one TV: a trackpad keeps sending wheel events after a flick, so after a move ignore
+    // them until they have stopped for a moment
+    if (now < (this._wheelBlock || 0)) { this._wheelBlock = now + 250; return; }
+    this._wheelAcc = (this._wheelAcc || 0) + (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY);
+    clearTimeout(this._wheelT);
+    this._wheelT = setTimeout(() => { this._wheelAcc = 0; }, 350);
+    if (Math.abs(this._wheelAcc) < 25) return;
+    const moved = this.stepTV(this._wheelAcc > 0 ? 1 : -1);
+    this._wheelAcc = 0;
+    this._wheelBlock = now + (moved ? 700 : 250);
+  }
+
+  _onSwipe(e) {
+    const s = this._swipe;
+    this._swipe = null;
+    if (!s || !this._focusKey || this._reading || this._selected >= 0) return;
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+    // a quick, mostly vertical swipe: up (like scrolling down) for the next TV down, down for the one above
+    if (Math.abs(dy) > 50 && Math.abs(dy) > Math.abs(dx) * 1.5 && performance.now() - s.t < 1500) this.stepTV(dy < 0 ? 1 : -1);
   }
 
   _hover(tv) {

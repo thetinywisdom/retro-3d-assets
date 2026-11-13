@@ -17268,7 +17268,12 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 			x: 0,
 			y: 0
 		}, this._frame = this._frame.bind(this), this._onKey = (e) => {
-			e.key === "Escape" && (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
+			e.key === "Escape" ? this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus() : [
+				"ArrowDown",
+				"ArrowUp",
+				"PageDown",
+				"PageUp"
+			].includes(e.key) && this._focusKey && !this._reading && !e.target?.closest?.("input, textarea, select") && this.stepTV(e.key === "ArrowDown" || e.key === "PageDown" ? 1 : -1) && e.preventDefault();
 		};
 		let e = this.attachShadow({ mode: "open" });
 		e.innerHTML = `<style>${Bf}${qp}</style>
@@ -17292,7 +17297,13 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		let n = this._wall;
 		n.addEventListener("pointerdown", (e) => this._onDown(e)), n.addEventListener("pointermove", (e) => this._onMove(e)), n.addEventListener("pointerup", (e) => this._onUp(e)), n.addEventListener("pointercancel", () => {
 			this._releaseButton(), this._drag = null;
-		}), n.addEventListener("pointerleave", () => this._hover(null)), n.addEventListener("scroll", () => {
+		}), n.addEventListener("pointerleave", () => this._hover(null)), n.addEventListener("wheel", (e) => this._onWheel(e), { passive: !1 }), n.addEventListener("touchstart", (e) => {
+			this._swipe = e.touches.length === 1 ? {
+				x: e.touches[0].clientX,
+				y: e.touches[0].clientY,
+				t: performance.now()
+			} : null;
+		}, { passive: !0 }), n.addEventListener("touchend", (e) => this._onSwipe(e), { passive: !0 }), n.addEventListener("scroll", () => {
 			this._selected >= 0 && this.close(), this.invalidate();
 		}, { passive: !0 });
 	}
@@ -17997,6 +18008,42 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		}
 		this.invalidate();
 	}
+	_order() {
+		let e = new U();
+		return Object.keys(this._units).map((t) => {
+			let n = this._units[t];
+			return n._parent.getWorldPosition(e), {
+				id: t,
+				y: e.y + n._meta.size.h / 2,
+				x: e.x
+			};
+		}).sort((e, t) => t.y - e.y || e.x - t.x).map((e) => e.id);
+	}
+	stepTV(e) {
+		if (!this._focusKey || this._reading) return !1;
+		let t = this._order(), n = t.indexOf(this._focusKey) + Math.sign(e);
+		return n < 0 || n >= t.length ? !1 : (this.focusTV(t[n]), !0);
+	}
+	_onWheel(e) {
+		if (!this._focusKey || this._reading) return;
+		e.preventDefault();
+		let t = performance.now();
+		if (t < (this._wheelBlock || 0)) {
+			this._wheelBlock = t + 250;
+			return;
+		}
+		if (this._wheelAcc = (this._wheelAcc || 0) + (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY), clearTimeout(this._wheelT), this._wheelT = setTimeout(() => {
+			this._wheelAcc = 0;
+		}, 350), Math.abs(this._wheelAcc) < 25) return;
+		let n = this.stepTV(this._wheelAcc > 0 ? 1 : -1);
+		this._wheelAcc = 0, this._wheelBlock = t + (n ? 700 : 250);
+	}
+	_onSwipe(e) {
+		let t = this._swipe;
+		if (this._swipe = null, !t || !this._focusKey || this._reading || this._selected >= 0) return;
+		let n = e.changedTouches[0], r = n.clientX - t.x, i = n.clientY - t.y;
+		Math.abs(i) > 50 && Math.abs(i) > Math.abs(r) * 1.5 && performance.now() - t.t < 1500 && this.stepTV(i < 0 ? 1 : -1);
+	}
 	_hover(e) {
 		e !== this._hovered && (this._hovered = e, this.dispatchEvent(new CustomEvent("shelf-hover", {
 			detail: { tv: e },
@@ -18098,7 +18145,18 @@ function sm(e, t) {
 		r
 	];
 }
-var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
+var cm = (e) => String(e).padStart(2, "0");
+function lm(e) {
+	let t = new G();
+	try {
+		t.setStyle(e);
+	} catch {
+		return e;
+	}
+	let n = {};
+	return t.getHSL(n), n.l < .62 && t.setHSL(n.h, Math.min(1, n.s * 1.1), .62), "#" + t.getHexString();
+}
+var um = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["for", "name"];
 	}
@@ -18272,7 +18330,10 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 				map: m,
 				transparent: !0,
 				roughness: .8,
-				alphaTest: .02
+				alphaTest: .02,
+				emissive: 16777215,
+				emissiveMap: m,
+				emissiveIntensity: 0
 			}));
 			h.position.z = 4.55;
 			let g = new Ln();
@@ -18284,7 +18345,8 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 				legend: {
 					c: u,
 					g: p,
-					t: m
+					t: m,
+					mat: h.material
 				}
 			});
 			for (let t of [o, h]) t.userData.key = this._keys.indexOf(e);
@@ -18356,14 +18418,14 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 			r.setTransform(1, 0, 0, 1, 0, 0), r.clearRect(0, 0, n.width, n.height), r.scale(16, 16);
 			let a = t.w, o = t.h, s = "#d8d3c7";
 			if (r.fillStyle = s, r.strokeStyle = s, r.textAlign = "center", t.tv) {
-				let n = t.tv === (e.reading || e.focused);
+				let n = t.tv === (e.reading || e.focused), i = n ? lm(this._tvColor(t.tv)) : this._tvColor(t.tv);
 				r.font = `500 ${o * .24}px ${em}`;
-				let i = r.measureText(t.channel).width, c = o * .075, l = a / 2 + c + .6, u = o * .34;
-				r.fillStyle = "#9d988d", r.textBaseline = "middle", r.fillText(t.channel, l, u), r.beginPath(), r.arc(l - i / 2 - 1.4 - c, u, c, 0, Math.PI * 2), r.fillStyle = this._tvColor(t.tv), r.globalAlpha = n ? 1 : .55, n && (r.shadowColor = r.fillStyle, r.shadowBlur = 2.5), r.fill(), r.shadowBlur = 0, r.globalAlpha = 1, r.fillStyle = s, r.textBaseline = "alphabetic";
-				let d = o * .36;
-				r.font = `700 ${d}px ${$p}`;
-				let f = t.label.toUpperCase(), p = r.measureText(f).width;
-				p > a * .9 && (d *= a * .9 / p, r.font = `700 ${d}px ${$p}`), r.fillText(f, a / 2, o * .84);
+				let c = r.measureText(t.channel).width, l = o * .075, u = a / 2 + l + .6, d = o * .34;
+				r.fillStyle = n ? "#fff2d2" : "#9d988d", n && (r.shadowColor = "rgba(255, 236, 190, 0.9)", r.shadowBlur = 2), r.textBaseline = "middle", r.fillText(t.channel, u, d), r.beginPath(), r.arc(u - c / 2 - 1.4 - l, d, l, 0, Math.PI * 2), r.fillStyle = i, r.globalAlpha = n ? 1 : .55, n && (r.shadowColor = i, r.shadowBlur = 3), r.fill(), r.globalAlpha = 1, r.fillStyle = n ? "#fff8e6" : s, n ? (r.shadowColor = "rgba(255, 236, 190, 0.85)", r.shadowBlur = 2.2) : r.shadowBlur = 0, r.textBaseline = "alphabetic";
+				let f = o * .36;
+				r.font = `700 ${f}px ${$p}`;
+				let p = t.label.toUpperCase(), m = r.measureText(p).width;
+				m > a * .9 && (f *= a * .9 / m, r.font = `700 ${f}px ${$p}`), r.fillText(p, a / 2, o * .84), r.shadowBlur = 0, t.legend.mat.emissiveIntensity = n ? 1.1 : 0;
 			} else {
 				r.lineWidth = a * .09, r.lineCap = "round", r.lineJoin = "round";
 				let n = a / 2, i = o / 2, s = a * .22;
@@ -18473,8 +18535,8 @@ var cm = (e) => String(e).padStart(2, "0"), lm = class extends HTMLElement {
 	}
 };
 // src/index.js
-function um() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Wf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Qp), customElements.get("retro-pager") || customElements.define("retro-pager", lm));
+function dm() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", Wf), customElements.get("retro-shelf") || customElements.define("retro-shelf", Qp), customElements.get("retro-pager") || customElements.define("retro-pager", um));
 }
-um();
-export { Bp as ARRANGEMENTS, Gf as ITEM_TYPES, Tf as MODELS, Mp as PROPS, lm as RetroPagerElement, Qp as RetroShelfElement, Wp as STACKS, Wf as SonyPVMElement, dp as buildItem, pp as buildShelf, um as define };
+dm();
+export { Bp as ARRANGEMENTS, Gf as ITEM_TYPES, Tf as MODELS, Mp as PROPS, um as RetroPagerElement, Qp as RetroShelfElement, Wp as STACKS, Wf as SonyPVMElement, dp as buildItem, pp as buildShelf, dm as define };
