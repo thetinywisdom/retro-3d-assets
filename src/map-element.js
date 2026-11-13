@@ -172,7 +172,7 @@ export class RetroMapElement extends HTMLElement {
       const h = id === 'kv-5200' ? 205 : size.h;                    // the portable's body; its handle is drawn on top
       u._parent.getWorldPosition(pos); u._parent.getWorldQuaternion(quat);
       const g = new THREE.Group();
-      g.position.copy(pos); g.quaternion.copy(quat);
+      g.position.copy(pos); g.quaternion.copy(quat); g.userData.id = id;
       const fill = new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
       const edges = new THREE.LineBasicMaterial({ color: GREEN, transparent: true, opacity: 0.45 });
       const screenFill = fill.clone();
@@ -205,6 +205,16 @@ export class RetroMapElement extends HTMLElement {
     const c = box.getCenter(new THREE.Vector3());
     this._group.position.set(-c.x, -c.y, -c.z);
     this._height = box.max.y - box.min.y;
+    // how far any corner reaches from the stack's axis, whichever way it turns
+    this._reach = 0;
+    const corner = new THREE.Vector3();
+    for (const { g, h } of Object.values(this._sets)) {
+      const { w, d } = units[g.userData.id]._meta.size;
+      for (const [x, z] of [[-w / 2, -d / 2], [w / 2, -d / 2], [-w / 2, d / 2], [w / 2, d / 2]]) {
+        corner.set(x, 0, z); g.localToWorld(corner); corner.add(this._group.position);
+        this._reach = Math.max(this._reach, Math.hypot(corner.x, corner.z));
+      }
+    }
     this._fitCamera();
   }
 
@@ -214,7 +224,8 @@ export class RetroMapElement extends HTMLElement {
     this._camera.aspect = w / h;
     // fit the stack's height, or its width on a short, wide map
     const fov = (this._camera.fov / 2) * Math.PI / 180;
-    const dist = Math.max(this._height * 0.56 / Math.tan(fov), 400 / (Math.tan(fov) * this._camera.aspect));
+    // (the widest set's corners swing out as the stack turns, and come nearer the camera: leave room for both)
+    const dist = Math.max(this._height * 0.56 / Math.tan(fov), this._reach * 1.08 / (Math.tan(fov) * this._camera.aspect));
     this._camera.position.set(0, this._height * 0.18, dist);
     this._camera.lookAt(0, 0, 0);
     this._camera.updateProjectionMatrix();
@@ -241,7 +252,7 @@ export class RetroMapElement extends HTMLElement {
     if (!this._renderer || !this.hasAttribute('open')) return;
     const t = now / 1000;
     const flicker = this._reduced ? 1 : 0.86 + 0.14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < 0.02 ? 0.35 : 0);
-    this._scene.rotation.y = this._reduced ? -0.35 : -0.35 + Math.sin(t * 0.5) * 0.45;
+    this._scene.rotation.y = this._reduced ? -0.3 : -0.3 + Math.sin(t * 0.5) * 0.3;
     for (const [id, s] of Object.entries(this._sets || {})) {
       const lit = id === this._current, pulse = lit && !this._reduced ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
       s.fill.opacity = (lit ? 0.22 * pulse : 0.035) * flicker;

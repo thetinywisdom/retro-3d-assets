@@ -18900,7 +18900,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			let i = e[r], a = i._meta.size, o = r === "kv-5200" ? 205 : a.h;
 			i._parent.getWorldPosition(t), i._parent.getWorldQuaternion(n);
 			let s = new Ln();
-			s.position.copy(t), s.quaternion.copy(n);
+			s.position.copy(t), s.quaternion.copy(n), s.userData.id = r;
 			let c = new Xr({
 				color: jm,
 				transparent: !0,
@@ -18938,13 +18938,24 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 		}
 		this._group.position.set(0, 0, 0), this._group.updateMatrixWorld(!0), r.setFromObject(this._group);
 		let i = r.getCenter(new U());
-		this._group.position.set(-i.x, -i.y, -i.z), this._height = r.max.y - r.min.y, this._fitCamera();
+		this._group.position.set(-i.x, -i.y, -i.z), this._height = r.max.y - r.min.y, this._reach = 0;
+		let a = new U();
+		for (let { g: t, h: n } of Object.values(this._sets)) {
+			let { w: n, d: r } = e[t.userData.id]._meta.size;
+			for (let [e, i] of [
+				[-n / 2, -r / 2],
+				[n / 2, -r / 2],
+				[-n / 2, r / 2],
+				[n / 2, r / 2]
+			]) a.set(e, 0, i), t.localToWorld(a), a.add(this._group.position), this._reach = Math.max(this._reach, Math.hypot(a.x, a.z));
+		}
+		this._fitCamera();
 	}
 	_fitCamera() {
 		if (!this._camera || !this._height) return;
 		let e = this._holo.clientWidth || 1, t = this._holo.clientHeight || 1;
 		this._camera.aspect = e / t;
-		let n = this._camera.fov / 2 * Math.PI / 180, r = Math.max(this._height * .56 / Math.tan(n), 400 / (Math.tan(n) * this._camera.aspect));
+		let n = this._camera.fov / 2 * Math.PI / 180, r = Math.max(this._height * .56 / Math.tan(n), this._reach * 1.08 / (Math.tan(n) * this._camera.aspect));
 		this._camera.position.set(0, this._height * .18, r), this._camera.lookAt(0, 0, 0), this._camera.updateProjectionMatrix();
 	}
 	_resize() {
@@ -18960,7 +18971,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 	_render(e) {
 		if (this._raf = 0, !this._renderer || !this.hasAttribute("open")) return;
 		let t = e / 1e3, n = this._reduced ? 1 : .86 + .14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < .02 ? .35 : 0);
-		this._scene.rotation.y = this._reduced ? -.35 : -.35 + Math.sin(t * .5) * .45;
+		this._scene.rotation.y = this._reduced ? -.3 : -.3 + Math.sin(t * .5) * .3;
 		for (let [e, r] of Object.entries(this._sets || {})) {
 			let i = e === this._current, a = i && !this._reduced ? .75 + .25 * Math.sin(t * 4) : 1;
 			r.fill.opacity = (i ? .22 * a : .035) * n, r.screenFill.opacity = (i ? .35 * a : .03) * n, r.edges.opacity = (i ? 1 : .4) * n;
