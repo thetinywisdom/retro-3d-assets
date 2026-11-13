@@ -49,7 +49,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 @keyframes nudge-down { 50% { transform: translateY(3px); opacity: 0.5; } }
 /* where you are: a tag pointing at the lit set */
 .here { position: absolute; left: 100%; top: 0; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; white-space: nowrap;
-  padding: 2px 6px; margin-left: -6px; background: #8dff9a; color: #031208; box-shadow: 0 0 10px rgba(141, 255, 154, 0.5); }
+  padding: 2px 6px; background: #8dff9a; color: #031208; box-shadow: 0 0 10px rgba(141, 255, 154, 0.5); }
 .here::before { content: ""; position: absolute; right: 100%; top: 50%; width: 10px; height: 1px; background: #8dff9a; }
 .keys { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }
 @media (prefers-reduced-motion: reduce) { .arrow { animation: none; } :host, :host([open]) { transition: none; } }
@@ -229,12 +229,14 @@ export class RetroMapElement extends HTMLElement {
     // how far any corner reaches from the stack's axis, whichever way it turns
     this._reach = 0;
     const corner = new THREE.Vector3();
-    for (const { g, h } of Object.values(this._sets)) {
-      const { w, d } = units[g.userData.id]._meta.size;
+    for (const set of Object.values(this._sets)) {
+      const { g } = set, { w, d } = units[g.userData.id]._meta.size;
+      set.reach = 0;
       for (const [x, z] of [[-w / 2, -d / 2], [w / 2, -d / 2], [-w / 2, d / 2], [w / 2, d / 2]]) {
         corner.set(x, 0, z); g.localToWorld(corner); corner.add(this._group.position);
-        this._reach = Math.max(this._reach, Math.hypot(corner.x, corner.z));
+        set.reach = Math.max(set.reach, Math.hypot(corner.x, corner.z));
       }
+      this._reach = Math.max(this._reach, set.reach);
     }
     this._fitCamera();
   }
@@ -304,7 +306,16 @@ export class RetroMapElement extends HTMLElement {
       lit.g.localToWorld(v);
       v.applyMatrix4(this._scene.matrixWorld).project(this._camera);
       const y = this._holo.offsetTop + (1 - (v.y + 1) / 2) * this._holo.clientHeight;
+      // just right of the lit set: the furthest right of its corners on screen
+      lit.body.geometry.computeBoundingBox();
+      const bb = lit.body.geometry.boundingBox, e = new THREE.Vector3();
+      let right = -Infinity;
+      for (const cx of [bb.min.x, bb.max.x]) for (const cy of [bb.min.y, bb.max.y]) for (const cz of [bb.min.z, bb.max.z]) {
+        e.set(cx, cy, cz); lit.body.localToWorld(e); right = Math.max(right, e.project(this._camera).x);
+      }
+      const x = this._holo.offsetLeft + ((right + 1) / 2) * this._holo.clientWidth + 12;
       this._here.style.top = `${y.toFixed(1)}px`;
+      this._here.style.left = `${x.toFixed(1)}px`;
     }
     if (!still || this._intro) this._raf = requestAnimationFrame(this._frame);
   }

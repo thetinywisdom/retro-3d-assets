@@ -18808,7 +18808,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 @keyframes nudge-down { 50% { transform: translateY(3px); opacity: 0.5; } }
 /* where you are: a tag pointing at the lit set */
 .here { position: absolute; left: 100%; top: 0; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; white-space: nowrap;
-  padding: 2px 6px; margin-left: -6px; background: #8dff9a; color: #031208; box-shadow: 0 0 10px rgba(141, 255, 154, 0.5); }
+  padding: 2px 6px; background: #8dff9a; color: #031208; box-shadow: 0 0 10px rgba(141, 255, 154, 0.5); }
 .here::before { content: ""; position: absolute; right: 100%; top: 50%; width: 10px; height: 1px; background: #8dff9a; }
 .keys { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }
 @media (prefers-reduced-motion: reduce) { .arrow { animation: none; } :host, :host([open]) { transition: none; } }
@@ -18948,14 +18948,16 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 		let i = r.getCenter(new U());
 		this._group.position.set(-i.x, -i.y, -i.z), this._height = r.max.y - r.min.y, this._reach = 0;
 		let a = new U();
-		for (let { g: t, h: n } of Object.values(this._sets)) {
-			let { w: n, d: r } = e[t.userData.id]._meta.size;
-			for (let [e, i] of [
-				[-n / 2, -r / 2],
-				[n / 2, -r / 2],
-				[-n / 2, r / 2],
-				[n / 2, r / 2]
-			]) a.set(e, 0, i), t.localToWorld(a), a.add(this._group.position), this._reach = Math.max(this._reach, Math.hypot(a.x, a.z));
+		for (let t of Object.values(this._sets)) {
+			let { g: n } = t, { w: r, d: i } = e[n.userData.id]._meta.size;
+			t.reach = 0;
+			for (let [e, o] of [
+				[-r / 2, -i / 2],
+				[r / 2, -i / 2],
+				[-r / 2, i / 2],
+				[r / 2, i / 2]
+			]) a.set(e, 0, o), n.localToWorld(a), a.add(this._group.position), t.reach = Math.max(t.reach, Math.hypot(a.x, a.z));
+			this._reach = Math.max(this._reach, t.reach);
 		}
 		this._fitCamera();
 	}
@@ -19002,7 +19004,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			let e = new U(0, o.h / 2, 0);
 			o.g.localToWorld(e), e.applyMatrix4(this._scene.matrixWorld).project(this._camera);
 			let t = this._holo.offsetTop + (1 - (e.y + 1) / 2) * this._holo.clientHeight;
-			this._here.style.top = `${t.toFixed(1)}px`;
+			o.body.geometry.computeBoundingBox();
+			let n = o.body.geometry.boundingBox, r = new U(), i = -Infinity;
+			for (let e of [n.min.x, n.max.x]) for (let t of [n.min.y, n.max.y]) for (let a of [n.min.z, n.max.z]) r.set(e, t, a), o.body.localToWorld(r), i = Math.max(i, r.project(this._camera).x);
+			let a = this._holo.offsetLeft + (i + 1) / 2 * this._holo.clientWidth + 12;
+			this._here.style.top = `${t.toFixed(1)}px`, this._here.style.left = `${a.toFixed(1)}px`;
 		}
 		(!t || this._intro) && (this._raf = requestAnimationFrame(this._frame));
 	}
