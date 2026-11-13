@@ -73,6 +73,8 @@ export class RetroMapElement extends HTMLElement {
     this._down = root.querySelector('.down');
     this._here = root.querySelector('.here');
     this._reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // phones and tablets: no sway, flicker or scan band, and a fresh drawing only when something changes
+    this._lite = matchMedia('(pointer: coarse)').matches;
     this._onShelf = () => this._update();
     this._frame = (now) => this._render(now);
     this._up.addEventListener('click', () => this._go(this._up.dataset.tv));
@@ -269,9 +271,13 @@ export class RetroMapElement extends HTMLElement {
   _render(now) {
     this._raf = 0;
     if (!this._renderer || !this.hasAttribute('open')) return;
+    // at most 20 drawings a second: plenty for a flickering hologram
+    if (this._lastDraw && now - this._lastDraw < 48) { this._raf = requestAnimationFrame(this._frame); return; }
+    this._lastDraw = now;
+    const still = this._reduced || this._lite;
     const t = now / 1000;
-    const flicker = this._reduced ? 1 : 0.86 + 0.14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < 0.02 ? 0.35 : 0);
-    this._scene.rotation.y = this._reduced ? -0.3 : -0.3 + Math.sin(t * 0.5) * 0.3;
+    const flicker = still ? 1 : 0.86 + 0.14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < 0.02 ? 0.35 : 0);
+    this._scene.rotation.y = still ? -0.3 : -0.3 + Math.sin(t * 0.5) * 0.3;
     let current = this._current, sweeping = false;
     if (this._intro) {
       // a set every 0.32 s, one step at most per frame so a slow device still shows each one
@@ -283,12 +289,12 @@ export class RetroMapElement extends HTMLElement {
       if (current !== this._labelled) this._labels(current, this._shelf._order());
     }
     for (const [id, s] of Object.entries(this._sets || {})) {
-      const lit = id === current, pulse = lit && !this._reduced && !sweeping ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
+      const lit = id === current, pulse = lit && !still && !sweeping ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
       s.fill.opacity = (lit ? 0.22 * pulse : 0.035) * flicker;
       s.screenFill.opacity = (lit ? 0.35 * pulse : 0.03) * flicker;
       s.edges.opacity = (lit ? 1 : 0.4) * flicker;
     }
-    this._band.visible = !this._reduced;
+    this._band.visible = !still;
     this._band.position.y = ((t * 160) % (this._height * 1.3)) - this._height * 0.65;
     this._renderer.render(this._scene, this._camera);
     // the "you are here" tag follows the lit set
@@ -300,6 +306,6 @@ export class RetroMapElement extends HTMLElement {
       const y = this._holo.offsetTop + (1 - (v.y + 1) / 2) * this._holo.clientHeight;
       this._here.style.top = `${y.toFixed(1)}px`;
     }
-    if (!this._reduced) this._raf = requestAnimationFrame(this._frame);
+    if (!still || this._intro) this._raf = requestAnimationFrame(this._frame);
   }
 }

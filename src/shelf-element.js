@@ -27,6 +27,9 @@ const TVS = ['pvm-20m4e', 'pvm-9042qm', 'kv-9pr1', 'kv-5200'];
 const FRONT_Z = -14; // how far the TV fronts sit behind the shelf's front edge
 
 // Where each set stands: x (mm from centre), on = what it sits on, ry = turn in degrees.
+// phones and tablets: fewer lights and a lower drawing resolution, to keep them smooth
+const LITE = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+
 export const STACKS = {
   pyramid: {
     'pvm-20m4e': { x: 0 },
@@ -310,7 +313,8 @@ export class RetroShelfElement extends Base {
     this._renderer = renderer;
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.NeutralToneMapping;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // phones draw the room at up to 1.5x their screen's pixels (not 2x): in the dark it looks the same and costs far less
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, LITE ? 1.5 : 2));
     const scene = (this._scene = new THREE.Scene());
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -491,7 +495,8 @@ export class RetroShelfElement extends Base {
       const color = new THREE.Color(back || '#10a045');
       const half = this._bounds.w / 2;
       // low and wide, so it reads as a haze at the edges of the room rather than a halo
-      for (const [x, y, k] of [[-half * 1.5, 120, 1], [half * 1.5, 120, 0.8], [0, 60, 0.35]]) {
+      // (phones get one lamp for the three: every light is worked out for every pixel)
+      for (const [x, y, k] of LITE ? [[0, 120, 1.6]] : [[-half * 1.5, 120, 1], [half * 1.5, 120, 0.8], [0, 60, 0.35]]) {
         const lamp = new THREE.PointLight(color, 150000 * k, 0, 2);
         lamp.position.set(x, y, -560);
         this._furniture.add(lamp);
@@ -603,7 +608,7 @@ export class RetroShelfElement extends Base {
       const spill = new THREE.PointLight(color, 0, 0, 1.7);
       spill.position.set(0, 0, pic.w * 0.9);
       spill.userData.full = pic.w * pic.h * (this._room > 0.1 ? 0.05 : 0.012);
-      light.add(spill);
+      if (!LITE) light.add(spill);                                    // phones go without the spill
       g.add(light);
       u._glow = light;
     }

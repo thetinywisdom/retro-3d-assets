@@ -26,7 +26,8 @@ const MONO = '"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace';
 // LCD lettering: a dot-matrix face (with Japanese) when the page offers it, else a monospace
 const DOTS = '"DotGothic16", "IBM Plex Mono", ui-monospace, monospace';
 const NARROW = 560;            // element width (CSS px) below which the keys go on two rows
-const TILT = -0.2;             // top edge leans away, as if propped on the floor
+const TILT = -0.2;
+const COARSE = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;   // phones and tablets             // top edge leans away, as if propped on the floor
 
 const STYLE = /* css */ `
 :host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }
@@ -539,12 +540,14 @@ export class RetroPagerElement extends HTMLElement {
         // runs round like a pager: the text, a gap, the text again, resting 2 s at the start of each pass
         // so its beginning can be read
         const speed = W * 0.14, loop = tw + avail * 0.35, hold = 2000, cycle = hold + (loop / speed) * 1000;
-        off = Math.max(0, ((performance.now() - this._mq0) % cycle) - hold) / 1000 * speed;
+        const at = (performance.now() - this._mq0) % cycle;
+        off = Math.max(0, at - hold) / 1000 * speed;
         g.save(); g.beginPath(); g.rect(px, 0, avail, H); g.clip();
         g.fillText(msg, px - off, H * 0.8);
         g.fillText(msg, px - off + loop, H * 0.8);
         g.restore();
-        this._mqT = setTimeout(() => this._draw(), 33);
+        // nothing moves while the text rests at its start; while it scrolls, 30 frames a second (20 on phones)
+        this._mqT = setTimeout(() => this._draw(), at < hold ? hold - at : COARSE ? 50 : 33);
       }
     } else g.fillText(msg, px, H * 0.8);
     // pixel grid and a faint shadow under the bezel

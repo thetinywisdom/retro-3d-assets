@@ -753,16 +753,18 @@ export class SonyPVMElement extends Base {
     const want = on && this.state.power;
     this._bl.on = want;
     this._tween('backlight', this._bl.v, want ? 1 : 0, this._reduced ? 0 : duration, (v) => { this._bl.v = v; this._applyBacklight(); }, { ease: easeInOut });
-    // the breathing runs on a light timer (about 12 updates a second), not every frame, so a set that is
-    // backlit all the time costs little
+    // the breathing runs on a light timer (5 updates a second: the pulse is slow and dim), not every frame,
+    // and holds still while the set is in standby (the camera is not on it), because every update redraws
+    // the host's whole scene
     if (want && !this._reduced && !this._blTimer) {
       const t0 = performance.now();
       this._blTimer = setInterval(() => {
         if (!this._bl.on && this._bl.v <= 0) { clearInterval(this._blTimer); this._blTimer = 0; return; }
+        if (this._standby) return;
         const phase = ((performance.now() - t0) % period) / period;
         this._bl.p = (1 - Math.cos(2 * Math.PI * phase)) / 2;          // eased in and out at both ends
         this._applyBacklight();
-      }, 80);
+      }, 200);
     }
   }
 

@@ -15109,9 +15109,10 @@ var sp = class extends ip {
 					clearInterval(this._blTimer), this._blTimer = 0;
 					return;
 				}
+				if (this._standby) return;
 				let t = (performance.now() - e) % a / a;
 				this._bl.p = (1 - Math.cos(2 * Math.PI * t)) / 2, this._applyBacklight();
-			}, 80);
+			}, 200);
 		}
 	}
 	_applyBacklight() {
@@ -17297,7 +17298,7 @@ var sm = [
 	"pvm-9042qm",
 	"kv-9pr1",
 	"kv-5200"
-], cm = -14, lm = {
+], cm = -14, lm = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, um = {
 	pyramid: {
 		"pvm-20m4e": { x: 0 },
 		"pvm-9042qm": {
@@ -17399,8 +17400,8 @@ var sm = [
 			z: 96
 		}
 	}
-}, um = (e, t, n) => Math.min(n, Math.max(t, e)), dm = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, fm = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
-function pm() {
+}, dm = (e, t, n) => Math.min(n, Math.max(t, e)), fm = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, pm = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
+function mm() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 160;
 	let t = e.getContext("2d"), n = 23, r = () => (n = n * 1664525 + 1013904223 >>> 0) / 4294967296;
@@ -17411,7 +17412,7 @@ function pm() {
 	let i = new Bi(e);
 	return i.colorSpace = Je, i;
 }
-function mm(e, t) {
+function hm(e, t) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 256;
 	let r = n.getContext("2d");
@@ -17436,7 +17437,7 @@ function mm(e, t) {
 		metalness: 0
 	};
 }
-function hm(e, t = !1) {
+function gm(e, t = !1) {
 	let n = document.createElement("canvas");
 	n.width = n.height = 512;
 	let r = n.getContext("2d");
@@ -17469,7 +17470,7 @@ function hm(e, t = !1) {
 	let o = new Bi(n);
 	return o.colorSpace = Je, o.wrapS = o.wrapT = d, o.repeat.set(e, t ? 5e3 / 9e3 * e : e), o.anisotropy = 8, o;
 }
-var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends gm {
+var _m = typeof HTMLElement < "u" ? HTMLElement : class {}, vm = class extends _m {
 	static get observedAttributes() {
 		return [
 			"stack",
@@ -17504,7 +17505,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			].includes(e.key) && this._focusKey && !this._reading && !e.target?.closest?.("input, textarea, select") && this.stepTV(e.key === "ArrowDown" || e.key === "PageDown" ? 1 : -1) && e.preventDefault();
 		};
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${rp}${fm}</style>
+		e.innerHTML = `<style>${rp}${pm}</style>
       <div class="wall" part="wall"><div class="view"><div class="css"></div><canvas aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div></div><div class="spacer"></div></div>
       <div class="ui">
         <button class="back" part="back" type="button" hidden>&larr; Back</button>
@@ -17605,7 +17606,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			this.classList.add("nogl");
 			return;
 		}
-		this._renderer = e, e.setClearColor(0, 0), e.toneMapping = 7, e.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+		this._renderer = e, e.setClearColor(0, 0), e.toneMapping = 7, e.setPixelRatio(Math.min(window.devicePixelRatio || 1, lm ? 1.5 : 2));
 		let t = this._scene = new Gn(), n = new dc(e);
 		t.environment = n.fromScene(new cd(), .04).texture, t.environmentIntensity = .6, n.dispose();
 		let r = new Ss(16777215, 2.1);
@@ -17700,9 +17701,9 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			cellW: e === "wide" ? 980 : 860
 		});
 		if (t || this._furniture.add(s.group), t || i) {
-			let e = new q(new ho(6e4, 6e4).rotateX(-Math.PI / 2), new J(i ? this.getAttribute("floor") === "carpet" ? mm(this.getAttribute("floor-color") || "#55682f", 200) : {
+			let e = new q(new ho(6e4, 6e4).rotateX(-Math.PI / 2), new J(i ? this.getAttribute("floor") === "carpet" ? hm(this.getAttribute("floor-color") || "#55682f", 200) : {
 				color: 9079434,
-				map: hm(6e4 / 1400),
+				map: gm(6e4 / 1400),
 				roughness: .5,
 				metalness: 0
 			} : {
@@ -17716,7 +17717,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 		if (this.hasAttribute("wall") || c !== null) {
 			let e = new q(new ho(9e3, 5e3), new J({
 				color: 10132122,
-				map: hm(9e3 / 1400, !0),
+				map: gm(9e3 / 1400, !0),
 				roughness: .88
 			}));
 			e.position.set(0, 2500, -760), e.raycast = () => {}, this._furniture.add(e);
@@ -17730,7 +17731,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			}));
 			e.position.set(0, .5, -s.depth / 2), e.raycast = () => {}, this._furniture.add(e);
 		}
-		let l = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), u = lm[e === "tall" && l[1] ? l[1] : l[0]] || lm.pyramid;
+		let l = (this.getAttribute("stack") || "pyramid").trim().split(/\s+/), u = um[e === "tall" && l[1] ? l[1] : l[0]] || um.pyramid;
 		this._dark = i;
 		let d = {}, f = s.height, p = -s.width / 2, m = s.width / 2, h = (e) => {
 			if (e in d) return d[e];
@@ -17742,7 +17743,11 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			h: f
 		}, c !== null) {
 			let e = new G(c || "#10a045"), t = this._bounds.w / 2;
-			for (let [n, r, i] of [
+			for (let [n, r, i] of lm ? [[
+				0,
+				120,
+				1.6
+			]] : [
 				[
 					-t * 1.5,
 					120,
@@ -17764,7 +17769,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			}
 		}
 		if (this._smoke = [], this.hasAttribute("smoke")) {
-			let e = new G(c || (c === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = pm(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
+			let e = new G(c || (c === "" ? "#10a045" : "#8a8f8c")), t = Math.max(.2, Math.min(3, parseFloat(this.getAttribute("smoke")) || 1)), n = mm(), r = Math.max(this._bounds.w / 2, 500), i = 11, a = () => (i = i * 1664525 + 1013904223 >>> 0) / 4294967296;
 			for (let i = 0; i < 14; i++) {
 				let o = i < 9, s = 900 + a() * 1100, c = new Xr({
 					map: n,
@@ -17903,7 +17908,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 			let c = new _s(o, 0, 0, 1.25, 1, 1.7);
 			c.position.set(r.cx, r.cy, r.z), c.target.position.set(r.cx, r.cy - 160, r.z + 400), n.add(c.target), c.userData.full = r.w * r.h * (this._room > .1 ? .75 : .2);
 			let l = new ys(o, 0, 0, 1.7);
-			l.position.set(0, 0, r.w * .9), l.userData.full = r.w * r.h * (this._room > .1 ? .05 : .012), c.add(l), n.add(c), t._glow = c;
+			l.position.set(0, 0, r.w * .9), l.userData.full = r.w * r.h * (this._room > .1 ? .05 : .012), lm || c.add(l), n.add(c), t._glow = c;
 		}
 		this._syncGlow();
 	}
@@ -17962,7 +17967,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 		let t = !1;
 		for (let [n, r] of this._tweens) {
 			let i = Math.min((e - r.start) / r.dur, 1);
-			r.fn(dm(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
+			r.fn(fm(i)), i >= 1 ? (this._tweens.delete(n), r.done?.()) : t = !0;
 		}
 		let n = this._over, r = this._camera, i = n.top - n.viewH / 2 - this._wall.scrollTop / n.pxPerMm, a = this._par.x * 26, o = this._par.y * 16, s = this._f, c = this._focus;
 		if (c && s > 0) {
@@ -18230,7 +18235,7 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 		}
 		if (t && (t.moved = Math.max(t.moved, Math.hypot(e.clientX - t.x, e.clientY - t.y))), e.pointerType !== "mouse" || !this._ready) return;
 		let n = this._view.getBoundingClientRect();
-		if (this._par.x = um((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -um((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
+		if (this._par.x = dm((e.clientX - n.left) / n.width * 2 - 1, -1, 1), this._par.y = -dm((e.clientY - n.top) / n.height * 2 - 1, -1, 1), !t && !this._inLiveScreen(e)) {
 			let t = this._pick(e);
 			this._wall.style.cursor = t.control || t.item !== void 0 || t.unit && t.unit !== this._focusKey ? "pointer" : t.screen ? "zoom-in" : "", this._hover(t.unit || null);
 		}
@@ -18294,8 +18299,8 @@ var gm = typeof HTMLElement < "u" ? HTMLElement : class {}, _m = class extends g
 		let n = t.hit;
 		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
-}, vm = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", ym = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", bm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", xm = 560, Sm = -.2, Cm = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
-function wm(e, t, n) {
+}, ym = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", bm = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", xm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Sm = 560, Cm = -.2, wm = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Tm = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
+function Em(e, t, n) {
 	let r = 6.5, i = n ? n * r * 2 + (n - 1) * 3 : 0, a = {
 		nav: [],
 		extra: []
@@ -18356,14 +18361,14 @@ function wm(e, t, n) {
 		r: 7
 	});
 }
-function Tm(e, t, n) {
+function Dm(e, t, n) {
 	return ud([Dd([
 		Q(Ed(e, 0, 0, 40), 0),
 		Q(Ed(e, 0, 0, 40), t - n),
 		Q(Ed(e - n, 0, 0, 40), t)
 	]), $(Ed(e - n, 0, 0, 40), [], t)]);
 }
-function Em(e, t) {
+function Om(e, t) {
 	let n = document.createElement("canvas");
 	n.width = e, n.height = t;
 	let r = new Bi(n);
@@ -18373,8 +18378,8 @@ function Em(e, t) {
 		r
 	];
 }
-var Dm = (e) => String(e).padStart(2, "0");
-function Om(e) {
+var km = (e) => String(e).padStart(2, "0");
+function Am(e) {
 	let t = new G();
 	try {
 		t.setStyle(e);
@@ -18384,14 +18389,14 @@ function Om(e) {
 	let n = {};
 	return t.getHSL(n), n.l < .62 && t.setHSL(n.h, Math.min(1, n.s * 1.1), .62), "#" + t.getHexString();
 }
-var km = class extends HTMLElement {
+var jm = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["for", "name"];
 	}
 	constructor() {
 		super();
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Cm}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
+		e.innerHTML = `<style>${Tm}</style><canvas aria-hidden="true"></canvas><div class="pad" aria-hidden="true"></div>
       <div class="keys" role="navigation" aria-label="${this.getAttribute("aria-label") || "Site"}"><slot></slot></div>
       <div class="keys" aria-live="polite"></div>`, this._canvas = e.querySelector("canvas"), this._pad = e.querySelector(".pad"), this._live = e.querySelectorAll(".keys")[1], this._hover = -1, this._sceneTV = null, this._pressed = -1, this._note = null, this._reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !1;
 		let t = this._pad;
@@ -18477,7 +18482,7 @@ var km = class extends HTMLElement {
 		let n = new Ss(16773596, 2.2);
 		n.position.set(-120, 300, 260), t.add(n);
 		let r = new Ss(1089605, 1.4);
-		r.position.set(60, 200, -220), t.add(r), this._camera = new hs(7, 1, 10, 2e4), this._ray = new Bs(), this._group = new Ln(), this._group.rotation.x = Sm, t.add(this._group), this._mat = {
+		r.position.set(60, 200, -220), t.add(r), this._camera = new hs(7, 1, 10, 2e4), this._ray = new Bs(), this._group = new Ln(), this._group.rotation.x = Cm, t.add(this._group), this._mat = {
 			body: new J({
 				color: 1841945,
 				roughness: .48,
@@ -18497,7 +18502,7 @@ var km = class extends HTMLElement {
 			}),
 			led: new Xr({ color: 3804170 })
 		};
-		let [i, a, o] = Em(1024, 2);
+		let [i, a, o] = Om(1024, 2);
 		this._lcd = {
 			c: i,
 			g: a,
@@ -18516,7 +18521,7 @@ var km = class extends HTMLElement {
 				tv: t,
 				action: e.dataset.action || null,
 				label: e.dataset.label || e.textContent.trim(),
-				channel: t ? e.dataset.channel || Dm(++r) : ""
+				channel: t ? e.dataset.channel || km(++r) : ""
 			};
 		});
 	}
@@ -18525,7 +18530,7 @@ var km = class extends HTMLElement {
 		this._body && (this._group.traverse((e) => {
 			e.geometry?.dispose(), e.material?.map && e.material !== this._mat.lcd && (e.material.map.dispose(), e.material.dispose());
 		}), this._group.clear()), this._keys = this._readKeys();
-		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = wm(e, t, n), i = this._group;
+		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = Em(e, t, n), i = this._group;
 		this._body = new q(Od(r.W, r.H, 12, r.r, 3), this._mat.body), this._body.position.z = -12, i.add(this._body);
 		let a = new q(Dd([Q(Z(r.W + .3, r.H + .3, r.r), -5.4), Q(Z(r.W + .3, r.H + .3, r.r), -5.9)]), this._mat.bezel);
 		i.add(a);
@@ -18540,21 +18545,21 @@ var km = class extends HTMLElement {
 		let l = Math.round(1024 * o.h / o.w);
 		if (this._lcd.c.height !== l) {
 			this._lcd.t.dispose();
-			let [e, t, n] = Em(1024, l);
+			let [e, t, n] = Om(1024, l);
 			this._lcd = {
 				c: e,
 				g: t,
 				t: n
 			}, this._mat.lcd.map = n, this._mat.lcd.needsUpdate = !0;
 		}
-		this._glow.position.set(o.x, o.y * Math.cos(Sm), 24);
-		let u = new q(Tm(1.3, .8, .3), this._mat.led);
+		this._glow.position.set(o.x, o.y * Math.cos(Cm), 24);
+		let u = new q(Dm(1.3, .8, .3), this._mat.led);
 		u.position.set(r.led.x, r.led.y, 0), i.add(u), this._ledMesh = u;
 		let d = 0, f = 0;
 		for (let e of this._keys) {
 			let t = e.tv ? r.nav[d++] : r.extra[f++], n = new Ln();
 			n.position.set(t.x, t.y, 0);
-			let a = 4.5, o = new q(e.tv ? Od(t.w, t.h, a, 4, 1.6) : Tm(t.r, a, 1.4), this._mat.key), s = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : $(Ed(t.r + 1.2, 0, 0, 40), [Ed(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = Em(Math.round(c * 16), Math.round(l * 16)), h = new q(new ho(c, l), new J({
+			let a = 4.5, o = new q(e.tv ? Od(t.w, t.h, a, 4, 1.6) : Dm(t.r, a, 1.4), this._mat.key), s = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : $(Ed(t.r + 1.2, 0, 0, 40), [Ed(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = Om(Math.round(c * 16), Math.round(l * 16)), h = new q(new ho(c, l), new J({
 				map: m,
 				transparent: !0,
 				roughness: .8,
@@ -18583,7 +18588,7 @@ var km = class extends HTMLElement {
 	}
 	_resize() {
 		if (!this._renderer) return;
-		let e = this.clientWidth < xm;
+		let e = this.clientWidth < Sm;
 		e !== this.hasAttribute("narrow") || !this._keys ? (e ? this.setAttribute("narrow", "") : this.removeAttribute("narrow"), this._rebuild()) : (this._fit(), this._render());
 	}
 	_fit() {
@@ -18592,7 +18597,7 @@ var km = class extends HTMLElement {
 		this._renderer.setSize(e, t, !1);
 		let r = this._camera;
 		r.aspect = e / t;
-		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(Sm) + 16 * Math.abs(Math.sin(Sm)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
+		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(Cm) + 16 * Math.abs(Math.sin(Cm)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
 		r.position.set(0, 0, s), r.lookAt(0, 0, 0), r.updateProjectionMatrix(), r.updateMatrixWorld(), this._group.updateMatrixWorld(!0);
 		let c = new or().setFromObject(this._group), l = [];
 		for (let e of [c.min.x, c.max.x]) for (let t of [c.min.y, c.max.y]) for (let n of [c.min.z, c.max.z]) l.push(new U(e, t, n).project(r));
@@ -18646,25 +18651,25 @@ var km = class extends HTMLElement {
 			r.setTransform(1, 0, 0, 1, 0, 0), r.clearRect(0, 0, n.width, n.height), r.scale(16, 16);
 			let a = t.w, o = t.h, s = "#d8d3c7";
 			if (r.fillStyle = s, r.strokeStyle = s, r.textAlign = "center", t.tv) {
-				let n = t.tv === (e.reading || e.focused), i = n ? Om(this._tvColor(t.tv)) : this._tvColor(t.tv);
-				r.font = `500 ${o * .24}px ${ym}`;
+				let n = t.tv === (e.reading || e.focused), i = n ? Am(this._tvColor(t.tv)) : this._tvColor(t.tv);
+				r.font = `500 ${o * .24}px ${bm}`;
 				let c = r.measureText(t.channel).width, l = o * .075, u = a / 2 + l + .6, d = o * .34;
 				r.fillStyle = n ? "#fff2d2" : "#9d988d", n && (r.shadowColor = "rgba(255, 236, 190, 0.9)", r.shadowBlur = 2), r.textBaseline = "middle", r.fillText(t.channel, u, d), r.beginPath(), r.arc(u - c / 2 - 1.4 - l, d, l, 0, Math.PI * 2), r.fillStyle = i, r.globalAlpha = n ? 1 : .55, n && (r.shadowColor = i, r.shadowBlur = 3), r.fill(), r.globalAlpha = 1, r.fillStyle = n ? "#fff8e6" : s, n ? (r.shadowColor = "rgba(255, 236, 190, 0.85)", r.shadowBlur = 2.2) : r.shadowBlur = 0, r.textBaseline = "alphabetic";
 				let f = o * .36;
-				r.font = `700 ${f}px ${vm}`;
+				r.font = `700 ${f}px ${ym}`;
 				let p = t.label.toUpperCase(), m = r.measureText(p).width;
-				m > a * .9 && (f *= a * .9 / m, r.font = `700 ${f}px ${vm}`), r.fillText(p, a / 2, o * .84), r.shadowBlur = 0, t.legend.mat.emissiveIntensity = n ? 1.1 : 0;
+				m > a * .9 && (f *= a * .9 / m, r.font = `700 ${f}px ${ym}`), r.fillText(p, a / 2, o * .84), r.shadowBlur = 0, t.legend.mat.emissiveIntensity = n ? 1.1 : 0;
 			} else {
 				r.lineWidth = a * .09, r.lineCap = "round", r.lineJoin = "round";
 				let n = a / 2, i = o / 2, s = a * .22;
-				r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${vm}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i)), r.globalAlpha = 1;
+				r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${ym}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i)), r.globalAlpha = 1;
 			}
 			i.needsUpdate = !0;
 		}
 		this._render();
 	}
 	_text() {
-		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${Dm(t.getHours())}:${Dm(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
+		let e = this._state(), t = /* @__PURE__ */ new Date(), n = `${km(t.getHours())}:${km(t.getMinutes())}`, r = this.getAttribute("name") || location.hostname || "PAGER", i = this._sceneTV ? this._keys?.find((e) => e.tv === this._sceneTV) : null, a = this._hover >= 0 ? this._keys[this._hover] : i;
 		if (a) {
 			if (a.tv) {
 				let t = this._shelf?.canRead?.(a.tv) ?? !0, n = a.tv === e.reading ? "Reading now" : a.tv === e.focused ? t ? "Press again to read it full screen" : "Press a channel key on the set" : null;
@@ -18720,7 +18725,7 @@ var km = class extends HTMLElement {
 		let o = t.createLinearGradient(0, 0, 0, i);
 		o.addColorStop(0, "#87a061"), o.addColorStop(.18, "#a3bc7b"), o.addColorStop(1, "#93ad6b"), t.fillStyle = o, t.fillRect(0, 0, r, i);
 		let s = r * .035, c = i * .27, l = i * .32;
-		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `400 ${i * .21}px ${bm}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `400 ${l}px ${bm}`, t.textAlign = "left";
+		t.fillStyle = "#162010", t.textBaseline = "alphabetic", t.font = `400 ${i * .21}px ${xm}`, t.globalAlpha = .72, t.textAlign = "left", t.fillText(a.left.toUpperCase(), s, c), t.textAlign = "right", t.fillText(a.right, r - s, c), t.globalAlpha = 1, t.font = `400 ${l}px ${xm}`, t.textAlign = "left";
 		let u = r - 2 * s, d = a.sub ? `${a.main} · ${a.sub}` : a.main, f = t.measureText(d).width;
 		d !== this._mqText && (this._mqText = d, this._mq0 = performance.now());
 		let p = 0;
@@ -18730,8 +18735,8 @@ var km = class extends HTMLElement {
 				for (; e.length > 1 && t.measureText(e + "…").width > u;) e = e.slice(0, -1);
 				t.fillText(e + "…", s, i * .8);
 			} else {
-				let e = r * .14, n = f + u * .35, a = 2e3, o = a + n / e * 1e3;
-				p = Math.max(0, (performance.now() - this._mq0) % o - a) / 1e3 * e, t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.fillText(d, s - p + n, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), 33);
+				let e = r * .14, n = f + u * .35, a = 2e3, o = a + n / e * 1e3, c = (performance.now() - this._mq0) % o;
+				p = Math.max(0, c - a) / 1e3 * e, t.save(), t.beginPath(), t.rect(s, 0, u, i), t.clip(), t.fillText(d, s - p, i * .8), t.fillText(d, s - p + n, i * .8), t.restore(), this._mqT = setTimeout(() => this._draw(), c < a ? a - c : wm ? 50 : 33);
 			}
 		} else t.fillText(d, s, i * .8);
 		t.fillStyle = "rgba(20, 30, 10, 0.07)";
@@ -18761,7 +18766,7 @@ var km = class extends HTMLElement {
 			bubbles: !0
 		})), this._layoutKeys(), this._paintLegends(), this._draw();
 	}
-}, Am = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", jm = 9306010, Mm = {
+}, Mm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Nm = 9306010, Pm = {
 	"pvm-20m4e": [
 		.8,
 		.62,
@@ -18782,9 +18787,9 @@ var km = class extends HTMLElement {
 		.5,
 		.68
 	]
-}, Nm = `
+}, Fm = `
 :host { display: block; position: relative; width: 150px; height: 330px; pointer-events: none; opacity: 0; visibility: hidden;
-  transition: opacity 0.5s ease, visibility 0s linear 0.5s; font: 400 13px/1.2 ${Am}; color: #8dff9a; letter-spacing: 0.06em;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s; font: 400 13px/1.2 ${Mm}; color: #8dff9a; letter-spacing: 0.06em;
   -webkit-tap-highlight-color: transparent; }
 :host([open]) { opacity: 1; visibility: visible; transition: opacity 0.5s ease; }
 /* while it first runs through the sets, the labels follow along but cannot be pressed */
@@ -18811,19 +18816,19 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .here::before { content: ""; position: absolute; right: 100%; top: 50%; width: 10px; height: 1px; background: #8dff9a; }
 .keys { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); }
 @media (prefers-reduced-motion: reduce) { .arrow { animation: none; } :host, :host([open]) { transition: none; } }
-`, Pm = class extends HTMLElement {
+`, Im = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["for"];
 	}
 	constructor() {
 		super();
 		let e = this.attachShadow({ mode: "open" });
-		e.innerHTML = `<style>${Nm}</style>
+		e.innerHTML = `<style>${Fm}</style>
       <button class="go up" type="button" hidden><span class="arrow">&#9650;</span><span class="name"></span></button>
       <div class="holo"><canvas></canvas></div>
       <div class="here" hidden aria-live="polite"></div>
       <button class="go down" type="button" hidden><span class="arrow">&#9660;</span><span class="name"></span></button>
-      <div class="keys"><slot></slot></div>`, this._canvas = e.querySelector("canvas"), this._holo = e.querySelector(".holo"), this._up = e.querySelector(".up"), this._down = e.querySelector(".down"), this._here = e.querySelector(".here"), this._reduced = matchMedia("(prefers-reduced-motion: reduce)").matches, this._onShelf = () => this._update(), this._frame = (e) => this._render(e), this._up.addEventListener("click", () => this._go(this._up.dataset.tv)), this._down.addEventListener("click", () => this._go(this._down.dataset.tv)), this._canvas.addEventListener("click", (e) => this._pick(e));
+      <div class="keys"><slot></slot></div>`, this._canvas = e.querySelector("canvas"), this._holo = e.querySelector(".holo"), this._up = e.querySelector(".up"), this._down = e.querySelector(".down"), this._here = e.querySelector(".here"), this._reduced = matchMedia("(prefers-reduced-motion: reduce)").matches, this._lite = matchMedia("(pointer: coarse)").matches, this._onShelf = () => this._update(), this._frame = (e) => this._render(e), this._up.addEventListener("click", () => this._go(this._up.dataset.tv)), this._down.addEventListener("click", () => this._go(this._down.dataset.tv)), this._canvas.addEventListener("click", (e) => this._pick(e));
 	}
 	connectedCallback() {
 		this._bind(), this._ro = new ResizeObserver(() => this._resize()), this._ro.observe(this._holo), this._update();
@@ -18888,7 +18893,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			return;
 		}
 		e.setPixelRatio(Math.min(2, devicePixelRatio || 1)), this._renderer = e, this._scene = new Gn(), this._camera = new hs(22, 1, 10, 2e4), this._group = new Ln(), this._scene.add(this._group), this._band = new q(new ho(520, 12), new Xr({
-			color: jm,
+			color: Nm,
 			transparent: !0,
 			opacity: .12,
 			depthWrite: !1,
@@ -18909,21 +18914,21 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			let s = new Ln();
 			s.position.copy(t), s.quaternion.copy(n), s.userData.id = r;
 			let c = new Xr({
-				color: jm,
+				color: Nm,
 				transparent: !0,
 				opacity: .05,
 				depthWrite: !1,
 				blending: 2,
 				side: 2
 			}), l = new Ei({
-				color: jm,
+				color: Nm,
 				transparent: !0,
 				opacity: .45
 			}), u = c.clone(), d = new Wi(a.w, o, a.d), f = new q(d, c);
 			f.position.y = o / 2, f.userData.tv = r;
 			let p = new Ri(new Qi(d), l);
 			p.position.y = o / 2, s.add(f, p);
-			let [m, h, g] = Mm[r] || [
+			let [m, h, g] = Pm[r] || [
 				.7,
 				.55,
 				.58
@@ -18977,33 +18982,38 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 	}
 	_render(e) {
 		if (this._raf = 0, !this._renderer || !this.hasAttribute("open")) return;
-		let t = e / 1e3, n = this._reduced ? 1 : .86 + .14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < .02 ? .35 : 0);
-		this._scene.rotation.y = this._reduced ? -.3 : -.3 + Math.sin(t * .5) * .3;
-		let r = this._current, i = !1;
+		if (this._lastDraw && e - this._lastDraw < 48) {
+			this._raf = requestAnimationFrame(this._frame);
+			return;
+		}
+		this._lastDraw = e;
+		let t = this._reduced || this._lite, n = e / 1e3, r = t ? 1 : .86 + .14 * Math.sin(n * 31) * Math.sin(n * 7.3) - (Math.random() < .02 ? .35 : 0);
+		this._scene.rotation.y = t ? -.3 : -.3 + Math.sin(n * .5) * .3;
+		let i = this._current, a = !1;
 		if (this._intro) {
 			let t = this._intro;
 			e >= t.start && e >= (t.next || 0) && (t.k = (t.k ?? -1) + 1, t.next = e + 320);
 			let n = t.k ?? -1;
-			n < t.order.length ? (r = n < 0 ? null : t.order[n], i = !0) : (this._intro = null, this.removeAttribute("intro")), r !== this._labelled && this._labels(r, this._shelf._order());
+			n < t.order.length ? (i = n < 0 ? null : t.order[n], a = !0) : (this._intro = null, this.removeAttribute("intro")), i !== this._labelled && this._labels(i, this._shelf._order());
 		}
-		for (let [e, a] of Object.entries(this._sets || {})) {
-			let o = e === r, s = o && !this._reduced && !i ? .75 + .25 * Math.sin(t * 4) : 1;
-			a.fill.opacity = (o ? .22 * s : .035) * n, a.screenFill.opacity = (o ? .35 * s : .03) * n, a.edges.opacity = (o ? 1 : .4) * n;
+		for (let [e, o] of Object.entries(this._sets || {})) {
+			let s = e === i, c = s && !t && !a ? .75 + .25 * Math.sin(n * 4) : 1;
+			o.fill.opacity = (s ? .22 * c : .035) * r, o.screenFill.opacity = (s ? .35 * c : .03) * r, o.edges.opacity = (s ? 1 : .4) * r;
 		}
-		this._band.visible = !this._reduced, this._band.position.y = t * 160 % (this._height * 1.3) - this._height * .65, this._renderer.render(this._scene, this._camera);
-		let a = this._sets?.[r];
-		if (a) {
-			let e = new U(0, a.h / 2, 0);
-			a.g.localToWorld(e), e.applyMatrix4(this._scene.matrixWorld).project(this._camera);
+		this._band.visible = !t, this._band.position.y = n * 160 % (this._height * 1.3) - this._height * .65, this._renderer.render(this._scene, this._camera);
+		let o = this._sets?.[i];
+		if (o) {
+			let e = new U(0, o.h / 2, 0);
+			o.g.localToWorld(e), e.applyMatrix4(this._scene.matrixWorld).project(this._camera);
 			let t = this._holo.offsetTop + (1 - (e.y + 1) / 2) * this._holo.clientHeight;
 			this._here.style.top = `${t.toFixed(1)}px`;
 		}
-		this._reduced || (this._raf = requestAnimationFrame(this._frame));
+		(!t || this._intro) && (this._raf = requestAnimationFrame(this._frame));
 	}
 };
 // src/index.js
-function Fm() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", sp), customElements.get("retro-shelf") || customElements.define("retro-shelf", _m), customElements.get("retro-pager") || customElements.define("retro-pager", km), customElements.get("retro-map") || customElements.define("retro-map", Pm));
+function Lm() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", sp), customElements.get("retro-shelf") || customElements.define("retro-shelf", vm), customElements.get("retro-pager") || customElements.define("retro-pager", jm), customElements.get("retro-map") || customElements.define("retro-map", Im));
 }
-Fm();
-export { am as ARRANGEMENTS, cp as ITEM_TYPES, Hf as MODELS, Zp as PROPS, Pm as RetroMapElement, km as RetroPagerElement, _m as RetroShelfElement, lm as STACKS, sp as SonyPVMElement, Op as buildItem, Ap as buildShelf, Fm as define };
+Lm();
+export { am as ARRANGEMENTS, cp as ITEM_TYPES, Hf as MODELS, Zp as PROPS, Im as RetroMapElement, jm as RetroPagerElement, vm as RetroShelfElement, um as STACKS, sp as SonyPVMElement, Op as buildItem, Ap as buildShelf, Lm as define };
