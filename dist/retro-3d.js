@@ -18787,9 +18787,9 @@ var km = class extends HTMLElement {
   transition: opacity 0.5s ease, visibility 0s linear 0.5s; font: 400 13px/1.2 ${Am}; color: #8dff9a; letter-spacing: 0.06em;
   -webkit-tap-highlight-color: transparent; }
 :host([open]) { opacity: 1; visibility: visible; transition: opacity 0.5s ease; }
-/* the first time it comes up the keys and the tag wait until the sets have been run through */
-.go, .here { transition: opacity 0.4s ease; }
-:host([intro]) .go, :host([intro]) .here { opacity: 0; pointer-events: none; }
+/* while it first runs through the sets, the labels follow along but cannot be pressed */
+:host([intro]) .go, :host([intro]) .here { pointer-events: none; }
+:host([intro]) .here:empty { visibility: hidden; }
 .holo { position: absolute; left: 0; right: 0; top: 34px; bottom: 34px; pointer-events: auto; cursor: pointer; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 /* fine scanlines over the hologram */
@@ -18864,13 +18864,17 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			return;
 		}
 		this._scene ? this._place() : this._build();
-		let n = e._order(), r = n.indexOf(e._focusKey);
-		this._current = e._focusKey;
-		for (let [e, t] of [[this._up, n[r - 1]], [this._down, n[r + 1]]]) e.hidden = !t, t && (e.dataset.tv = t, e.querySelector(".name").textContent = this._name(t), e.setAttribute("aria-label", `Go to ${this._name(t)}`));
-		this._here.textContent = `◀ ${this._name(e._focusKey)}`, this._here.hidden = !1, this._introduced || (this._introduced = !0, this._reduced || (this._intro = {
+		let n = e._order();
+		this._current = e._focusKey, this._intro || this._labels(e._focusKey, n), this._introduced || (this._introduced = !0, this._reduced || (this._intro = {
 			start: performance.now() + 500,
 			order: n
-		}, this.setAttribute("intro", ""))), this._raf || (this._raf = requestAnimationFrame(this._frame));
+		}, this.setAttribute("intro", ""), this._labels(null, n))), this._raf || (this._raf = requestAnimationFrame(this._frame));
+	}
+	_labels(e, t) {
+		this._labelled = e;
+		let n = t.indexOf(e);
+		for (let [r, i] of [[this._up, t[n - 1]], [this._down, t[n + 1]]]) r.hidden = !e || !i, r.hidden || (r.dataset.tv = i, r.querySelector(".name").textContent = this._name(i), r.setAttribute("aria-label", `Go to ${this._name(i)}`));
+		this._here.textContent = e ? `\u25C0 ${this._name(e)}` : "", this._here.hidden = !1;
 	}
 	_build() {
 		let e;
@@ -18980,14 +18984,14 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			let t = this._intro;
 			e >= t.start && e >= (t.next || 0) && (t.k = (t.k ?? -1) + 1, t.next = e + 320);
 			let n = t.k ?? -1;
-			n < t.order.length ? (r = n < 0 ? null : t.order[n], i = !0) : (this._intro = null, this.removeAttribute("intro"));
+			n < t.order.length ? (r = n < 0 ? null : t.order[n], i = !0) : (this._intro = null, this.removeAttribute("intro")), r !== this._labelled && this._labels(r, this._shelf._order());
 		}
 		for (let [e, a] of Object.entries(this._sets || {})) {
 			let o = e === r, s = o && !this._reduced && !i ? .75 + .25 * Math.sin(t * 4) : 1;
 			a.fill.opacity = (o ? .22 * s : .035) * n, a.screenFill.opacity = (o ? .35 * s : .03) * n, a.edges.opacity = (o ? 1 : .4) * n;
 		}
 		this._band.visible = !this._reduced, this._band.position.y = t * 160 % (this._height * 1.3) - this._height * .65, this._renderer.render(this._scene, this._camera);
-		let a = this._sets?.[this._current];
+		let a = this._sets?.[r];
 		if (a) {
 			let e = new U(0, a.h / 2, 0);
 			a.g.localToWorld(e), e.applyMatrix4(this._scene.matrixWorld).project(this._camera);

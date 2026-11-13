@@ -29,9 +29,9 @@ const STYLE = /* css */ `
   transition: opacity 0.5s ease, visibility 0s linear 0.5s; font: 400 13px/1.2 ${DOTS}; color: #8dff9a; letter-spacing: 0.06em;
   -webkit-tap-highlight-color: transparent; }
 :host([open]) { opacity: 1; visibility: visible; transition: opacity 0.5s ease; }
-/* the first time it comes up the keys and the tag wait until the sets have been run through */
-.go, .here { transition: opacity 0.4s ease; }
-:host([intro]) .go, :host([intro]) .here { opacity: 0; pointer-events: none; }
+/* while it first runs through the sets, the labels follow along but cannot be pressed */
+:host([intro]) .go, :host([intro]) .here { pointer-events: none; }
+:host([intro]) .here:empty { visibility: hidden; }
 .holo { position: absolute; left: 0; right: 0; top: 34px; bottom: 34px; pointer-events: auto; cursor: pointer; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 /* fine scanlines over the hologram */
@@ -129,26 +129,34 @@ export class RetroMapElement extends HTMLElement {
     if (!on) { cancelAnimationFrame(this._raf); this._raf = 0; return; }
     if (!this._scene) this._build();
     else this._place();
-    const order = shelf._order(), i = order.indexOf(shelf._focusKey);
+    const order = shelf._order();
     this._current = shelf._focusKey;
-    for (const [el, id] of [[this._up, order[i - 1]], [this._down, order[i + 1]]]) {
-      el.hidden = !id;                                               // nothing above the top set, nothing below the bottom one
-      if (!id) continue;
-      el.dataset.tv = id;
-      el.querySelector('.name').textContent = this._name(id);
-      el.setAttribute('aria-label', `Go to ${this._name(id)}`);
-    }
-    this._here.textContent = `◀ ${this._name(shelf._focusKey)}`;
-    this._here.hidden = false;
+    if (!this._intro) this._labels(shelf._focusKey, order);
     // the first time: fade in, light each set from the top down, then settle on the one you are on
     if (!this._introduced) {
       this._introduced = true;
       if (!this._reduced) {
         this._intro = { start: performance.now() + 500, order };
         this.setAttribute('intro', '');
+        this._labels(null, order);
       }
     }
     if (!this._raf) this._raf = requestAnimationFrame(this._frame);
+  }
+
+  /** Point the tag at a set, with keys for the sets above and below it. */
+  _labels(at, order) {
+    this._labelled = at;
+    const i = order.indexOf(at);
+    for (const [el, id] of [[this._up, order[i - 1]], [this._down, order[i + 1]]]) {
+      el.hidden = !at || !id;                                        // nothing above the top set, nothing below the bottom one
+      if (el.hidden) continue;
+      el.dataset.tv = id;
+      el.querySelector('.name').textContent = this._name(id);
+      el.setAttribute('aria-label', `Go to ${this._name(id)}`);
+    }
+    this._here.textContent = at ? `\u25C0 ${this._name(at)}` : '';
+    this._here.hidden = false;
   }
 
   // ---------------------------------------------------------------- scene --
@@ -272,6 +280,7 @@ export class RetroMapElement extends HTMLElement {
       const k = it.k ?? -1;
       if (k < it.order.length) { current = k < 0 ? null : it.order[k]; sweeping = true; }
       else { this._intro = null; this.removeAttribute('intro'); }
+      if (current !== this._labelled) this._labels(current, this._shelf._order());
     }
     for (const [id, s] of Object.entries(this._sets || {})) {
       const lit = id === current, pulse = lit && !this._reduced && !sweeping ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
@@ -283,7 +292,7 @@ export class RetroMapElement extends HTMLElement {
     this._band.position.y = ((t * 160) % (this._height * 1.3)) - this._height * 0.65;
     this._renderer.render(this._scene, this._camera);
     // the "you are here" tag follows the lit set
-    const lit = this._sets?.[this._current];
+    const lit = this._sets?.[current];
     if (lit) {
       const v = new THREE.Vector3(0, lit.h / 2, 0);
       lit.g.localToWorld(v);
