@@ -29,6 +29,9 @@ const STYLE = /* css */ `
   transition: opacity 0.5s ease, visibility 0s linear 0.5s; font: 400 13px/1.2 ${DOTS}; color: #8dff9a; letter-spacing: 0.06em;
   -webkit-tap-highlight-color: transparent; }
 :host([open]) { opacity: 1; visibility: visible; transition: opacity 0.5s ease; }
+/* the first time it comes up the keys and the tag wait until the sets have been run through */
+.go, .here { transition: opacity 0.4s ease; }
+:host([intro]) .go, :host([intro]) .here { opacity: 0; pointer-events: none; }
 .holo { position: absolute; left: 0; right: 0; top: 34px; bottom: 34px; pointer-events: auto; cursor: pointer; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 /* fine scanlines over the hologram */
@@ -137,6 +140,14 @@ export class RetroMapElement extends HTMLElement {
     }
     this._here.textContent = `◀ ${this._name(shelf._focusKey)}`;
     this._here.hidden = false;
+    // the first time: fade in, light each set from the top down, then settle on the one you are on
+    if (!this._introduced) {
+      this._introduced = true;
+      if (!this._reduced) {
+        this._intro = { start: performance.now() + 500, order };
+        this.setAttribute('intro', '');
+      }
+    }
     if (!this._raf) this._raf = requestAnimationFrame(this._frame);
   }
 
@@ -253,8 +264,17 @@ export class RetroMapElement extends HTMLElement {
     const t = now / 1000;
     const flicker = this._reduced ? 1 : 0.86 + 0.14 * Math.sin(t * 31) * Math.sin(t * 7.3) - (Math.random() < 0.02 ? 0.35 : 0);
     this._scene.rotation.y = this._reduced ? -0.3 : -0.3 + Math.sin(t * 0.5) * 0.3;
+    let current = this._current, sweeping = false;
+    if (this._intro) {
+      // a set every 0.32 s, one step at most per frame so a slow device still shows each one
+      const it = this._intro;
+      if (now >= it.start && now >= (it.next || 0)) { it.k = (it.k ?? -1) + 1; it.next = now + 320; }
+      const k = it.k ?? -1;
+      if (k < it.order.length) { current = k < 0 ? null : it.order[k]; sweeping = true; }
+      else { this._intro = null; this.removeAttribute('intro'); }
+    }
     for (const [id, s] of Object.entries(this._sets || {})) {
-      const lit = id === this._current, pulse = lit && !this._reduced ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
+      const lit = id === current, pulse = lit && !this._reduced && !sweeping ? 0.75 + 0.25 * Math.sin(t * 4) : 1;
       s.fill.opacity = (lit ? 0.22 * pulse : 0.035) * flicker;
       s.screenFill.opacity = (lit ? 0.35 * pulse : 0.03) * flicker;
       s.edges.opacity = (lit ? 1 : 0.4) * flicker;
