@@ -15165,10 +15165,7 @@ var sp = class extends ip {
 		this._syncLamps(), this._applyPicture(), this._emit("pvm-button", {
 			id: e,
 			pressed: !t.latch || n.buttons[e]
-		}), r !== this._lastInput && (this._lastInput = r, n.power && this._meta.noSignal === "noise" && this._blip(), this._emit("pvm-input", { input: r }));
-	}
-	_blip() {
-		this._noise.classList.add("active"), clearTimeout(this._blipT), this._blipT = setTimeout(() => this._applyPicture(), 140);
+		}), r !== this._lastInput && (this._lastInput = r, this._emit("pvm-input", { input: r }));
 	}
 	press(e) {
 		if (this._ctl[e]?.kind !== "button") throw Error(`sony-pvm: unknown button "${e}"`);

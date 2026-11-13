@@ -828,16 +828,9 @@ export class SonyPVMElement extends Base {
     this._emit('pvm-button', { id, pressed: c.latch ? st.buttons[id] : true });
     if (input !== this._lastInput) {
       this._lastInput = input;
-      if (st.power && this._meta.noSignal === 'noise') this._blip();
+      // (no burst of snow between channels: the owner found it read as a fault)
       this._emit('pvm-input', { input });
     }
-  }
-
-  /** Short burst of snow when the channel changes. */
-  _blip() {
-    this._noise.classList.add('active');
-    clearTimeout(this._blipT);
-    this._blipT = setTimeout(() => this._applyPicture(), 140);
   }
 
   /** Press a front-panel button, exactly as a click on it would. */
