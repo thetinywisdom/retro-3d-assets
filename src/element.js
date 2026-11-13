@@ -56,14 +56,14 @@ function ytWire(f, level) {
       setTimeout(() => {
         ytPost(f, { event: 'listening', id: 1, channel: 'widget' });
         const { vol, quiet, standby } = y.level();
-        if (standby) ytCmd(f, 'pauseVideo');                      // loaded while the set is in standby: wait
+        if (standby || y.playing === false) ytCmd(f, 'pauseVideo');   // in standby, or its channel already left: wait
         else ytLevel(f, vol, quiet);
       }, t);
     }
     // the browser refused to start it with sound: play it muted until the visitor does something
     y.t = setTimeout(() => {
       const { vol, quiet, standby } = y.level();
-      if (!standby && y.state !== 1 && !quiet && vol > 0) { y.blocked = true; ytCmd(f, 'mute'); ytCmd(f, 'playVideo'); }
+      if (!standby && y.playing !== false && y.state !== 1 && !quiet && vol > 0) { y.blocked = true; ytCmd(f, 'mute'); ytCmd(f, 'playVideo'); }   // not one that is meant to be paused
     }, 3200);
   });
 }
@@ -1005,13 +1005,18 @@ export class SonyPVMElement extends Base {
         for (const f of n.matches('iframe') ? [n] : n.querySelectorAll('iframe')) {
           const yt = isYouTube(f);
           if (yt) ytWire(f, () => ({ vol: this.state.power ? this._val('volume') : 0, quiet: !!this._sound?.muted, standby: !!this._standby }));
-          // in standby the channel on air keeps its place: YouTube pauses; other players (Spotify) cannot be
-          // paused from here, so they are unloaded like the channels off air
-          const keep = live && (!standby || yt);
-          if (keep && f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; }
-          else if (!keep && !f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; }
-          // tell YouTube only when standby changes, so a video the visitor paused stays paused
-          if (yt && live && f._yt && f._yt.standby !== standby) { if (f._yt.standby !== undefined || standby) ytCmd(f, standby ? 'pauseVideo' : 'playVideo'); f._yt.standby = standby; }
+          const playing = live && !standby;
+          const hold = () => { if (!f.dataset.held && f.getAttribute('src') && f.getAttribute('src') !== 'about:blank') { f.dataset.held = f.getAttribute('src'); f.src = 'about:blank'; } };
+          const load = () => { if (f.dataset.held) { f.src = f.dataset.held; delete f.dataset.held; } };
+          if (yt) {
+            // YouTube keeps its place: a video is only loaded the first time its channel comes on air, and from
+            // then on it is paused off air and in standby, and carries on from there. It is told only when that
+            // changes, so a video the visitor paused themselves stays paused.
+            const y = f._yt;
+            if (!y.aired) { if (live) { load(); y.aired = true; y.playing = playing; } else hold(); }
+            else if (y.playing !== playing) { ytCmd(f, playing ? 'playVideo' : 'pauseVideo'); y.playing = playing; }
+          } else if (playing) load();
+          else hold();                                                   // other players (Spotify) cannot be paused from here
         }
         for (const m of n.matches('video, audio') ? [n] : n.querySelectorAll('video, audio')) {
           if (!live || standby) { try { m.pause(); } catch {} } else if (m.autoplay) { m.play?.().catch(() => {}); }

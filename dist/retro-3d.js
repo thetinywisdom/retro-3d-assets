@@ -14547,11 +14547,11 @@ function zf(e, t) {
 				channel: "widget"
 			});
 			let { vol: n, quiet: r, standby: i } = t.level();
-			i ? Lf(e, "pauseVideo") : Rf(e, n, r);
+			i || t.playing === !1 ? Lf(e, "pauseVideo") : Rf(e, n, r);
 		}, n);
 		t.t = setTimeout(() => {
 			let { vol: n, quiet: r, standby: i } = t.level();
-			!i && t.state !== 1 && !r && n > 0 && (t.blocked = !0, Lf(e, "mute"), Lf(e, "playVideo"));
+			!i && t.playing !== !1 && t.state !== 1 && !r && n > 0 && (t.blocked = !0, Lf(e, "mute"), Lf(e, "playVideo"));
 		}, 3200);
 	}));
 }
@@ -15149,8 +15149,15 @@ var Wf = class extends Vf {
 						quiet: !!this._sound?.muted,
 						standby: !!this._standby
 					}));
-					let r = i && (!t || e);
-					r && n.dataset.held ? (n.src = n.dataset.held, delete n.dataset.held) : !r && !n.dataset.held && n.getAttribute("src") && n.getAttribute("src") !== "about:blank" && (n.dataset.held = n.getAttribute("src"), n.src = "about:blank"), e && i && n._yt && n._yt.standby !== t && ((n._yt.standby !== void 0 || t) && Lf(n, t ? "pauseVideo" : "playVideo"), n._yt.standby = t);
+					let r = i && !t, a = () => {
+						!n.dataset.held && n.getAttribute("src") && n.getAttribute("src") !== "about:blank" && (n.dataset.held = n.getAttribute("src"), n.src = "about:blank");
+					}, o = () => {
+						n.dataset.held && (n.src = n.dataset.held, delete n.dataset.held);
+					};
+					if (e) {
+						let e = n._yt;
+						e.aired ? e.playing !== r && (Lf(n, r ? "playVideo" : "pauseVideo"), e.playing = r) : i ? (o(), e.aired = !0, e.playing = r) : a();
+					} else r ? o() : a();
 				}
 				for (let n of e.matches("video, audio") ? [e] : e.querySelectorAll("video, audio")) if (!i || t) try {
 					n.pause();
