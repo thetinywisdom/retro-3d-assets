@@ -17670,7 +17670,7 @@ var Zp = typeof HTMLElement < "u" ? HTMLElement : class {}, Qp = class extends Z
 		for (let e of Hp) {
 			let t = this._units[e], n = t._parent, r = t._m.picture;
 			if (t._glow && (n.remove(t._glow, t._glow.target), t._glow.dispose(), t._glow = null), t._m.crtMaterial.uniforms.uRoom.value = this._room ?? 1, !this._dark) continue;
-			let i = this.querySelector(`[slot="${e}"]`), a = i ? getComputedStyle(i).backgroundColor : "", o = new G(!a || a === "transparent" || a.endsWith(", 0)") ? "#cfe0ff" : a), s = o.getHSL({});
+			let i = this.querySelector(`[slot="${e}"]`), a = i ? i.dataset.glow || getComputedStyle(i).backgroundColor : "", o = new G(!a || a === "transparent" || a.endsWith(", 0)") ? "#cfe0ff" : a), s = o.getHSL({});
 			o.setHSL(s.h, Math.min(s.s, .8), Math.max(s.l, .55));
 			let c = new es(o, 0, 0, 1.25, 1, 1.7);
 			c.position.set(r.cx, r.cy, r.z), c.target.position.set(r.cx, r.cy - 160, r.z + 400), n.add(c.target), c.userData.full = r.w * r.h * (this._room > .1 ? .75 : .2);

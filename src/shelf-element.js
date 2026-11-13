@@ -586,7 +586,9 @@ export class RetroShelfElement extends Base {
       u._m.crtMaterial.uniforms.uRoom.value = this._room ?? 1;
       if (!this._dark) continue;
       const page = this.querySelector(`[slot="${id}"]`);
-      const css = page ? getComputedStyle(page).backgroundColor : '';
+      // the light a TV throws is its page's background colour, unless the page names one (data-glow), e.g. a
+      // black screen saver that should still light the room
+      const css = page ? page.dataset.glow || getComputedStyle(page).backgroundColor : '';
       const transparent = !css || css === 'transparent' || css.endsWith(', 0)');
       const color = new THREE.Color(transparent ? '#cfe0ff' : css);
       const hsl = color.getHSL({});

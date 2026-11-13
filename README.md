@@ -28,7 +28,7 @@ One straight-on camera. The first tap on a TV moves in to it. A tap on its scree
 | `stack` | `pyramid` (default), `pile`, `tower`, `row` or `scatter`. Two names, such as `stack="scatter tower"`, use the first on wide screens and the second on tall ones. Positions are in `STACKS` in `src/shelf-element.js`; add your own arrangement there |
 | `arrange` | How the shelf contents are set out: `browsed` (default), `piled`, `display` or `tidy`. Each is a short script in `src/arrange.js`; add your own there |
 | `scene` | `floor` removes the shelf and its contents and stands the TVs on the floor |
-| `lighting` | `dark`: the room is almost pitch black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV). `dim`: the same with a little room light left on |
+| `lighting` | `dark`: the room is almost pitch black and each lit screen throws its own colour onto the floor (the colour is the background of the page on that TV, or its `data-glow` attribute if it has one). `dim`: the same with a little room light left on |
 | `backlight` | Coloured light hidden behind the TVs, washing a wall and the floor. `backlight` alone is a dim green; `backlight="#ff3355"` picks a colour |
 | `floor` | Floor in the dark room: `concrete` (default, slight sheen) or `carpet` (matt, no reflections). `floor-color="#55682f"` sets the carpet colour; the default is moss green |
 | `smoke` | Still haze that picks up the backlight colour. `smoke="2"` is thicker, `smoke="0.5"` thinner. It does not move, so it costs nothing after the first frame |
