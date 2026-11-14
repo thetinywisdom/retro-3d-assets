@@ -21810,7 +21810,8 @@ var Ug = 9306010, Wg = [
 	"surprised",
 	"sad",
 	"wink",
-	"angry"
+	"angry",
+	"dizzy"
 ], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n", Kg = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["src"];

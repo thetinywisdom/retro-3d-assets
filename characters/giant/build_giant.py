@@ -164,7 +164,7 @@ BONES = [  # name, head, tail, parent
     # shows its own copy of the eyes on clip_eyes_<name>_ctrl (scale 0 / 1)
     ('eyes_code', eyes_pos, eyes_pos + screen_up * 0.5, 'eyes_ctrl'),
 ]
-CLIP_EXPRS = ['happy', 'surprised', 'sad', 'thinking', 'wink', 'angry']
+CLIP_EXPRS = ['happy', 'surprised', 'sad', 'thinking', 'wink', 'angry', 'dizzy']
 BONES += [(f'clip_eyes_{e}_ctrl', eyes_pos, eyes_pos + screen_up * 0.5, 'eyes_ctrl') for e in CLIP_EXPRS]
 for side, s in (('L', 1), ('R', -1)):
     sh, el, wr = arm_pts(s)
@@ -293,6 +293,19 @@ def both(fn):
     return fn(-EX, -1) + fn(EX, 1)
 
 
+def spiral(cx, cy, turns=2.4, n=18, rad=None):
+    """Short bars along an Archimedean spiral: the dizzy eyes."""
+    rad = ES * 0.48 if rad is None else rad
+    bars = [rect(cx, cy, ET * 1.35, ET * 1.35)]
+    for i in range(n):
+        u = (i + 0.5) / n
+        ang = u * turns * 2 * math.pi - math.pi / 2
+        r = rad * (0.16 + 0.84 * u)
+        bars.append(rect(cx + math.cos(ang) * r, cy + math.sin(ang) * r,
+                         ET * 2.15, ET * 0.92, ang + math.pi / 2))
+    return bars
+
+
 EXPRESSIONS = {
     'neutral':   both(lambda x, s: eye_open(x)),
     'happy':     both(lambda x, s: arch(x, 0.02 * SCR_H, ES, ES * 0.5, ET * 1.1)),
@@ -305,6 +318,7 @@ EXPRESSIONS = {
     'wink':      eye_open(-EX) + arch(EX, 0.02 * SCR_H, ES, ES * 0.5, ET * 1.1),
     'angry':     both(lambda x, s: eye_open(x, -0.04 * SCR_H)
                       + [rect(x, BROW - 0.06 * SCR_H, ES * 1.0, ET, ang=s * 0.32)]),
+    'dizzy':     both(lambda x, s: spiral(x, 0.01 * SCR_H)),
 }
 
 # local axes of the Eyes empty: x = screen right, y = screen up, z = out of the screen (-Y)
@@ -373,14 +387,26 @@ def clip(name, frames, fn):
     act.use_fake_user = True
     arm.animation_data_create()
     arm.animation_data.action = act
+    # Keep each bone's quaternion on one continuous path. A spin of more than
+    # half a turn (dizzy) would otherwise flip back at the 360° wrap, because
+    # a quaternion and its negative are the same pose.
+    prev_q = {}
     for f in range(frames + 1):
         t = f / frames
         pose = fn(t, f)
         for b in pb:
             rot = pose.get(b.name, {})
-            b.rotation_quaternion = world_rot(b.name, *rot.get('r', (0, 0, 0)))
+            q = world_rot(b.name, *rot.get('r', (0, 0, 0)))
+            prev = prev_q.get(b.name)
+            if prev is not None and prev.dot(q) < 0:
+                q.negate()
+            b.rotation_quaternion = q
+            prev_q[b.name] = q.copy()
             b.keyframe_insert('rotation_quaternion', frame=f, group=b.name)
-            if b.name in ('head', 'hips'):                # small lifts / bounces, armature axes (dir4 units)
+            # head and hips are always keyed (lifts / bounces). Any other bone
+            # is keyed only when the pose sets 'l', so older clips stay put.
+            # Offsets are armature axes in dir4 units.
+            if b.name in ('head', 'hips') or 'l' in rot:
                 b.location = REST[b.name].inverted() @ (V(rot.get('l', (0, 0, 0))) * S)
                 b.keyframe_insert('location', frame=f, group=b.name)
             if b.name in SCALE_DEFAULT:                    # only these ever scale
@@ -641,9 +667,61 @@ def angry(t, f, n=60):
     }, show_eyes('angry', f, n))
 
 
+def dizzy_eyes(f):
+    """Surprised eyes through the recoil, spiral eyes from frame 21, held to the end.
+    Frame 0 stays on the code-chosen eyes so a cross-fade out of idle is clean."""
+    code = sur = diz = 0.0
+    if f <= 0:
+        code = 1.0
+    elif f < 21:
+        sur = 1.0
+    else:
+        diz = 1.0
+    return {
+        'eyes_code': {'s': (code, code, code)},
+        'clip_eyes_surprised_ctrl': {'s': (sur, sur, sur)},
+        'clip_eyes_dizzy_ctrl': {'s': (diz, diz, diz)},
+    }
+
+
+def dizzy(t, f, n=150):
+    """5 s one-shot. Recoil and hop, then a 2.5-turn spin, a wobble, a fall, a held lie.
+    Does not return to rest: play idle (LoopOnce + clampWhenFinished) to stand him up."""
+    recoil = ss(0.012, 0.07, t) * (1 - ss(0.12, 0.16, t))
+    hop = math.exp(-((f - 14) / 4.2) ** 2)
+    spin_u = ss(21 / n, 96 / n, t)
+    spin = 900.0 * spin_u                         # 2.5 turns, starting at frame 21
+    wob_u = 0.0
+    if 96 <= f <= 120:
+        wob_u = math.sin(math.pi * (f - 96) / 24.0)
+    wob = math.sin((f - 96) / 24.0 * 6 * math.pi) * wob_u
+    lie = 1.0 if f >= 142 else ss(114 / n, 138 / n, t)
+    bounce = math.exp(-((f - 136) / 2.6) ** 2)
+    # +X lays him onto his back. Root stays still during the recoil so the
+    # head does not swing through the torso; the hop is on the hips.
+    # The held pose is lifted so the body sits a few cm above the floor.
+    rx = 80 * lie - 9 * bounce
+    arms = max(recoil, spin_u * (1.0 - lie))
+    return merge({
+        'root': {'r': (rx, 18 * wob, spin), 'l': (0, 0.15 * lie, 1.45 * lie - 0.35 * bounce)},
+        'hips': {'l': (0, 0, 0.9 * hop), 'r': (-3 * recoil, 0, 0)},
+        'spine': {'r': (-1 * recoil, 4 * wob, 0)},
+        'chest': {'r': (-5 * recoil, 6 * wob, 0)},
+        'neck': {'r': (-2 * recoil, 2 * wob, 0)},
+        'head': {'r': (-6 * recoil + 10 * wob, 6 * wob, 0),
+                 'l': (0, 0, 0.2 * recoil - 0.40 * wob_u)},   # wobble: TV sinks 4 cm into the shoulders
+        'shoulder_L': {'r': (0, -8 * recoil, 0)}, 'shoulder_R': {'r': (0, 8 * recoil, 0)},
+        'upper_arm_L': {'r': (-16 * arms, -12 * arms, 0)}, 'upper_arm_R': {'r': (-16 * arms, 12 * arms, 0)},
+        'forearm_L': {'r': (-30 * arms, 0, 0)}, 'forearm_R': {'r': (-30 * arms, 0, 0)},
+        'thigh_L': {'r': (14 * lie, 0, 0)}, 'thigh_R': {'r': (14 * lie, 0, 0)},
+        'shin_L': {'r': (-16 * lie, 0, 0)}, 'shin_R': {'r': (-16 * lie, 0, 0)},
+    }, dizzy_eyes(f))
+
+
 CLIPS = [('idle', 108, idle), ('talk', 72, talk), ('yes', 45, yes), ('no', 45, no),
          ('happy', 60, happy), ('surprised', 54, surprised), ('sad', 75, sad),
-         ('thinking', 90, thinking), ('wink', 54, wink), ('angry', 60, angry)]
+         ('thinking', 90, thinking), ('wink', 54, wink), ('angry', 60, angry),
+         ('dizzy', 150, dizzy)]
 for name, n, fn in CLIPS:
     clip(name, n, fn)
 

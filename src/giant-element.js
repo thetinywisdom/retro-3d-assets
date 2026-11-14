@@ -11,7 +11,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const GREEN = 0x8dff9a;
-const ONE_SHOTS = ['yes', 'no', 'happy', 'surprised', 'sad', 'wink', 'angry'];
+const ONE_SHOTS = ['yes', 'no', 'happy', 'surprised', 'sad', 'wink', 'angry', 'dizzy'];
 
 const STYLE = /* css */ `
 :host { display: block; position: relative; }
@@ -137,7 +137,7 @@ export class RetroGiantElement extends HTMLElement {
       frames: this._frames || 0, error: this._error || null, gpu: gl ? (gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER) || '') : '' };
   }
 
-  /** Eye expression: neutral, happy, blink, surprised, sad, thinking, wink, angry. */
+  /** Eye expression: neutral, happy, blink, surprised, sad, thinking, wink, angry, dizzy. */
   face(name) {
     if (!this._eyes) return;
     for (const e of this._eyes.children) e.visible = e.name === `eyes_${name}`;

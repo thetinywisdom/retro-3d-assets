@@ -46,14 +46,14 @@ def rest():
     im.save(os.path.join(PRE, 'rest_front.png'))
 
 
-EXPRS = ['neutral', 'happy', 'blink', 'surprised', 'sad', 'thinking', 'wink', 'angry']
+EXPRS = ['neutral', 'happy', 'blink', 'surprised', 'sad', 'thinking', 'wink', 'angry', 'dizzy']
 
 
 def expressions():
     cw, ch, g = 600, 520, 10
     small_h = 130
-    cols = 4
-    rows = 2
+    cols = 3
+    rows = 3
     sheet = Image.new('RGB', (cols * cw + (cols + 1) * g, rows * (ch + 40) + g * 2 + 60 + 220), (6, 8, 6))
     d = ImageDraw.Draw(sheet)
     f = ImageFont.truetype(FONT, 30)

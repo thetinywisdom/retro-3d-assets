@@ -77,7 +77,7 @@ def render(path):
     bpy.ops.render.render(write_still=True)
 
 
-EXPRS = ['neutral', 'happy', 'blink', 'surprised', 'sad', 'thinking', 'wink', 'angry']
+EXPRS = ['neutral', 'happy', 'blink', 'surprised', 'sad', 'thinking', 'wink', 'angry', 'dizzy']
 set_expr('neutral')
 set_clip('idle', 0)
 
