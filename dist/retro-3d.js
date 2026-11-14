@@ -18299,64 +18299,84 @@ var _m = typeof HTMLElement < "u" ? HTMLElement : class {}, vm = class extends _
 		let n = t.hit;
 		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
-}, ym = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", bm = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", xm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Sm = 560, Cm = -.2, wm = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Tm = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
-function Em(e, t, n) {
-	let r = 6.5, i = n ? n * r * 2 + (n - 1) * 3 : 0, a = {
+}, ym = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", bm = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", xm = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Sm = 560, Cm = -.2, wm = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Tm = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\n/* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */\n:host([compact]) { height: 80px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
+function Em(e, t, n, r = !1) {
+	let i = 6.5, a = n ? n * i * 2 + (n - 1) * 3 : 0, o = {
 		nav: [],
 		extra: []
 	};
+	if (r) {
+		let e = t * 30 + Math.max(0, t - 1) * 4, r = 6 + (n ? a + 6 : 0) + e + 6, s = -r / 2 + 6;
+		for (let e = 0; e < n; e++) o.extra.push({
+			x: s + i + e * 16,
+			y: 0,
+			r: i
+		});
+		s += n ? a + 6 : 0;
+		for (let e = 0; e < t; e++) o.nav.push({
+			x: s + 15 + e * 34,
+			y: 0,
+			w: 30,
+			h: 18
+		});
+		return o.lcd = null, o.led = null, Object.assign(o, {
+			W: r,
+			H: 30,
+			r: 7
+		});
+	}
 	if (!e) {
-		let e = t * 24 + Math.max(0, t - 1) * 4, o = 134 + e + (n ? 13 + i : 0) + 13, s = -o / 2 + 13;
-		a.lcd = {
+		let e = t * 24 + Math.max(0, t - 1) * 4, r = 134 + e + (n ? 13 + a : 0) + 13, s = -r / 2 + 13;
+		o.lcd = {
 			x: s + 54,
 			y: 0,
 			w: 108,
 			h: 30
 		}, s += 121;
-		for (let e = 0; e < t; e++) a.nav.push({
+		for (let e = 0; e < t; e++) o.nav.push({
 			x: s + 12 + e * 28,
 			y: 0,
 			w: 24,
 			h: 22
 		});
 		s += e + 13;
-		for (let e = 0; e < n; e++) a.extra.push({
-			x: s + r + e * 16,
+		for (let e = 0; e < n; e++) o.extra.push({
+			x: s + i + e * 16,
 			y: 0,
-			r
+			r: i
 		});
-		return a.led = {
-			x: o / 2 - 12,
+		return o.led = {
+			x: r / 2 - 12,
 			y: 18.5
-		}, Object.assign(a, {
-			W: o,
+		}, Object.assign(o, {
+			W: r,
 			H: 52,
 			r: 7
 		});
 	}
-	let o = Math.max(89 + (n ? 6 + i : 0) + 11, 132), s = (o - 22 - Math.max(0, t - 1) * 4) / Math.max(1, t), c = o - 22 - (n ? 6 + i : 0);
-	a.lcd = {
-		x: -o / 2 + 11 + c / 2,
+	let s = Math.max(89 + (n ? 6 + a : 0) + 11, 132), c = (s - 22 - Math.max(0, t - 1) * 4) / Math.max(1, t), l = s - 22 - (n ? 6 + a : 0);
+	o.lcd = {
+		x: -s / 2 + 11 + l / 2,
 		y: 14,
-		w: c,
+		w: l,
 		h: 24
 	};
-	for (let e = 0; e < n; e++) a.extra.push({
-		x: o / 2 - 11 - i + r + e * 16,
+	for (let e = 0; e < n; e++) o.extra.push({
+		x: s / 2 - 11 - a + i + e * 16,
 		y: 14,
-		r
+		r: i
 	});
-	for (let e = 0; e < t; e++) a.nav.push({
-		x: -o / 2 + 11 + s / 2 + e * (s + 4),
+	for (let e = 0; e < t; e++) o.nav.push({
+		x: -s / 2 + 11 + c / 2 + e * (c + 4),
 		y: -16,
-		w: s,
+		w: c,
 		h: 20
 	});
-	return a.led = {
-		x: o / 2 - 10,
+	return o.led = {
+		x: s / 2 - 10,
 		y: 30.5
-	}, Object.assign(a, {
-		W: o,
+	}, Object.assign(o, {
+		W: s,
 		H: 74,
 		r: 7
 	});
@@ -18417,7 +18437,7 @@ var jm = class extends HTMLElement {
 			let t = this._keys?.findIndex((t) => t.el === e.target) ?? -1;
 			t >= 0 && this._setHover(t);
 		}), this.addEventListener("focusout", () => this._setHover(-1)), this._onShelf = (e) => {
-			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
+			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-ready" && this._paintLegends(), e.type === "shelf-read" && !!this._shelf?._reading !== this.hasAttribute("compact") && (this.toggleAttribute("compact", !!this._shelf?._reading), this._hover = -1, this._pressed = -1, this._rebuild()), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
 		};
 	}
 	connectedCallback() {
@@ -18513,7 +18533,7 @@ var jm = class extends HTMLElement {
 		}), this._glow = new ys(11985034, 900, 140, 2), t.add(this._glow);
 	}
 	_readKeys() {
-		let e = [...this.children].filter((e) => e.matches("[data-tv], [data-action]")), t = e.filter((e) => e.dataset.tv), n = e.filter((e) => !e.dataset.tv), r = 0;
+		let e = [...this.children].filter((e) => e.matches("[data-tv], [data-action]")), t = e.filter((e) => e.dataset.tv), n = e.filter((e) => !e.dataset.tv && (!this.hasAttribute("compact") || e.dataset.action === "back")), r = 0;
 		return [...t, ...n].map((e) => {
 			let t = e.dataset.tv || null;
 			return {
@@ -18530,36 +18550,45 @@ var jm = class extends HTMLElement {
 		this._body && (this._group.traverse((e) => {
 			e.geometry?.dispose(), e.material?.map && e.material !== this._mat.lcd && (e.material.map.dispose(), e.material.dispose());
 		}), this._group.clear()), this._keys = this._readKeys();
-		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = Em(e, t, n), i = this._group;
+		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = Em(e, t, n, this.hasAttribute("compact")), i = this._group;
 		this._body = new q(Od(r.W, r.H, 12, r.r, 3), this._mat.body), this._body.position.z = -12, i.add(this._body);
 		let a = new q(Dd([Q(Z(r.W + .3, r.H + .3, r.r), -5.4), Q(Z(r.W + .3, r.H + .3, r.r), -5.9)]), this._mat.bezel);
 		i.add(a);
-		let o = r.lcd, s = new q(ud([
-			Dd([Q(Z(o.w + 6, o.h + 6, 5), 0), Q(Z(o.w + 6, o.h + 6, 5), .8)]),
-			$(Z(o.w + 6, o.h + 6, 5), [Z(o.w, o.h, 2.5).reverse()], .8),
-			Dd([Q(Z(o.w, o.h, 2.5), .8), Q(Z(o.w, o.h, 2.5), .05)])
-		]), this._mat.bezel);
-		s.position.set(o.x, o.y, 0), i.add(s);
-		let c = new q(new ho(o.w, o.h), this._mat.lcd);
-		c.position.set(o.x, o.y, .1), i.add(c);
-		let l = Math.round(1024 * o.h / o.w);
-		if (this._lcd.c.height !== l) {
-			this._lcd.t.dispose();
-			let [e, t, n] = Om(1024, l);
-			this._lcd = {
-				c: e,
-				g: t,
-				t: n
-			}, this._mat.lcd.map = n, this._mat.lcd.needsUpdate = !0;
+		let o = r.lcd || {
+			x: 0,
+			y: 0,
+			w: 0,
+			h: 0
+		};
+		if (r.lcd) {
+			let e = new q(ud([
+				Dd([Q(Z(o.w + 6, o.h + 6, 5), 0), Q(Z(o.w + 6, o.h + 6, 5), .8)]),
+				$(Z(o.w + 6, o.h + 6, 5), [Z(o.w, o.h, 2.5).reverse()], .8),
+				Dd([Q(Z(o.w, o.h, 2.5), .8), Q(Z(o.w, o.h, 2.5), .05)])
+			]), this._mat.bezel);
+			e.position.set(o.x, o.y, 0), i.add(e);
+			let t = new q(new ho(o.w, o.h), this._mat.lcd);
+			t.position.set(o.x, o.y, .1), i.add(t);
+			let n = Math.round(1024 * o.h / o.w);
+			if (this._lcd.c.height !== n) {
+				this._lcd.t.dispose();
+				let [e, t, r] = Om(1024, n);
+				this._lcd = {
+					c: e,
+					g: t,
+					t: r
+				}, this._mat.lcd.map = r, this._mat.lcd.needsUpdate = !0;
+			}
 		}
-		this._glow.position.set(o.x, o.y * Math.cos(Cm), 24);
-		let u = new q(Dm(1.3, .8, .3), this._mat.led);
-		u.position.set(r.led.x, r.led.y, 0), i.add(u), this._ledMesh = u;
-		let d = 0, f = 0;
+		if (this._glow.position.set(o.x, o.y * Math.cos(Cm), 24), this._glow.visible = !!r.lcd, r.led) {
+			let e = new q(Dm(1.3, .8, .3), this._mat.led);
+			e.position.set(r.led.x, r.led.y, 0), i.add(e), this._ledMesh = e;
+		}
+		let s = 0, c = 0;
 		for (let e of this._keys) {
-			let t = e.tv ? r.nav[d++] : r.extra[f++], n = new Ln();
+			let t = e.tv ? r.nav[s++] : r.extra[c++], n = new Ln();
 			n.position.set(t.x, t.y, 0);
-			let a = 4.5, o = new q(e.tv ? Od(t.w, t.h, a, 4, 1.6) : Dm(t.r, a, 1.4), this._mat.key), s = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : $(Ed(t.r + 1.2, 0, 0, 40), [Ed(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), c = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, l = e.tv ? t.h - 3.2 : c, [u, p, m] = Om(Math.round(c * 16), Math.round(l * 16)), h = new q(new ho(c, l), new J({
+			let a = 4.5, o = new q(e.tv ? Od(t.w, t.h, a, 4, 1.6) : Dm(t.r, a, 1.4), this._mat.key), l = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : $(Ed(t.r + 1.2, 0, 0, 40), [Ed(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), u = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, d = e.tv ? t.h - 3.2 : u, [f, p, m] = Om(Math.round(u * 16), Math.round(d * 16)), h = new q(new ho(u, d), new J({
 				map: m,
 				transparent: !0,
 				roughness: .8,
@@ -18570,13 +18599,13 @@ var jm = class extends HTMLElement {
 			}));
 			h.position.z = 4.55;
 			let g = new Ln();
-			g.add(o, h), n.add(s, g), i.add(n), Object.assign(e, {
+			g.add(o, h), n.add(l, g), i.add(n), Object.assign(e, {
 				top: g,
 				cap: o,
-				w: c,
-				h: l,
+				w: u,
+				h: d,
 				legend: {
-					c: u,
+					c: f,
 					g: p,
 					t: m,
 					mat: h.material
@@ -18597,7 +18626,7 @@ var jm = class extends HTMLElement {
 		this._renderer.setSize(e, t, !1);
 		let r = this._camera;
 		r.aspect = e / t;
-		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = Math.min(e - 24, 780), o = n.H * Math.cos(Cm) + 16 * Math.abs(Math.sin(Cm)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
+		let i = Math.tan(Rt.degToRad(r.fov / 2)), a = this.hasAttribute("compact") ? Math.min(e - 32, 460) : Math.min(e - 24, 780), o = n.H * Math.cos(Cm) + 16 * Math.abs(Math.sin(Cm)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
 		r.position.set(0, 0, s), r.lookAt(0, 0, 0), r.updateProjectionMatrix(), r.updateMatrixWorld(), this._group.updateMatrixWorld(!0);
 		let c = new or().setFromObject(this._group), l = [];
 		for (let e of [c.min.x, c.max.x]) for (let t of [c.min.y, c.max.y]) for (let n of [c.min.z, c.max.z]) l.push(new U(e, t, n).project(r));

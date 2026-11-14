@@ -33,15 +33,29 @@ const COARSE = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)
 const STYLE = /* css */ `
 :host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }
 :host([narrow]) { height: 176px; }
+/* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */
+:host([compact]) { height: 80px; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }
 .pad { position: absolute; pointer-events: auto; touch-action: manipulation; }
 .keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 `;
 
 /** Where each part goes, for a given number of TV keys and extra keys. */
-function layout(narrow, nNav, nExtra) {
+function layout(narrow, nNav, nExtra, compact = false) {
   const R = 6.5, eg = 3, extraW = nExtra ? nExtra * R * 2 + (nExtra - 1) * eg : 0;
   const parts = { nav: [], extra: [] };
+  if (compact) {
+    // one row: the round Back key, then the TV keys
+    const m = 6, kw = 30, kh = 18, kg = 4, gap = 6, H = kh + 2 * m;
+    const navW = nNav * kw + Math.max(0, nNav - 1) * kg;
+    const W = m + (nExtra ? extraW + gap : 0) + navW + m;
+    let x = -W / 2 + m;
+    for (let i = 0; i < nExtra; i++) parts.extra.push({ x: x + R + i * (2 * R + eg), y: 0, r: R });
+    x += nExtra ? extraW + gap : 0;
+    for (let i = 0; i < nNav; i++) parts.nav.push({ x: x + kw / 2 + i * (kw + kg), y: 0, w: kw, h: kh });
+    parts.lcd = null; parts.led = null;
+    return Object.assign(parts, { W, H, r: 7 });
+  }
   if (!narrow) {
     const m = 13, lcdW = 108, kw = 24, kh = 22, kg = 4, H = 52;
     const navW = nNav * kw + Math.max(0, nNav - 1) * kg;
@@ -143,6 +157,11 @@ export class RetroPagerElement extends HTMLElement {
     this._onShelf = (e) => {
       if (e.type === 'pvm-input') { (this._channels ||= {})[e.detail.tv] = e.detail.input; }
       if (e.type === 'shelf-ready') this._paintLegends();
+      if (e.type === 'shelf-read' && !!this._shelf?._reading !== this.hasAttribute('compact')) {
+        this.toggleAttribute('compact', !!this._shelf?._reading);
+        this._hover = -1; this._pressed = -1;
+        this._rebuild();
+      }
       if (e.type === 'shelf-focus' || e.type === 'shelf-read') { this._note = null; this._layoutKeys(); this._paintLegends(); }
       this._draw();
     };
@@ -237,7 +256,8 @@ export class RetroPagerElement extends HTMLElement {
 
   _readKeys() {
     const kids = [...this.children].filter((el) => el.matches('[data-tv], [data-action]'));
-    const nav = kids.filter((el) => el.dataset.tv), extra = kids.filter((el) => !el.dataset.tv);
+    // compact keeps only the TV keys and Back
+    const nav = kids.filter((el) => el.dataset.tv), extra = kids.filter((el) => !el.dataset.tv && (!this.hasAttribute('compact') || el.dataset.action === 'back'));
     let n = 0;
     return [...nav, ...extra].map((el) => {
       const tv = el.dataset.tv || null;
@@ -258,7 +278,7 @@ export class RetroPagerElement extends HTMLElement {
     this._keys = this._readKeys();
     const narrow = this.hasAttribute('narrow');
     const nNav = this._keys.filter((k) => k.tv).length, nExtra = this._keys.length - nNav;
-    const L = (this._L = layout(narrow, nNav, nExtra));
+    const L = (this._L = layout(narrow, nNav, nExtra, this.hasAttribute('compact')));
     const D = 12, g = this._group;
 
     this._body = new THREE.Mesh(rbox(L.W, L.H, D, L.r, 3), this._mat.body);
@@ -268,8 +288,9 @@ export class RetroPagerElement extends HTMLElement {
     const seam = new THREE.Mesh(loft([ring(rr(L.W + 0.3, L.H + 0.3, L.r), -D * 0.45), ring(rr(L.W + 0.3, L.H + 0.3, L.r), -D * 0.45 - 0.5)]), this._mat.bezel);
     g.add(seam);
 
-    // LCD in a black bezel
-    const s = L.lcd, b = 3;
+    // LCD in a black bezel (none in the compact row)
+    const s = L.lcd || { x: 0, y: 0, w: 0, h: 0 }, b = 3;
+    if (L.lcd) {
     const bezel = new THREE.Mesh(mergeGeometries([
       loft([ring(rr(s.w + 2 * b, s.h + 2 * b, 5), 0), ring(rr(s.w + 2 * b, s.h + 2 * b, 5), 0.8)]),
       plate(rr(s.w + 2 * b, s.h + 2 * b, 5), [rr(s.w, s.h, 2.5).reverse()], 0.8),
@@ -289,13 +310,17 @@ export class RetroPagerElement extends HTMLElement {
       this._mat.lcd.map = t;
       this._mat.lcd.needsUpdate = true;
     }
+    }
     this._glow.position.set(s.x, s.y * Math.cos(TILT), 24);
+    this._glow.visible = !!L.lcd;
 
     // LED, top right
-    const led = new THREE.Mesh(roundKey(1.3, 0.8, 0.3), this._mat.led);
-    led.position.set(L.led.x, L.led.y, 0);
-    g.add(led);
-    this._ledMesh = led;
+    if (L.led) {
+      const led = new THREE.Mesh(roundKey(1.3, 0.8, 0.3), this._mat.led);
+      led.position.set(L.led.x, L.led.y, 0);
+      g.add(led);
+      this._ledMesh = led;
+    }
 
     // keys
     let ni = 0, ei = 0;
@@ -345,7 +370,7 @@ export class RetroPagerElement extends HTMLElement {
     const cam = this._camera;
     cam.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
-    const target = Math.min(w - 24, 780);
+    const target = this.hasAttribute('compact') ? Math.min(w - 32, 460) : Math.min(w - 24, 780);
     const tallH = L.H * Math.cos(TILT) + 16 * Math.abs(Math.sin(TILT));
     const d = Math.max((L.W * h) / (2 * target * tan), tallH / (2 * 0.84 * tan));
     cam.position.set(0, 0, d);
