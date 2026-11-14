@@ -21813,31 +21813,73 @@ var Ug = 9306010, Wg = [
 	"angry",
 	"dizzy"
 ], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n";
-function Kg(e) {
-	let t = e.getAttribute("position");
-	if (!t || t.count < 8) return null;
-	let n = new H(), r = new H(Infinity, Infinity, Infinity), i = r.clone().negate();
-	for (let e = 0; e < t.count; e++) n.fromBufferAttribute(t, e), r.min(n), i.max(n);
-	let a = i.clone().sub(r), [o, s, c] = [
+function Kg(e, t) {
+	let n = new H(), r = (e) => {
+		let t = new H(Infinity, Infinity, Infinity), r = t.clone().negate();
+		for (let i = 0; i < e.count; i++) n.fromBufferAttribute(e, i), t.min(n), r.max(n);
+		return [t, r];
+	}, i = t.getAttribute("position"), a = e.getAttribute("position");
+	if (!i || !a) return null;
+	let [o, s] = r(i), c = s.clone().sub(o), [l, u, d] = [
 		0,
 		1,
 		2
-	].sort((e, t) => a.getComponent(t) - a.getComponent(e)), l = (r.getComponent(o) + i.getComponent(o)) / 2, u = (r.getComponent(c) + i.getComponent(c)) / 2, d = [[], []];
-	for (let e = 0; e < t.count; e++) n.fromBufferAttribute(t, e), d[n.getComponent(o) < l ? 0 : 1].push(n.clone());
-	let f = [];
-	for (let e of d) {
-		if (!e.length) return null;
-		let t = e.reduce((e, t) => e.min(t), e[0].clone()), n = e.reduce((e, t) => e.max(t), e[0].clone()), r = t.clone().add(n).multiplyScalar(.5), i = Math.min(n.getComponent(o) - t.getComponent(o), n.getComponent(s) - t.getComponent(s)) * .5, a = i * .11, l = (e, t) => {
-			let n = e * 1.75 * Math.PI * 2, a = i * (.08 + .92 * e), l = Math.cos(n), d = Math.sin(n), f = new H();
-			return f.setComponent(o, r.getComponent(o) + l * (a + t)), f.setComponent(s, r.getComponent(s) + d * (a + t)), f.setComponent(c, u), f;
+	].sort((e, t) => c.getComponent(t) - c.getComponent(e)), f = (o.getComponent(l) + s.getComponent(l)) / 2, p = (() => {
+		let [e, t] = r(a);
+		return (e.getComponent(d) + t.getComponent(d)) / 2;
+	})(), m = [];
+	for (let e of [-1, 1]) {
+		let t = new H(Infinity, Infinity, Infinity), r = t.clone().negate();
+		for (let a = 0; a < i.count; a++) n.fromBufferAttribute(i, a), (n.getComponent(l) - f) * e > 0 && (t.min(n), r.max(n));
+		if (!(r.getComponent(l) > t.getComponent(l))) return null;
+		let a = (t.getComponent(l) + r.getComponent(l)) / 2, o = (t.getComponent(u) + r.getComponent(u)) / 2, s = (r.getComponent(l) - t.getComponent(l)) / 2, c = s * 2 * .09 / .44, h = s / c, g = [
+			[
+				-h,
+				h - 1,
+				h,
+				h
+			],
+			[
+				h - 1,
+				-h,
+				h,
+				h - 1
+			],
+			[
+				-h,
+				-h,
+				h - 1,
+				-h + 1
+			],
+			[
+				-h,
+				-h + 1,
+				-h + 1,
+				h - 2
+			],
+			[
+				-h + 1,
+				h - 3,
+				h - 2,
+				h - 2
+			],
+			[
+				h - 3,
+				-h + 2,
+				h - 2,
+				h - 3
+			]
+		], _ = (t, n) => {
+			let r = new H();
+			return r.setComponent(l, a + t * c * -e), r.setComponent(u, o + n * c), r.setComponent(d, p), r;
 		};
-		for (let e = 0; e < 90; e++) {
-			let t = e / 90, n = (e + 1) / 90, r = l(t, -a / 2), i = l(t, a / 2), o = l(n, -a / 2), s = l(n, a / 2);
-			f.push(r, i, s, r, s, o);
+		for (let [e, t, n, r] of g) {
+			let i = _(e, t), a = _(n, t), o = _(n, r), s = _(e, r);
+			m.push(i, a, o, i, o, s);
 		}
 	}
-	let p = new Wr().setFromPoints(f);
-	return p.computeVertexNormals(), p;
+	let h = new Wr().setFromPoints(m);
+	return h.computeVertexNormals(), h;
 }
 var qg = class extends HTMLElement {
 	static get observedAttributes() {
@@ -21903,10 +21945,11 @@ var qg = class extends HTMLElement {
 					e.material = t === "holo_eye" ? this._mats.eye : t === "holo_screen" ? this._mats.screen : this._mats.fill;
 				}
 			});
+			let r = t.getObjectByName("eyes_neutral");
 			for (let e of ["eyes_dizzy", "clip_eyes_dizzy"]) {
 				let n = t.getObjectByName(e);
-				if (n?.isMesh) {
-					let e = Kg(n.geometry);
+				if (n?.isMesh && r?.isMesh) {
+					let e = Kg(n.geometry, r.geometry);
 					e && (n.geometry.dispose(), n.geometry = e);
 				}
 			}
@@ -21915,8 +21958,8 @@ var qg = class extends HTMLElement {
 			this._mixer.addEventListener("finished", (e) => {
 				Wg.includes(e.action.getClip().name) && this.play(this._talking ? "talk" : "idle");
 			}), this.face("neutral"), this._current = this._actions.idle?.play();
-			let r = new fr().setFromObject(t);
-			this._size = r.getSize(new H()), this._center = r.getCenter(new H()), this._resize(), this._wake(), this.dispatchEvent(new CustomEvent("giant-ready"));
+			let i = new fr().setFromObject(t);
+			this._size = i.getSize(new H()), this._center = i.getCenter(new H()), this._resize(), this._wake(), this.dispatchEvent(new CustomEvent("giant-ready"));
 		}).catch((t) => {
 			console.warn("retro-giant: could not load", e, t), this._error = String(t?.message || t), this._loaded = null;
 		}), this._loaded) : Promise.resolve();

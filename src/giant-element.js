@@ -18,39 +18,41 @@ const STYLE = /* css */ `
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 `;
 
-/** Two thin Archimedean spirals, one in place of each eye in `geo` (the original dizzy eyes), flat in the
- *  same plane. Returns null if the shape is not what was expected. */
-function spiralEyes(geo) {
-  const pos = geo.getAttribute('position');
-  if (!pos || pos.count < 8) return null;
-  const v = new THREE.Vector3(), min = new THREE.Vector3(Infinity, Infinity, Infinity), max = min.clone().negate();
-  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); min.min(v); max.max(v); }
-  const span = max.clone().sub(min), axes = [0, 1, 2].sort((a, b) => span.getComponent(b) - span.getComponent(a));
-  const [ax, ay, az] = axes;                                          // the two eyes sit side by side along ax
-  const mid = (min.getComponent(ax) + max.getComponent(ax)) / 2, depth = (min.getComponent(az) + max.getComponent(az)) / 2;
-  const eyes = [[], []];
-  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); eyes[v.getComponent(ax) < mid ? 0 : 1].push(v.clone()); }
+/** Two square spirals, one in place of each eye in `geo` (the original dizzy eyes), flat in the same plane,
+ *  built like the other faces: bars as thick as the open eyes' stroke, inside the open eye's box (`neutral`).
+ *  Returns null if the shapes are not what was expected. */
+function spiralEyes(geo, neutral) {
+  const v = new THREE.Vector3();
+  const box = (attr) => { const lo = new THREE.Vector3(Infinity, Infinity, Infinity), hi = lo.clone().negate();
+    for (let i = 0; i < attr.count; i++) { v.fromBufferAttribute(attr, i); lo.min(v); hi.max(v); } return [lo, hi]; };
+  const np = neutral.getAttribute('position'), dp = geo.getAttribute('position');
+  if (!np || !dp) return null;
+  const [lo, hi] = box(np), span = hi.clone().sub(lo);
+  const [ax, ay, az] = [0, 1, 2].sort((a, b) => span.getComponent(b) - span.getComponent(a));   // eyes side by side along ax
+  const mid = (lo.getComponent(ax) + hi.getComponent(ax)) / 2;
+  const depth = (() => { const [l, h] = box(dp); return (l.getComponent(az) + h.getComponent(az)) / 2; })();
   const out = [];
-  const TURNS = 1.75, N = 90;
-  for (const pts of eyes) {
-    if (!pts.length) return null;
-    const lo = pts.reduce((a, p) => a.min(p), pts[0].clone()), hi = pts.reduce((a, p) => a.max(p), pts[0].clone());
-    const c = lo.clone().add(hi).multiplyScalar(0.5);
-    const R = Math.min(hi.getComponent(ax) - lo.getComponent(ax), hi.getComponent(ay) - lo.getComponent(ay)) * 0.5;
-    const w = R * 0.11;
-    const at = (t, off) => {                                          // point on the spiral, pushed sideways by off
-      const ang = t * TURNS * Math.PI * 2, r = R * (0.08 + 0.92 * t);
-      const nx = Math.cos(ang), ny = Math.sin(ang);
-      const p = new THREE.Vector3();
-      p.setComponent(ax, c.getComponent(ax) + nx * (r + off));
-      p.setComponent(ay, c.getComponent(ay) + ny * (r + off));
-      p.setComponent(az, depth);
-      return p;
-    };
-    for (let i = 0; i < N; i++) {
-      const t0 = i / N, t1 = (i + 1) / N;
-      const a = at(t0, -w / 2), b = at(t0, w / 2), d = at(t1, -w / 2), e = at(t1, w / 2);
-      out.push(a, b, e, a, e, d);
+  for (const side of [-1, 1]) {
+    // this open eye's box: its centre and size; the stroke is 0.09 / 0.44 of the size (build_giant.py: ET, ES)
+    const l = new THREE.Vector3(Infinity, Infinity, Infinity), h = l.clone().negate();
+    for (let i = 0; i < np.count; i++) { v.fromBufferAttribute(np, i); if ((v.getComponent(ax) - mid) * side > 0) { l.min(v); h.max(v); } }
+    if (!(h.getComponent(ax) > l.getComponent(ax))) return null;
+    const cx = (l.getComponent(ax) + h.getComponent(ax)) / 2, cy = (l.getComponent(ay) + h.getComponent(ay)) / 2;
+    const half = (h.getComponent(ax) - l.getComponent(ax)) / 2, t = half * 2 * 0.09 / 0.44;
+    // in strokes from the box's top-left: the outer square, then a turn inwards (mirrored on the left eye)
+    const k = half / t;                                                 // half the box, in strokes
+    const bars = [
+      [-k, k - 1, k, k],                                                // top
+      [k - 1, -k, k, k - 1],                                            // right
+      [-k, -k, k - 1, -k + 1],                                          // bottom
+      [-k, -k + 1, -k + 1, k - 2],                                      // left, stopping a stroke under the top
+      [-k + 1, k - 3, k - 2, k - 2],                                    // inner top
+      [k - 3, -k + 2, k - 2, k - 3],                                    // inner right, down into the middle
+    ];
+    const pt = (x, y) => { const p = new THREE.Vector3(); p.setComponent(ax, cx + x * t * -side); p.setComponent(ay, cy + y * t); p.setComponent(az, depth); return p; };
+    for (const [x0, y0, x1, y1] of bars) {
+      const a = pt(x0, y0), b = pt(x1, y0), c = pt(x1, y1), d = pt(x0, y1);
+      out.push(a, b, c, a, c, d);
     }
   }
   const g = new THREE.BufferGeometry().setFromPoints(out);
@@ -114,9 +116,10 @@ export class RetroGiantElement extends HTMLElement {
       });
       // the dizzy eyes in the file are short bars round a tight spiral, which merge into a white blob at the
       // size the site shows him: draw each as one thin spiral line instead, in the same place
+      const neutral = giant.getObjectByName('eyes_neutral');
       for (const name of ['eyes_dizzy', 'clip_eyes_dizzy']) {
         const m = giant.getObjectByName(name);
-        if (m?.isMesh) { const g = spiralEyes(m.geometry); if (g) { m.geometry.dispose(); m.geometry = g; } }
+        if (m?.isMesh && neutral?.isMesh) { const g = spiralEyes(m.geometry, neutral.geometry); if (g) { m.geometry.dispose(); m.geometry = g; } }
       }
       this._giant = giant;
       this._eyes = giant.getObjectByName('Eyes');
