@@ -21931,6 +21931,12 @@ var Ug = 9306010, Wg = [
 			gpu: e && e.getParameter(e.getExtension("WEBGL_debug_renderer_info")?.UNMASKED_RENDERER_WEBGL ?? e.RENDERER) || ""
 		};
 	}
+	turn(e) {
+		this._turn = (this._turn || 0) + e, this._spinV = 0, this._wake();
+	}
+	dizzy(e = 0) {
+		this._spinV = e, this._dizzyT = performance.now(), this.face("surprised"), this._wake();
+	}
 	face(e) {
 		if (this._eyes) {
 			for (let t of this._eyes.children) t.visible = t.name === `eyes_${e}`;
@@ -21956,10 +21962,13 @@ var Ug = 9306010, Wg = [
 		if (this._raf = 0, !this._renderer || !this._visible || !this.isConnected || this._lost && (this._init(), !this._renderer)) return;
 		let t = Math.min(.1, this._clock.getDelta());
 		if (this._mixer && !this._reduced && this._mixer.update(t), this._giant && !this._reduced) {
-			let t = e / 1e3;
-			this._giant.rotation.y = Math.sin(t * .4) * .25;
-			let n = .9 + .1 * Math.sin(t * 29) * Math.sin(t * 7.1) - (Math.random() < .015 ? .3 : 0);
-			this._mats.edge.opacity = .9 * n, this._mats.fill.opacity = .07 * n, this._mats.screen.opacity = .2 * n;
+			let n = e / 1e3;
+			if (this._turn = (this._turn || 0) + (this._spinV || 0) * t, this._spinV = (this._spinV || 0) * .35 ** t, Math.abs(this._spinV) < .4 && (this._spinV = 0), this._giant.rotation.y = Math.sin(n * .4) * .25 + this._turn, this._dizzyT) {
+				let t = (e - this._dizzyT) / 1e3, n = Math.max(0, 1 - t / 3);
+				this._giant.rotation.z = Math.sin(t * 9) * .12 * n, this._giant.rotation.x = Math.cos(t * 7) * .06 * n, n || (this._dizzyT = 0, this._giant.rotation.z = 0, this._giant.rotation.x = 0, this.face("neutral"));
+			}
+			let r = .9 + .1 * Math.sin(n * 29) * Math.sin(n * 7.1) - (Math.random() < .015 ? .3 : 0);
+			this._mats.edge.opacity = .9 * r, this._mats.fill.opacity = .07 * r, this._mats.screen.opacity = .2 * r;
 		}
 		this._renderer.render(this._scene, this._camera), this._frames = (this._frames || 0) + 1, this._reduced || (this._raf = requestAnimationFrame(this._frame));
 	}

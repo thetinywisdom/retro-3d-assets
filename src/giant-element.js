@@ -137,6 +137,17 @@ export class RetroGiantElement extends HTMLElement {
       frames: this._frames || 0, error: this._error || null, gpu: gl ? (gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER) || '') : '' };
   }
 
+  /** Turn him by hand (radians), e.g. while he is dragged. */
+  turn(radians) { this._turn = (this._turn || 0) + radians; this._spinV = 0; this._wake(); }
+
+  /** Let go after a drag: he keeps spinning at `speed` (radians a second), slows down, and wobbles dizzily. */
+  dizzy(speed = 0) {
+    this._spinV = speed;
+    this._dizzyT = performance.now();
+    this.face('surprised');
+    this._wake();
+  }
+
   /** Eye expression: neutral, happy, blink, surprised, sad, thinking, wink, angry. */
   face(name) {
     if (!this._eyes) return;
@@ -183,7 +194,17 @@ export class RetroGiantElement extends HTMLElement {
     if (this._giant && !this._reduced) {
       // a slow sway and a faint hologram flicker
       const t = now / 1000;
-      this._giant.rotation.y = Math.sin(t * 0.4) * 0.25;
+      // spin from a drag, slowing down; then a dizzy wobble that fades out
+      this._turn = (this._turn || 0) + (this._spinV || 0) * dt;
+      this._spinV = (this._spinV || 0) * Math.pow(0.35, dt);
+      if (Math.abs(this._spinV) < 0.4) this._spinV = 0;
+      this._giant.rotation.y = Math.sin(t * 0.4) * 0.25 + this._turn;
+      if (this._dizzyT) {
+        const age = (now - this._dizzyT) / 1000, fade = Math.max(0, 1 - age / 3);
+        this._giant.rotation.z = Math.sin(age * 9) * 0.12 * fade;
+        this._giant.rotation.x = Math.cos(age * 7) * 0.06 * fade;
+        if (!fade) { this._dizzyT = 0; this._giant.rotation.z = 0; this._giant.rotation.x = 0; this.face('neutral'); }
+      }
       const f = 0.9 + 0.1 * Math.sin(t * 29) * Math.sin(t * 7.1) - (Math.random() < 0.015 ? 0.3 : 0);
       this._mats.edge.opacity = 0.9 * f; this._mats.fill.opacity = 0.07 * f; this._mats.screen.opacity = 0.2 * f;
     }
