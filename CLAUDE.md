@@ -26,17 +26,18 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 
 1. `npm run build` and `npm run demo`.
 2. Commit `dist/` too: it is tracked on purpose, because the site copies it.
-3. Copy `dist/retro-3d.js` to `vendor/retro-3d.js` in the `briandi.to` repository and commit there as well. The site does not update until you do.
+3. Copy `dist/retro-3d.js` (and `dist/giant.glb` when Giant changes) to `vendor/` in the `briandi.to` repository and commit there as well. The site does not update until you do.
 
 ## Layout
 
 | Path | What it is |
 | --- | --- |
-| `src/index.js` | Entry: registers `<sony-pvm>`, `<retro-shelf>`, `<retro-pager>` and `<retro-map>`, re-exports builders |
+| `src/index.js` | Entry: registers `<sony-pvm>`, `<retro-shelf>`, `<retro-pager>`, `<retro-map>` and `<retro-giant>`, re-exports builders |
 | `src/element.js` | `<sony-pvm>`: one CRT with its own canvas, orbit camera, controls, power, picture effects. Also runs "hosted" inside another scene (`_attachHost`, `_tick`) |
 | `src/shelf-element.js` | `<retro-shelf>`: the scene the site uses. Owns the renderer and camera, hosts the four CRTs, builds the shelf or floor scene, lighting, smoke, grain, focus and the full-screen reader |
 | `src/pager-element.js` | `<retro-pager>`: the site's navigation dock, a 3D pager with its own canvas. Keys come from its child buttons; it drives a `<retro-shelf>` through its methods and events |
 | `src/map-element.js` | `<retro-map>`: a green hologram of the TV stack with its own canvas, copied as plain boxes from the shelf's sets. Shown while the camera is in on a set; lights that set and has keys for the set above and below |
+| `src/giant-element.js` | `<retro-giant src="giant.glb">`: Giant, the hologram robot from `characters/giant`, on its own canvas in the `<retro-map>` green. Loads the GLB when first shown; `face()`, `play()`, `say(mood)`, `talk(on)` |
 | `src/models/*.js` | One file per CRT. Each exports `META` (id, size, inputs, controls) and `buildMonitor()`; registered in `src/models/index.js` |
 | `src/kit.js` | Shared geometry helpers (`rr`, `loft`, `plate`, `rbox`) and the `Kit` builder (materials, buttons, knobs, sliders, decals, the CRT glass) |
 | `src/crt.js` | Glass shader. Draws the tube look and leaves a transparent window for the HTML underneath |

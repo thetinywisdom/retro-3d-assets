@@ -81,6 +81,14 @@ Other attributes: `for` (id of the `<retro-shelf>`; the first one on the page if
 
 While a page is open full screen, the pager turns compact by itself (it sets its own `compact` attribute): one slim row with the Back key and the TV keys, no screen, Sound or Info key. It goes back to the full pager when the page closes.
 
+## `<retro-giant>`
+
+```html
+<retro-giant src="giant.glb"></retro-giant>
+```
+
+Giant, the TV-headed hologram robot (`characters/giant`, file `dist/giant.glb`), drawn on its own transparent canvas in additive green with scanlines, a slow sway and a faint flicker. The model loads the first time the element is on screen; `ready` is a promise for it. Methods: `face(name)` (eye expression: `neutral`, `happy`, `blink`, `surprised`, `sad`, `thinking`, `wink`, `angry`), `play(clip)` (`idle`, `talk`, `yes`, `no`, `thinking`, and the reactions), `say(mood)` (a reaction with its face kept), `talk(on)` (talking while words appear). It draws only while on screen; with reduced motion it stands still.
+
 ## `<sony-pvm>`
 
 Four Sony CRTs as one element. The picture on the tube is your own HTML, and the controls work.
