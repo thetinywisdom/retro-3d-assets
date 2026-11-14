@@ -28,7 +28,7 @@ export class RetroGiantElement extends HTMLElement {
     this._canvas = root.querySelector('canvas');
     this._reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this._frame = (now) => this._render(now);
-    this._clock = new THREE.Clock();
+    this._clock = new THREE.Clock();   // (THREE.Timer in newer three)
   }
 
   connectedCallback() {
@@ -93,12 +93,25 @@ export class RetroGiantElement extends HTMLElement {
   }
 
   _init() {
-    if (this._renderer) return;
+    if (this._renderer && !this._lost) return;
+    // a phone can drop a page's drawing surfaces (it allows only so many): when that happens to this one,
+    // start again on a fresh canvas the next time it is shown; the model and its materials carry over
+    if (this._renderer) {
+      this._renderer.dispose();
+      const fresh = document.createElement('canvas');
+      fresh.setAttribute('aria-hidden', 'true');
+      this._canvas.replaceWith(fresh);
+      this._canvas = fresh;
+      this._renderer = null;
+    }
+    this._lost = false;
+    this._canvas.addEventListener('webglcontextlost', () => { this._lost = true; }, { once: true });
     try { this._renderer = new THREE.WebGLRenderer({ canvas: this._canvas, antialias: true, alpha: true, premultipliedAlpha: true }); } catch { return; }
     this._renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
     this._renderer.setClearColor(0x000000, 0);
-    this._scene = new THREE.Scene();
-    this._camera = new THREE.PerspectiveCamera(24, 1, 0.05, 50);
+    this._scene ||= new THREE.Scene();
+    this._camera ||= new THREE.PerspectiveCamera(24, 1, 0.05, 50);
+    this._resize();
   }
 
   _resize() {
@@ -148,12 +161,15 @@ export class RetroGiantElement extends HTMLElement {
   }
 
   _wake() {
+    if (this._renderer && this._renderer.getContext().isContextLost()) this._lost = true;
+    if (this._lost) this._init();
     if (!this._raf && this._renderer) this._raf = requestAnimationFrame(this._frame);
   }
 
   _render(now) {
     this._raf = 0;
     if (!this._renderer || !this._visible || !this.isConnected) return;
+    if (this._lost) { this._init(); if (!this._renderer) return; }
     const dt = Math.min(0.1, this._clock.getDelta());
     if (this._mixer && !this._reduced) this._mixer.update(dt);
     if (this._giant && !this._reduced) {

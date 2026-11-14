@@ -21885,7 +21885,15 @@ var Ug = 9306010, Wg = [
 		}), this._loaded) : Promise.resolve();
 	}
 	_init() {
-		if (!this._renderer) {
+		if (!this._renderer || this._lost) {
+			if (this._renderer) {
+				this._renderer.dispose();
+				let e = document.createElement("canvas");
+				e.setAttribute("aria-hidden", "true"), this._canvas.replaceWith(e), this._canvas = e, this._renderer = null;
+			}
+			this._lost = !1, this._canvas.addEventListener("webglcontextlost", () => {
+				this._lost = !0;
+			}, { once: !0 });
 			try {
 				this._renderer = new nf({
 					canvas: this._canvas,
@@ -21896,7 +21904,7 @@ var Ug = 9306010, Wg = [
 			} catch {
 				return;
 			}
-			this._renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)), this._renderer.setClearColor(0, 0), this._scene = new Zn(), this._camera = new lc(24, 1, .05, 50);
+			this._renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)), this._renderer.setClearColor(0, 0), this._scene || (this._scene = new Zn()), this._camera || (this._camera = new lc(24, 1, .05, 50)), this._resize();
 		}
 	}
 	_resize() {
@@ -21927,10 +21935,10 @@ var Ug = 9306010, Wg = [
 		e && (t === "idle" || t === "thinking") && this.play("talk"), !e && t === "talk" && this.play("idle");
 	}
 	_wake() {
-		!this._raf && this._renderer && (this._raf = requestAnimationFrame(this._frame));
+		this._renderer && this._renderer.getContext().isContextLost() && (this._lost = !0), this._lost && this._init(), !this._raf && this._renderer && (this._raf = requestAnimationFrame(this._frame));
 	}
 	_render(e) {
-		if (this._raf = 0, !this._renderer || !this._visible || !this.isConnected) return;
+		if (this._raf = 0, !this._renderer || !this._visible || !this.isConnected || this._lost && (this._init(), !this._renderer)) return;
 		let t = Math.min(.1, this._clock.getDelta());
 		if (this._mixer && !this._reduced && this._mixer.update(t), this._giant && !this._reduced) {
 			let t = e / 1e3;
