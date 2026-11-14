@@ -21881,7 +21881,7 @@ var Ug = 9306010, Wg = [
 			let r = new fr().setFromObject(t);
 			this._size = r.getSize(new H()), this._center = r.getCenter(new H()), this._resize(), this._wake(), this.dispatchEvent(new CustomEvent("giant-ready"));
 		}).catch((t) => {
-			console.warn("retro-giant: could not load", e, t), this._loaded = null;
+			console.warn("retro-giant: could not load", e, t), this._error = String(t?.message || t), this._loaded = null;
 		}), this._loaded) : Promise.resolve();
 	}
 	_init() {
@@ -21895,7 +21895,7 @@ var Ug = 9306010, Wg = [
 				this._lost = !0;
 			}, { once: !0 });
 			try {
-				this._renderer = new nf({
+				this._error = null, this._renderer = new nf({
 					canvas: this._canvas,
 					antialias: !0,
 					alpha: !0,
@@ -21915,6 +21915,21 @@ var Ug = 9306010, Wg = [
 			this._camera.position.set(n.x, n.y + this._size.y * .12, n.z + t), this._camera.lookAt(n.x, n.y, n.z);
 		}
 		this._camera.updateProjectionMatrix();
+	}
+	get status() {
+		let e = this._renderer?.getContext();
+		return {
+			renderer: !!this._renderer,
+			lost: !!(this._lost || e?.isContextLost()),
+			model: !!this._giant,
+			visible: !!this._visible,
+			canvas: `${this._canvas.width}x${this._canvas.height}`,
+			box: `${this.clientWidth}x${this.clientHeight}`,
+			reduced: this._reduced,
+			frames: this._frames || 0,
+			error: this._error || null,
+			gpu: e && e.getParameter(e.getExtension("WEBGL_debug_renderer_info")?.UNMASKED_RENDERER_WEBGL ?? e.RENDERER) || ""
+		};
 	}
 	face(e) {
 		if (this._eyes) {
@@ -21946,7 +21961,7 @@ var Ug = 9306010, Wg = [
 			let n = .9 + .1 * Math.sin(t * 29) * Math.sin(t * 7.1) - (Math.random() < .015 ? .3 : 0);
 			this._mats.edge.opacity = .9 * n, this._mats.fill.opacity = .07 * n, this._mats.screen.opacity = .2 * n;
 		}
-		this._renderer.render(this._scene, this._camera), this._reduced || (this._raf = requestAnimationFrame(this._frame));
+		this._renderer.render(this._scene, this._camera), this._frames = (this._frames || 0) + 1, this._reduced || (this._raf = requestAnimationFrame(this._frame));
 	}
 };
 // src/index.js

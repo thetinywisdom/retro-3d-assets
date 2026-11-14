@@ -88,7 +88,7 @@ export class RetroGiantElement extends HTMLElement {
       this._resize();
       this._wake();
       this.dispatchEvent(new CustomEvent('giant-ready'));
-    }).catch((err) => { console.warn('retro-giant: could not load', src, err); this._loaded = null; });
+    }).catch((err) => { console.warn('retro-giant: could not load', src, err); this._error = String(err?.message || err); this._loaded = null; });
     return this._loaded;
   }
 
@@ -106,7 +106,7 @@ export class RetroGiantElement extends HTMLElement {
     }
     this._lost = false;
     this._canvas.addEventListener('webglcontextlost', () => { this._lost = true; }, { once: true });
-    try { this._renderer = new THREE.WebGLRenderer({ canvas: this._canvas, antialias: true, alpha: true, premultipliedAlpha: true }); } catch { return; }
+    try { this._error = null; this._renderer = new THREE.WebGLRenderer({ canvas: this._canvas, antialias: true, alpha: true, premultipliedAlpha: true }); } catch { return; }
     this._renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
     this._renderer.setClearColor(0x000000, 0);
     this._scene ||= new THREE.Scene();
@@ -127,6 +127,14 @@ export class RetroGiantElement extends HTMLElement {
       this._camera.lookAt(c.x, c.y, c.z);
     }
     this._camera.updateProjectionMatrix();
+  }
+
+  /** What the element is doing, for checking on a device. */
+  get status() {
+    const gl = this._renderer?.getContext();
+    return { renderer: !!this._renderer, lost: !!(this._lost || gl?.isContextLost()), model: !!this._giant, visible: !!this._visible,
+      canvas: `${this._canvas.width}x${this._canvas.height}`, box: `${this.clientWidth}x${this.clientHeight}`, reduced: this._reduced,
+      frames: this._frames || 0, error: this._error || null, gpu: gl ? (gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER) || '') : '' };
   }
 
   /** Eye expression: neutral, happy, blink, surprised, sad, thinking, wink, angry. */
@@ -180,6 +188,7 @@ export class RetroGiantElement extends HTMLElement {
       this._mats.edge.opacity = 0.9 * f; this._mats.fill.opacity = 0.07 * f; this._mats.screen.opacity = 0.2 * f;
     }
     this._renderer.render(this._scene, this._camera);
+    this._frames = (this._frames || 0) + 1;
     if (!this._reduced) this._raf = requestAnimationFrame(this._frame);
   }
 }
