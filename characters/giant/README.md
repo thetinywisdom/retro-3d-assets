@@ -9,10 +9,26 @@ real line geometry. It is about 1.15 m tall, in metres, Y up, facing +Z.
 | Thing | Name(s) |
 |---|---|
 | Clips | `idle` 3.6 s loop · `talk` 2.4 s loop · `yes` 1.5 s · `no` 1.5 s |
-| Expression clips | `happy` 2.0 s · `surprised` 1.8 s · `sad` 2.5 s · `thinking` 3.0 s **loop** · `wink` 1.8 s · `angry` 2.0 s |
-| Eye expressions (meshes under the `Eyes` node) | `eyes_neutral` `eyes_happy` `eyes_blink` `eyes_surprised` `eyes_sad` `eyes_thinking` `eyes_wink` `eyes_angry` |
+| Expression clips | `happy` 2.0 s · `surprised` 1.8 s · `sad` 2.5 s · `thinking` 3.0 s **loop** · `wink` 1.8 s · `angry` 2.0 s · `dizzy` 5.0 s one-shot |
+
+### Clips
+
+| Clip | Duration | Playback | What it does |
+| --- | --- | --- | --- |
+| `idle` | 3.6 s | loop | Standing sway, one blink |
+| `talk` | 2.4 s | loop | Talking body, mouth bar |
+| `yes` | 1.5 s | one-shot | Nod, back to rest |
+| `no` | 1.5 s | one-shot | Head shake, back to rest |
+| `happy` | 2.0 s | one-shot | Bounce, then rest |
+| `surprised` | 1.8 s | one-shot | Startle, then rest |
+| `sad` | 2.5 s | one-shot | Slump, then rest |
+| `thinking` | 3.0 s | held loop | Stays in the thinking pose |
+| `wink` | 1.8 s | one-shot | Shrug and wink, then rest |
+| `angry` | 2.0 s | one-shot | Stomp, then rest |
+| `dizzy` | 5.0 s | one-shot | Swoon, 2.5-turn spin with spiral eyes from frame 21, wobble, then a held fall. `LoopOnce` and `clampWhenFinished`. Play `idle` to stand him back up |
+| Eye expressions (meshes under the `Eyes` node) | `eyes_neutral` `eyes_happy` `eyes_blink` `eyes_surprised` `eyes_sad` `eyes_thinking` `eyes_wink` `eyes_angry` `eyes_dizzy` |
 | Mouth (shown only while `talk` plays) | `mouth` |
-| Clip-driven eyes | `clip_eyes_happy` `clip_eyes_surprised` `clip_eyes_sad` `clip_eyes_thinking` `clip_eyes_wink` `clip_eyes_angry` |
+| Clip-driven eyes | `clip_eyes_happy` `clip_eyes_surprised` `clip_eyes_sad` `clip_eyes_thinking` `clip_eyes_wink` `clip_eyes_angry` `clip_eyes_dizzy` |
 | Rig nodes | `root` `hips` `spine` `chest` `neck` `head` `eyes_ctrl` `eyes_code` `clip_eyes_<name>_ctrl` `mouth_ctrl` `shoulder_L/R` `upper_arm_L/R` `forearm_L/R` `hand_L/R` `thigh_L/R` `shin_L/R` `foot_L/R` |
 | Block fills / edges | `<part>_fill` meshes and `<part>_edges` line segments, `screen`, `floor_ring` |
 
@@ -72,7 +88,7 @@ setExpression('neutral');
 // animation clips, cross-faded by name
 const mixer = new THREE.AnimationMixer(giant);
 const actions = Object.fromEntries(gltf.animations.map(c => [c.name, mixer.clipAction(c)]));
-const ONE_SHOTS = ['yes', 'no', 'happy', 'surprised', 'sad', 'wink', 'angry'];
+const ONE_SHOTS = ['yes', 'no', 'happy', 'surprised', 'sad', 'wink', 'angry', 'dizzy'];
 for (const n of ONE_SHOTS) {               // one-shots: play once, then go back to idle
   actions[n].setLoop(THREE.LoopOnce, 1);
   actions[n].clampWhenFinished = true;
