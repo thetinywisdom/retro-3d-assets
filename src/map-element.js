@@ -172,7 +172,7 @@ export class RetroMapElement extends HTMLElement {
     this._group = new THREE.Group();
     this._scene.add(this._group);
     this._band = new THREE.Mesh(new THREE.PlaneGeometry(520, 12),
-      new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending }));
+      new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending, premultipliedAlpha: true }));
     this._scene.add(this._band);
     this._place();
     this._resize();
@@ -194,7 +194,7 @@ export class RetroMapElement extends HTMLElement {
       u._parent.getWorldPosition(pos); u._parent.getWorldQuaternion(quat);
       const g = new THREE.Group();
       g.position.copy(pos); g.quaternion.copy(quat); g.userData.id = id;
-      const fill = new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+      const fill = new THREE.MeshBasicMaterial({ color: GREEN, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, premultipliedAlpha: true, side: THREE.DoubleSide });
       const edges = new THREE.LineBasicMaterial({ color: GREEN, transparent: true, opacity: 0.45 });
       const screenFill = fill.clone();
       const geo = new THREE.BoxGeometry(size.w, h, size.d);

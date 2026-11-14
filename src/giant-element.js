@@ -16,9 +16,6 @@ const ONE_SHOTS = ['yes', 'no', 'happy', 'surprised', 'sad', 'wink', 'angry'];
 const STYLE = /* css */ `
 :host { display: block; position: relative; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-/* fine scanlines over the hologram */
-:host::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0 1px, transparent 1px 3px); }
 `;
 
 export class RetroGiantElement extends HTMLElement {
@@ -58,7 +55,10 @@ export class RetroGiantElement extends HTMLElement {
     this._init();
     this._loaded = new GLTFLoader().loadAsync(src).then((gltf) => {
       const giant = gltf.scene;
-      const add = { transparent: true, blending: THREE.AdditiveBlending, depthWrite: false };
+      // premultiplied additive light: colour and alpha both add up, so the see-through canvas holds valid
+      // premultiplied pixels and looks the same on every GPU (plain additive light on a see-through canvas
+      // came out invisible on some phones)
+      const add = { transparent: true, blending: THREE.AdditiveBlending, premultipliedAlpha: true, depthWrite: false };
       this._mats = {
         fill: new THREE.MeshBasicMaterial({ color: GREEN, opacity: 0.07, side: THREE.DoubleSide, ...add }),
         screen: new THREE.MeshBasicMaterial({ color: GREEN, opacity: 0.2, ...add }),
@@ -88,13 +88,13 @@ export class RetroGiantElement extends HTMLElement {
       this._resize();
       this._wake();
       this.dispatchEvent(new CustomEvent('giant-ready'));
-    });
+    }).catch((err) => { console.warn('retro-giant: could not load', src, err); this._loaded = null; });
     return this._loaded;
   }
 
   _init() {
     if (this._renderer) return;
-    try { this._renderer = new THREE.WebGLRenderer({ canvas: this._canvas, antialias: true, alpha: true }); } catch { return; }
+    try { this._renderer = new THREE.WebGLRenderer({ canvas: this._canvas, antialias: true, alpha: true, premultipliedAlpha: true }); } catch { return; }
     this._renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
     this._renderer.setClearColor(0x000000, 0);
     this._scene = new THREE.Scene();

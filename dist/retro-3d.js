@@ -20284,7 +20284,8 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 			transparent: !0,
 			opacity: .12,
 			depthWrite: !1,
-			blending: 2
+			blending: 2,
+			premultipliedAlpha: !0
 		})), this._scene.add(this._band), this._place(), this._resize();
 	}
 	_place() {
@@ -20306,6 +20307,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 				opacity: .05,
 				depthWrite: !1,
 				blending: 2,
+				premultipliedAlpha: !0,
 				side: 2
 			}), l = new Xi({
 				color: Ih,
@@ -21809,7 +21811,7 @@ var Ug = 9306010, Wg = [
 	"sad",
 	"wink",
 	"angry"
-], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n/* fine scanlines over the hologram */\n:host::after { content: \"\"; position: absolute; inset: 0; pointer-events: none;\n  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0 1px, transparent 1px 3px); }\n", Kg = class extends HTMLElement {
+], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n", Kg = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["src"];
 	}
@@ -21841,6 +21843,7 @@ var Ug = 9306010, Wg = [
 			let t = e.scene, n = {
 				transparent: !0,
 				blending: 2,
+				premultipliedAlpha: !0,
 				depthWrite: !1
 			};
 			this._mats = {
@@ -21877,6 +21880,8 @@ var Ug = 9306010, Wg = [
 			}), this.face("neutral"), this._current = this._actions.idle?.play();
 			let r = new fr().setFromObject(t);
 			this._size = r.getSize(new H()), this._center = r.getCenter(new H()), this._resize(), this._wake(), this.dispatchEvent(new CustomEvent("giant-ready"));
+		}).catch((t) => {
+			console.warn("retro-giant: could not load", e, t), this._loaded = null;
 		}), this._loaded) : Promise.resolve();
 	}
 	_init() {
@@ -21885,7 +21890,8 @@ var Ug = 9306010, Wg = [
 				this._renderer = new nf({
 					canvas: this._canvas,
 					antialias: !0,
-					alpha: !0
+					alpha: !0,
+					premultipliedAlpha: !0
 				});
 			} catch {
 				return;
