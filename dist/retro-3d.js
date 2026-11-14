@@ -19663,82 +19663,75 @@ var bh = typeof HTMLElement < "u" ? HTMLElement : class {}, xh = class extends b
 	}
 }, Sh = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", Ch = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", wh = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Th = 560, Eh = -.2, Dh = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Oh = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\n/* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */\n:host([compact]) { height: 80px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
 function kh(e, t, n, r = !1) {
-	let i = 6.5, a = n ? n * i * 2 + (n - 1) * 3 : 0, o = {
+	let i = 6.5, a = n.length, o = a ? n.reduce((e, t) => e + t, 0) + (a - 1) * 3 : 0, s = {
 		nav: [],
 		extra: []
+	}, c = (e, t) => {
+		let r = e;
+		for (let e of n) s.extra.push({
+			x: r + e / 2,
+			y: t,
+			r: i,
+			w: e,
+			h: 2 * i
+		}), r += e + 3;
 	};
 	if (r) {
-		let e = t * 30 + Math.max(0, t - 1) * 4, r = 6 + (n ? a + 6 : 0) + e + 6, s = -r / 2 + 6;
-		for (let e = 0; e < n; e++) o.extra.push({
-			x: s + i + e * 16,
-			y: 0,
-			r: i
-		});
-		s += n ? a + 6 : 0;
-		for (let e = 0; e < t; e++) o.nav.push({
-			x: s + 15 + e * 34,
+		let e = t * 30 + Math.max(0, t - 1) * 4, n = 6 + (a ? o + 6 : 0) + e + 6, r = -n / 2 + 6;
+		c(r, 0), r += a ? o + 6 : 0;
+		for (let e = 0; e < t; e++) s.nav.push({
+			x: r + 15 + e * 34,
 			y: 0,
 			w: 30,
 			h: 18
 		});
-		return o.lcd = null, o.led = null, Object.assign(o, {
-			W: r,
+		return s.lcd = null, s.led = null, Object.assign(s, {
+			W: n,
 			H: 30,
 			r: 7
 		});
 	}
 	if (!e) {
-		let e = t * 24 + Math.max(0, t - 1) * 4, r = 134 + e + (n ? 13 + a : 0) + 13, s = -r / 2 + 13;
-		o.lcd = {
-			x: s + 54,
+		let e = t * 24 + Math.max(0, t - 1) * 4, n = 134 + e + (a ? 13 + o : 0) + 13, r = -n / 2 + 13;
+		s.lcd = {
+			x: r + 54,
 			y: 0,
 			w: 108,
 			h: 30
-		}, s += 121;
-		for (let e = 0; e < t; e++) o.nav.push({
-			x: s + 12 + e * 28,
+		}, r += 121;
+		for (let e = 0; e < t; e++) s.nav.push({
+			x: r + 12 + e * 28,
 			y: 0,
 			w: 24,
 			h: 22
 		});
-		s += e + 13;
-		for (let e = 0; e < n; e++) o.extra.push({
-			x: s + i + e * 16,
-			y: 0,
-			r: i
-		});
-		return o.led = {
-			x: r / 2 - 12,
+		return r += e + 13, c(r, 0), s.led = {
+			x: n / 2 - 12,
 			y: 18.5
-		}, Object.assign(o, {
-			W: r,
+		}, Object.assign(s, {
+			W: n,
 			H: 52,
 			r: 7
 		});
 	}
-	let s = Math.max(89 + (n ? 6 + a : 0) + 11, 132), c = (s - 22 - Math.max(0, t - 1) * 4) / Math.max(1, t), l = s - 22 - (n ? 6 + a : 0);
-	o.lcd = {
-		x: -s / 2 + 11 + l / 2,
+	let l = Math.max(89 + (a ? 6 + o : 0) + 11, 132), u = (l - 22 - Math.max(0, t - 1) * 4) / Math.max(1, t), d = l - 22 - (a ? 6 + o : 0);
+	s.lcd = {
+		x: -l / 2 + 11 + d / 2,
 		y: 14,
-		w: l,
+		w: d,
 		h: 24
-	};
-	for (let e = 0; e < n; e++) o.extra.push({
-		x: s / 2 - 11 - a + i + e * 16,
-		y: 14,
-		r: i
-	});
-	for (let e = 0; e < t; e++) o.nav.push({
-		x: -s / 2 + 11 + c / 2 + e * (c + 4),
+	}, c(l / 2 - 11 - o, 14);
+	for (let e = 0; e < t; e++) s.nav.push({
+		x: -l / 2 + 11 + u / 2 + e * (u + 4),
 		y: -16,
-		w: c,
+		w: u,
 		h: 20
 	});
-	return o.led = {
-		x: s / 2 - 10,
+	return s.led = {
+		x: l / 2 - 10,
 		y: 30.5
-	}, Object.assign(o, {
-		W: s,
+	}, Object.assign(s, {
+		W: l,
 		H: 74,
 		r: 7
 	});
@@ -19903,6 +19896,7 @@ var Ph = class extends HTMLElement {
 				tv: t,
 				action: e.dataset.action || null,
 				label: e.dataset.label || e.textContent.trim(),
+				word: e.dataset.word || null,
 				channel: t ? e.dataset.channel || Mh(++r) : ""
 			};
 		});
@@ -19912,7 +19906,7 @@ var Ph = class extends HTMLElement {
 		this._body && (this._group.traverse((e) => {
 			e.geometry?.dispose(), e.material?.map && e.material !== this._mat.lcd && (e.material.map.dispose(), e.material.dispose());
 		}), this._group.clear()), this._keys = this._readKeys();
-		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.length - t, r = this._L = kh(e, t, n, this.hasAttribute("compact")), i = this._group;
+		let e = this.hasAttribute("narrow"), t = this._keys.filter((e) => e.tv).length, n = this._keys.filter((e) => !e.tv).map((e) => e.word ? 26 : 13), r = this._L = kh(e, t, n, this.hasAttribute("compact")), i = this._group;
 		this._body = new q(Mf(r.W, r.H, 12, r.r, 3), this._mat.body), this._body.position.z = -12, i.add(this._body);
 		let a = new q(jf([Q(Z(r.W + .3, r.H + .3, r.r), -5.4), Q(Z(r.W + .3, r.H + .3, r.r), -5.9)]), this._mat.bezel);
 		i.add(a);
@@ -19950,30 +19944,30 @@ var Ph = class extends HTMLElement {
 		for (let e of this._keys) {
 			let t = e.tv ? r.nav[s++] : r.extra[c++], n = new Un();
 			n.position.set(t.x, t.y, 0);
-			let a = 4.5, o = new q(e.tv ? Mf(t.w, t.h, a, 4, 1.6) : Ah(t.r, a, 1.4), this._mat.key), l = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : $(Af(t.r + 1.2, 0, 0, 40), [Af(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), u = e.tv ? t.w - 3.2 : (t.r - 1.4) * 2, d = e.tv ? t.h - 3.2 : u, [f, p, m] = jh(Math.round(u * 16), Math.round(d * 16)), h = new q(new qo(u, d), new J({
-				map: m,
+			let a = 4.5, o = !e.tv && e.word, l = new q(e.tv ? Mf(t.w, t.h, a, 4, 1.6) : o ? Mf(t.w, t.h, a, t.h / 2 - .3, 1.4) : Ah(t.r, a, 1.4), this._mat.key), u = new q(e.tv ? $(Z(t.w + 2.4, t.h + 2.4, 5), [Z(t.w, t.h, 4).reverse()], .05) : o ? $(Z(t.w + 2.4, t.h + 2.4, t.h / 2 + 1.2), [Z(t.w, t.h, t.h / 2).reverse()], .05) : $(Af(t.r + 1.2, 0, 0, 40), [Af(t.r, 0, 0, 40).reverse()], .05), this._mat.bezel), d = e.tv ? t.w - 3.2 : o ? t.w - 4 : (t.r - 1.4) * 2, f = e.tv ? t.h - 3.2 : o ? t.h - 3 : d, [p, m, h] = jh(Math.round(d * 16), Math.round(f * 16)), g = new q(new qo(d, f), new J({
+				map: h,
 				transparent: !0,
 				roughness: .8,
 				alphaTest: .02,
 				emissive: 16777215,
-				emissiveMap: m,
+				emissiveMap: h,
 				emissiveIntensity: 0
 			}));
-			h.position.z = 4.55;
-			let g = new Un();
-			g.add(o, h), n.add(l, g), i.add(n), Object.assign(e, {
-				top: g,
-				cap: o,
-				w: u,
-				h: d,
+			g.position.z = 4.55;
+			let _ = new Un();
+			_.add(l, g), n.add(u, _), i.add(n), Object.assign(e, {
+				top: _,
+				cap: l,
+				w: d,
+				h: f,
 				legend: {
-					c: f,
-					g: p,
-					t: m,
-					mat: h.material
+					c: p,
+					g: m,
+					t: h,
+					mat: g.material
 				}
 			});
-			for (let t of [o, h]) t.userData.key = this._keys.indexOf(e);
+			for (let t of [l, g]) t.userData.key = this._keys.indexOf(e);
 		}
 		this._paintLegends(), this._layoutKeys(), this._fit(), this._draw();
 	}
@@ -20053,7 +20047,13 @@ var Ph = class extends HTMLElement {
 			} else {
 				r.lineWidth = a * .09, r.lineCap = "round", r.lineJoin = "round";
 				let n = a / 2, i = o / 2, s = a * .22;
-				r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${Sh}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i)), r.globalAlpha = 1;
+				if (r.globalAlpha = t.action === "back" && !e.focused ? .4 : 1, t.word) {
+					let e = o * .62;
+					r.font = `700 ${e}px ${Sh}`;
+					let s = r.measureText(t.word.toUpperCase()).width;
+					s > a * .86 && (e *= a * .86 / s, r.font = `700 ${e}px ${Sh}`), r.textBaseline = "middle", r.fillText(t.word.toUpperCase(), n, i + e * .04);
+				} else t.action === "back" ? (r.beginPath(), r.moveTo(n + s, i), r.lineTo(n - s, i), r.moveTo(n - s * .1, i - s * .9), r.lineTo(n - s, i), r.lineTo(n - s * .1, i + s * .9), r.stroke()) : t.action === "sound" ? (r.beginPath(), r.moveTo(n - s * 1.1, i - s * .4), r.lineTo(n - s * .6, i - s * .4), r.lineTo(n, i - s), r.lineTo(n, i + s), r.lineTo(n - s * .6, i + s * .4), r.lineTo(n - s * 1.1, i + s * .4), r.closePath(), r.fill(), r.beginPath(), e.muted ? (r.moveTo(n + s * .4, i - s * .45), r.lineTo(n + s * 1.2, i + s * .45), r.moveTo(n + s * 1.2, i - s * .45), r.lineTo(n + s * .4, i + s * .45)) : (r.arc(n + s * .2, i, s * .6, -.9, .9), r.moveTo(n + s * .2 + Math.cos(-.9) * s * 1.1, i + Math.sin(-.9) * s * 1.1), r.arc(n + s * .2, i, s * 1.1, -.9, .9)), r.stroke()) : t.action === "info" ? (r.font = `700 ${o * .62}px Georgia, "Times New Roman", serif`, r.textBaseline = "middle", r.fillText("i", n, i + o * .03)) : (r.font = `700 ${o * .5}px ${Sh}`, r.textBaseline = "middle", r.fillText((t.label[0] || "?").toUpperCase(), n, i));
+				r.globalAlpha = 1;
 			}
 			i.needsUpdate = !0;
 		}

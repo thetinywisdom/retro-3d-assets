@@ -41,16 +41,19 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 `;
 
 /** Where each part goes, for a given number of TV keys and extra keys. */
-function layout(narrow, nNav, nExtra, compact = false) {
-  const R = 6.5, eg = 3, extraW = nExtra ? nExtra * R * 2 + (nExtra - 1) * eg : 0;
+function layout(narrow, nNav, extras, compact = false) {
+  // extras: the widths of the extra keys (a round key is 2R wide; a key with a word on it is a wider pill)
+  const R = 6.5, eg = 3, nExtra = extras.length;
+  const extraW = nExtra ? extras.reduce((a, b) => a + b, 0) + (nExtra - 1) * eg : 0;
   const parts = { nav: [], extra: [] };
+  const row = (x0, y) => { let x = x0; for (const ew of extras) { parts.extra.push({ x: x + ew / 2, y, r: R, w: ew, h: 2 * R }); x += ew + eg; } };
   if (compact) {
     // one row: the round Back key, then the TV keys
     const m = 6, kw = 30, kh = 18, kg = 4, gap = 6, H = kh + 2 * m;
     const navW = nNav * kw + Math.max(0, nNav - 1) * kg;
     const W = m + (nExtra ? extraW + gap : 0) + navW + m;
     let x = -W / 2 + m;
-    for (let i = 0; i < nExtra; i++) parts.extra.push({ x: x + R + i * (2 * R + eg), y: 0, r: R });
+    row(x, 0);
     x += nExtra ? extraW + gap : 0;
     for (let i = 0; i < nNav; i++) parts.nav.push({ x: x + kw / 2 + i * (kw + kg), y: 0, w: kw, h: kh });
     parts.lcd = null; parts.led = null;
@@ -65,7 +68,7 @@ function layout(narrow, nNav, nExtra, compact = false) {
     x += lcdW + m;
     for (let i = 0; i < nNav; i++) parts.nav.push({ x: x + kw / 2 + i * (kw + kg), y: 0, w: kw, h: kh });
     x += navW + m;
-    for (let i = 0; i < nExtra; i++) parts.extra.push({ x: x + R + i * (2 * R + eg), y: 0, r: R });
+    row(x, 0);
     parts.led = { x: W / 2 - 12, y: H / 2 - 7.5 };
     return Object.assign(parts, { W, H, r: 7 });
   }
@@ -75,7 +78,7 @@ function layout(narrow, nNav, nExtra, compact = false) {
   const top = H / 2 - m - 12, bottom = -H / 2 + m + kh / 2;
   const lw = W - 2 * m - (nExtra ? gap + extraW : 0);
   parts.lcd = { x: -W / 2 + m + lw / 2, y: top, w: lw, h: 24 };
-  for (let i = 0; i < nExtra; i++) parts.extra.push({ x: W / 2 - m - extraW + R + i * (2 * R + eg), y: top, r: R });
+  row(W / 2 - m - extraW, top);
   for (let i = 0; i < nNav; i++) parts.nav.push({ x: -W / 2 + m + kw / 2 + i * (kw + kg), y: bottom, w: kw, h: kh });
   parts.led = { x: W / 2 - 10, y: H / 2 - 6.5 };
   return Object.assign(parts, { W, H, r: 7 });
@@ -264,6 +267,7 @@ export class RetroPagerElement extends HTMLElement {
       return {
         el, tv, action: el.dataset.action || null,
         label: el.dataset.label || el.textContent.trim(),
+        word: el.dataset.word || null,                                // a round key with a word on it (e.g. HELP) is a pill
         channel: tv ? el.dataset.channel || pad2(++n) : '',
       };
     });
@@ -277,8 +281,9 @@ export class RetroPagerElement extends HTMLElement {
     }
     this._keys = this._readKeys();
     const narrow = this.hasAttribute('narrow');
-    const nNav = this._keys.filter((k) => k.tv).length, nExtra = this._keys.length - nNav;
-    const L = (this._L = layout(narrow, nNav, nExtra, this.hasAttribute('compact')));
+    const nNav = this._keys.filter((k) => k.tv).length;
+    const extras = this._keys.filter((k) => !k.tv).map((k) => (k.word ? 26 : 13));
+    const L = (this._L = layout(narrow, nNav, extras, this.hasAttribute('compact')));
     const D = 12, g = this._group;
 
     this._body = new THREE.Mesh(rbox(L.W, L.H, D, L.r, 3), this._mat.body);
@@ -329,11 +334,14 @@ export class RetroPagerElement extends HTMLElement {
       const hold = new THREE.Group();
       hold.position.set(p.x, p.y, 0);
       const depth = 4.5;
-      const geo = k.tv ? rbox(p.w, p.h, depth, 4, 1.6) : roundKey(p.r, depth, 1.4);
+      const pill = !k.tv && k.word;
+      const geo = k.tv ? rbox(p.w, p.h, depth, 4, 1.6) : pill ? rbox(p.w, p.h, depth, p.h / 2 - 0.3, 1.4) : roundKey(p.r, depth, 1.4);
       const cap = new THREE.Mesh(geo, this._mat.key);
       // a dark well round the key
-      const well = new THREE.Mesh(k.tv ? plate(rr(p.w + 2.4, p.h + 2.4, 5), [rr(p.w, p.h, 4).reverse()], 0.05) : plate(circle(p.r + 1.2, 0, 0, 40), [circle(p.r, 0, 0, 40).reverse()], 0.05), this._mat.bezel);
-      const lw = k.tv ? p.w - 3.2 : (p.r - 1.4) * 2, lh = k.tv ? p.h - 3.2 : lw;
+      const well = new THREE.Mesh(k.tv ? plate(rr(p.w + 2.4, p.h + 2.4, 5), [rr(p.w, p.h, 4).reverse()], 0.05)
+        : pill ? plate(rr(p.w + 2.4, p.h + 2.4, p.h / 2 + 1.2), [rr(p.w, p.h, p.h / 2).reverse()], 0.05)
+        : plate(circle(p.r + 1.2, 0, 0, 40), [circle(p.r, 0, 0, 40).reverse()], 0.05), this._mat.bezel);
+      const lw = k.tv ? p.w - 3.2 : pill ? p.w - 4 : (p.r - 1.4) * 2, lh = k.tv ? p.h - 3.2 : pill ? p.h - 3 : lw;
       const [lc2, lg2, lt2] = canvasTexture(Math.round(lw * 16), Math.round(lh * 16));
       const legend = new THREE.Mesh(new THREE.PlaneGeometry(lw, lh), new THREE.MeshStandardMaterial({ map: lt2, transparent: true, roughness: 0.8, alphaTest: 0.02, emissive: 0xffffff, emissiveMap: lt2, emissiveIntensity: 0 }));
       legend.position.z = depth + 0.05;
@@ -475,7 +483,14 @@ export class RetroPagerElement extends HTMLElement {
         g.lineWidth = w * 0.09; g.lineCap = 'round'; g.lineJoin = 'round';
         const cx = w / 2, cy = h / 2, u = w * 0.22;
         g.globalAlpha = k.action === 'back' && !st.focused ? 0.4 : 1;
-        if (k.action === 'back') {
+        if (k.word) {
+          let size = h * 0.62;
+          g.font = `700 ${size}px ${LEGEND}`;
+          const ww = g.measureText(k.word.toUpperCase()).width;
+          if (ww > w * 0.86) { size *= (w * 0.86) / ww; g.font = `700 ${size}px ${LEGEND}`; }
+          g.textBaseline = 'middle';
+          g.fillText(k.word.toUpperCase(), cx, cy + size * 0.04);
+        } else if (k.action === 'back') {
           g.beginPath(); g.moveTo(cx + u, cy); g.lineTo(cx - u, cy); g.moveTo(cx - u * 0.1, cy - u * 0.9); g.lineTo(cx - u, cy); g.lineTo(cx - u * 0.1, cy + u * 0.9); g.stroke();
         } else if (k.action === 'sound') {
           g.beginPath(); g.moveTo(cx - u * 1.1, cy - u * 0.4); g.lineTo(cx - u * 0.6, cy - u * 0.4); g.lineTo(cx, cy - u); g.lineTo(cx, cy + u); g.lineTo(cx - u * 0.6, cy + u * 0.4); g.lineTo(cx - u * 1.1, cy + u * 0.4); g.closePath(); g.fill();
