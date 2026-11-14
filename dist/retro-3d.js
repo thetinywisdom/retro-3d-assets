@@ -21812,7 +21812,34 @@ var Ug = 9306010, Wg = [
 	"wink",
 	"angry",
 	"dizzy"
-], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n", Kg = class extends HTMLElement {
+], Gg = "\n:host { display: block; position: relative; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }\n";
+function Kg(e) {
+	let t = e.getAttribute("position");
+	if (!t || t.count < 8) return null;
+	let n = new H(), r = new H(Infinity, Infinity, Infinity), i = r.clone().negate();
+	for (let e = 0; e < t.count; e++) n.fromBufferAttribute(t, e), r.min(n), i.max(n);
+	let a = i.clone().sub(r), [o, s, c] = [
+		0,
+		1,
+		2
+	].sort((e, t) => a.getComponent(t) - a.getComponent(e)), l = (r.getComponent(o) + i.getComponent(o)) / 2, u = (r.getComponent(c) + i.getComponent(c)) / 2, d = [[], []];
+	for (let e = 0; e < t.count; e++) n.fromBufferAttribute(t, e), d[n.getComponent(o) < l ? 0 : 1].push(n.clone());
+	let f = [];
+	for (let e of d) {
+		if (!e.length) return null;
+		let t = e.reduce((e, t) => e.min(t), e[0].clone()), n = e.reduce((e, t) => e.max(t), e[0].clone()), r = t.clone().add(n).multiplyScalar(.5), i = Math.min(n.getComponent(o) - t.getComponent(o), n.getComponent(s) - t.getComponent(s)) * .5, a = i * .11, l = (e, t) => {
+			let n = e * 1.75 * Math.PI * 2, a = i * (.08 + .92 * e), l = Math.cos(n), d = Math.sin(n), f = new H();
+			return f.setComponent(o, r.getComponent(o) + l * (a + t)), f.setComponent(s, r.getComponent(s) + d * (a + t)), f.setComponent(c, u), f;
+		};
+		for (let e = 0; e < 90; e++) {
+			let t = e / 90, n = (e + 1) / 90, r = l(t, -a / 2), i = l(t, a / 2), o = l(n, -a / 2), s = l(n, a / 2);
+			f.push(r, i, s, r, s, o);
+		}
+	}
+	let p = new Wr().setFromPoints(f);
+	return p.computeVertexNormals(), p;
+}
+var qg = class extends HTMLElement {
 	static get observedAttributes() {
 		return ["src"];
 	}
@@ -21866,6 +21893,7 @@ var Ug = 9306010, Wg = [
 				}),
 				eye: new oi({
 					color: 14221280,
+					side: 2,
 					...n
 				})
 			}, t.traverse((e) => {
@@ -21874,7 +21902,15 @@ var Ug = 9306010, Wg = [
 					let t = e.material?.name;
 					e.material = t === "holo_eye" ? this._mats.eye : t === "holo_screen" ? this._mats.screen : this._mats.fill;
 				}
-			}), this._giant = t, this._eyes = t.getObjectByName("Eyes"), this._scene.add(t), this._mixer = new zc(t), this._actions = Object.fromEntries(e.animations.map((e) => [e.name, this._mixer.clipAction(e)]));
+			});
+			for (let e of ["eyes_dizzy", "clip_eyes_dizzy"]) {
+				let n = t.getObjectByName(e);
+				if (n?.isMesh) {
+					let e = Kg(n.geometry);
+					e && (n.geometry.dispose(), n.geometry = e);
+				}
+			}
+			this._giant = t, this._eyes = t.getObjectByName("Eyes"), this._scene.add(t), this._mixer = new zc(t), this._actions = Object.fromEntries(e.animations.map((e) => [e.name, this._mixer.clipAction(e)]));
 			for (let e of Wg) this._actions[e] && (this._actions[e].setLoop(He, 1), this._actions[e].clampWhenFinished = !0);
 			this._mixer.addEventListener("finished", (e) => {
 				Wg.includes(e.action.getClip().name) && this.play(this._talking ? "talk" : "idle");
@@ -21966,8 +22002,8 @@ var Ug = 9306010, Wg = [
 	}
 };
 // src/index.js
-function qg() {
-	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", um), customElements.get("retro-shelf") || customElements.define("retro-shelf", xh), customElements.get("retro-pager") || customElements.define("retro-pager", Ph), customElements.get("retro-map") || customElements.define("retro-map", zh), customElements.get("retro-giant") || customElements.define("retro-giant", Kg));
+function Jg() {
+	typeof customElements < "u" && (customElements.get("sony-pvm") || customElements.define("sony-pvm", um), customElements.get("retro-shelf") || customElements.define("retro-shelf", xh), customElements.get("retro-pager") || customElements.define("retro-pager", Ph), customElements.get("retro-map") || customElements.define("retro-map", zh), customElements.get("retro-giant") || customElements.define("retro-giant", qg));
 }
-qg();
-export { ch as ARRANGEMENTS, dm as ITEM_TYPES, Gp as MODELS, eh as PROPS, Kg as RetroGiantElement, zh as RetroMapElement, Ph as RetroPagerElement, xh as RetroShelfElement, ph as STACKS, um as SonyPVMElement, jm as buildItem, Nm as buildShelf, qg as define };
+Jg();
+export { ch as ARRANGEMENTS, dm as ITEM_TYPES, Gp as MODELS, eh as PROPS, qg as RetroGiantElement, zh as RetroMapElement, Ph as RetroPagerElement, xh as RetroShelfElement, ph as STACKS, um as SonyPVMElement, jm as buildItem, Nm as buildShelf, Jg as define };

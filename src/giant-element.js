@@ -18,6 +18,46 @@ const STYLE = /* css */ `
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 `;
 
+/** Two thin Archimedean spirals, one in place of each eye in `geo` (the original dizzy eyes), flat in the
+ *  same plane. Returns null if the shape is not what was expected. */
+function spiralEyes(geo) {
+  const pos = geo.getAttribute('position');
+  if (!pos || pos.count < 8) return null;
+  const v = new THREE.Vector3(), min = new THREE.Vector3(Infinity, Infinity, Infinity), max = min.clone().negate();
+  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); min.min(v); max.max(v); }
+  const span = max.clone().sub(min), axes = [0, 1, 2].sort((a, b) => span.getComponent(b) - span.getComponent(a));
+  const [ax, ay, az] = axes;                                          // the two eyes sit side by side along ax
+  const mid = (min.getComponent(ax) + max.getComponent(ax)) / 2, depth = (min.getComponent(az) + max.getComponent(az)) / 2;
+  const eyes = [[], []];
+  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); eyes[v.getComponent(ax) < mid ? 0 : 1].push(v.clone()); }
+  const out = [];
+  const TURNS = 1.75, N = 90;
+  for (const pts of eyes) {
+    if (!pts.length) return null;
+    const lo = pts.reduce((a, p) => a.min(p), pts[0].clone()), hi = pts.reduce((a, p) => a.max(p), pts[0].clone());
+    const c = lo.clone().add(hi).multiplyScalar(0.5);
+    const R = Math.min(hi.getComponent(ax) - lo.getComponent(ax), hi.getComponent(ay) - lo.getComponent(ay)) * 0.5;
+    const w = R * 0.11;
+    const at = (t, off) => {                                          // point on the spiral, pushed sideways by off
+      const ang = t * TURNS * Math.PI * 2, r = R * (0.08 + 0.92 * t);
+      const nx = Math.cos(ang), ny = Math.sin(ang);
+      const p = new THREE.Vector3();
+      p.setComponent(ax, c.getComponent(ax) + nx * (r + off));
+      p.setComponent(ay, c.getComponent(ay) + ny * (r + off));
+      p.setComponent(az, depth);
+      return p;
+    };
+    for (let i = 0; i < N; i++) {
+      const t0 = i / N, t1 = (i + 1) / N;
+      const a = at(t0, -w / 2), b = at(t0, w / 2), d = at(t1, -w / 2), e = at(t1, w / 2);
+      out.push(a, b, e, a, e, d);
+    }
+  }
+  const g = new THREE.BufferGeometry().setFromPoints(out);
+  g.computeVertexNormals();
+  return g;
+}
+
 export class RetroGiantElement extends HTMLElement {
   static get observedAttributes() { return ['src']; }
 
@@ -63,7 +103,7 @@ export class RetroGiantElement extends HTMLElement {
         fill: new THREE.MeshBasicMaterial({ color: GREEN, opacity: 0.07, side: THREE.DoubleSide, ...add }),
         screen: new THREE.MeshBasicMaterial({ color: GREEN, opacity: 0.2, ...add }),
         edge: new THREE.LineBasicMaterial({ color: GREEN, opacity: 0.9, ...add }),
-        eye: new THREE.MeshBasicMaterial({ color: 0xd8ffe0, ...add }),
+        eye: new THREE.MeshBasicMaterial({ color: 0xd8ffe0, side: THREE.DoubleSide, ...add }),
       };
       giant.traverse((o) => {
         if (o.isLineSegments || o.isLine) o.material = this._mats.edge;
@@ -72,6 +112,12 @@ export class RetroGiantElement extends HTMLElement {
           o.material = n === 'holo_eye' ? this._mats.eye : n === 'holo_screen' ? this._mats.screen : this._mats.fill;
         }
       });
+      // the dizzy eyes in the file are short bars round a tight spiral, which merge into a white blob at the
+      // size the site shows him: draw each as one thin spiral line instead, in the same place
+      for (const name of ['eyes_dizzy', 'clip_eyes_dizzy']) {
+        const m = giant.getObjectByName(name);
+        if (m?.isMesh) { const g = spiralEyes(m.geometry); if (g) { m.geometry.dispose(); m.geometry = g; } }
+      }
       this._giant = giant;
       this._eyes = giant.getObjectByName('Eyes');
       this._scene.add(giant);
