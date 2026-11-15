@@ -28,7 +28,8 @@ const toTexture = (src) => new Promise((resolve) => {
 });
 
 /**
- * Render one image per cover. `covers` are image URLs or canvases (square art suits the case; other shapes
+ * Render one image per cover. `covers` are image URLs or canvases, or { src, align } where align ('top',
+ * 'center', 'bottom', 'left', 'right') says which part of art that is not square to keep (square art suits the case; other shapes
  * are cropped to fill). Returns PNG data URLs in the same order (null where a cover failed to load).
  */
 export async function renderCases(modelUrl, covers, { size = 480, angle = -28, tilt = 16 } = {}) {
@@ -78,13 +79,17 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -28, t
   camera.lookAt(0, 0.6, 0);
 
   const out = [];
-  for (const src of covers) {
+  for (const item of covers) {
+    const { src, align = 'center' } = item && typeof item === 'object' && !(item instanceof HTMLCanvasElement) ? item : { src: item };
     const tex = src ? await toTexture(src) : null;
     if (!tex) { out.push(null); continue; }
     // crop to fill the insert, keeping the art's proportions
     const a = (tex.image.width || 1) / (tex.image.height || 1), want = iw / ih;
     tex.repeat.set(a > want ? want / a : 1, a > want ? 1 : a / want);
-    tex.offset.set((1 - tex.repeat.x) / 2, (1 - tex.repeat.y) / 2);
+    // texture v runs bottom to top: 'bottom' keeps the lower part, 'top' the upper
+    const ox = align === 'left' ? 0 : align === 'right' ? 1 - tex.repeat.x : (1 - tex.repeat.x) / 2;
+    const oy = align === 'bottom' ? 0 : align === 'top' ? 1 - tex.repeat.y : (1 - tex.repeat.y) / 2;
+    tex.offset.set(ox, oy);
     insertMat.map = tex; insertMat.needsUpdate = true;
     renderer.render(scene, camera);
     out.push(canvas.toDataURL('image/png'));

@@ -22398,13 +22398,15 @@ async function m_(e, t, { size: n = 480, angle: r = -28, tilt: i = 16 } = {}) {
 	b.position.set(0, .6, 37), b.lookAt(0, .6, 0);
 	let x = [];
 	for (let e of t) {
-		let t = e ? await p_(e) : null;
-		if (!t) {
+		let { src: t, align: n = "center" } = e && typeof e == "object" && !(e instanceof HTMLCanvasElement) ? e : { src: e }, r = t ? await p_(t) : null;
+		if (!r) {
 			x.push(null);
 			continue;
 		}
-		let n = (t.image.width || 1) / (t.image.height || 1), r = _ / v;
-		t.repeat.set(n > r ? r / n : 1, n > r ? 1 : n / r), t.offset.set((1 - t.repeat.x) / 2, (1 - t.repeat.y) / 2), g.map = t, g.needsUpdate = !0, s.render(c, b), x.push(o.toDataURL("image/png")), t.dispose();
+		let i = (r.image.width || 1) / (r.image.height || 1), a = _ / v;
+		r.repeat.set(i > a ? a / i : 1, i > a ? 1 : i / a);
+		let l = n === "left" ? 0 : n === "right" ? 1 - r.repeat.x : (1 - r.repeat.x) / 2, u = n === "bottom" ? 0 : n === "top" ? 1 - r.repeat.y : (1 - r.repeat.y) / 2;
+		r.offset.set(l, u), g.map = r, g.needsUpdate = !0, s.render(c, b), x.push(o.toDataURL("image/png")), r.dispose();
 	}
 	return l.dispose(), s.dispose(), s.forceContextLoss?.(), x;
 }
