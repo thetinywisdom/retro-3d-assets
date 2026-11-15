@@ -32,7 +32,7 @@ const toTexture = (src) => new Promise((resolve) => {
  * 'center', 'bottom', 'left', 'right') says which part of art that is not square to keep (square art suits the case; other shapes
  * are cropped to fill). Returns PNG data URLs in the same order (null where a cover failed to load).
  */
-export async function renderCases(modelUrl, covers, { size = 480, angle = -28, tilt = 16 } = {}) {
+export async function renderCases(modelUrl, covers, { size = 480, angle = -34, tilt = 20 } = {}) {
   const obj = await loadModel(modelUrl);
   const canvas = document.createElement('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -49,17 +49,22 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -28, t
   scene.add(key, new THREE.AmbientLight(0xffffff, 0.35));
 
   // the case: a clear, glossy lid over a black tray
-  const lidMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.1,
-    clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.7, depthWrite: false, side: THREE.DoubleSide });
+  const lidMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.16,
+    clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.2, depthWrite: false, side: THREE.DoubleSide });
   const trayMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.35, metalness: 0 });
   const box = new THREE.Group();
   const model = obj.clone(true);
+  const lidEdges = [];
   model.traverse((o) => {
     if (!o.isMesh) return;
     const lid = /cover/i.test(o.name);
     o.material = lid ? lidMat : trayMat;
     o.renderOrder = lid ? 2 : 0;
+    // the clear lid's edges and lip catch the light, like real polystyrene: draw its creases as bright lines
+    if (lid) lidEdges.push([o, new THREE.EdgesGeometry(o.geometry, 25)]);
   });
+  const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false });
+  for (const [o, g] of lidEdges) { const l = new THREE.LineSegments(g, edgeMat); l.renderOrder = 3; o.add(l); }
   box.add(model);
   // a solid black floor under everything, so the hinge strip reads as black plastic, not see-through
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(14.2, 12.4), trayMat);
@@ -78,6 +83,7 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -28, t
   camera.position.set(0, 0.6, 37);
   camera.lookAt(0, 0.6, 0);
 
+  const probe = Object.assign(document.createElement('canvas'), { width: 32, height: 32 }).getContext('2d', { willReadFrequently: true });
   const out = [];
   for (const item of covers) {
     const { src, align = 'center' } = item && typeof item === 'object' && !(item instanceof HTMLCanvasElement) ? item : { src: item };
@@ -92,7 +98,14 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -28, t
     tex.offset.set(ox, oy);
     insertMat.map = tex; insertMat.needsUpdate = true;
     renderer.render(scene, camera);
-    out.push(canvas.toDataURL('image/png'));
+    // some browsers hand back an empty picture from a WebGL canvas: check, and leave a gap (null) for the
+    // page to fall back on rather than a blank image
+    probe.clearRect(0, 0, 32, 32);
+    probe.drawImage(canvas, 0, 0, 32, 32);
+    const px = probe.getImageData(0, 0, 32, 32).data;
+    let seen = 0;
+    for (let i = 3; i < px.length; i += 4) seen += px[i];
+    out.push(seen > 0 ? canvas.toDataURL('image/png') : null);
     tex.dispose();
   }
   pmrem.dispose(); renderer.dispose();
