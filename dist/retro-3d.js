@@ -22341,7 +22341,7 @@ var c_ = class extends Ws {
 	x1: 6.95,
 	y0: -6.05,
 	y1: 6.05,
-	z: .43
+	z: .86
 }, p_ = (e) => new Promise((t) => {
 	if (e instanceof HTMLCanvasElement) {
 		let n = new va(e);
@@ -22354,78 +22354,78 @@ var c_ = class extends Ws {
 		e.colorSpace = tt, e.needsUpdate = !0, t(e);
 	}, n.onerror = () => t(null), n.src = e;
 });
-async function m_(e, t, { size: n = 480, angle: r = -34, tilt: i = 20 } = {}) {
-	let a = await d_(e), o = document.createElement("canvas"), s = new af({
-		canvas: o,
+async function m_(e, t, { size: n = 480, angle: r = 32, tilt: i = 8, roll: a = 0, insert: o = !0 } = {}) {
+	let s = await d_(e), c = document.createElement("canvas"), l = new af({
+		canvas: c,
 		antialias: !0,
 		alpha: !0,
 		preserveDrawingBuffer: !0
 	});
-	s.setPixelRatio(1), s.setSize(n, n, !1), s.setClearColor(0, 0), s.toneMapping = 7, s.outputColorSpace = tt;
-	let c = new Zn(), l = new hl(s);
-	c.environment = l.fromScene(new pf(), .04).texture;
-	let u = new _c(16777215, 1.6);
-	u.position.set(-6, 10, 14), c.add(u, new vc(16777215, .35));
-	let d = new us({
+	l.setPixelRatio(1), l.setSize(n, n, !1), l.setClearColor(0, 0), l.toneMapping = 7, l.outputColorSpace = tt;
+	let u = new Zn(), d = new hl(l);
+	u.environment = d.fromScene(new pf(), .04).texture;
+	let f = new _c(16777215, 1.6);
+	f.position.set(-6, 10, 14), u.add(f, new vc(16777215, .35));
+	let p = new us({
 		color: 16777215,
 		roughness: .05,
 		metalness: 0,
 		transparent: !0,
-		opacity: .16,
+		opacity: .22,
 		clearcoat: 1,
 		clearcoatRoughness: .04,
 		envMapIntensity: 1.2,
 		depthWrite: !1,
 		side: 2
-	}), f = new J({
+	}), m = new J({
 		color: 1315860,
 		roughness: .35,
 		metalness: 0
-	}), p = new Un(), m = a.clone(!0), h = [];
-	m.traverse((e) => {
+	}), h = new Un(), g = s.clone(!0), _ = [];
+	g.traverse((e) => {
 		if (!e.isMesh) return;
 		let t = /cover/i.test(e.name);
-		e.material = t ? d : f, e.renderOrder = t ? 2 : 0, t && h.push([e, new Aa(e.geometry, 25)]);
+		e.material = t ? p : m, e.renderOrder = t ? 2 : 0, t && _.push([e, new Aa(e.geometry, 25)]);
 	});
-	let g = new Xi({
+	let v = new Xi({
 		color: 16777215,
 		transparent: !0,
 		opacity: .55,
 		depthWrite: !1
 	});
-	for (let [e, t] of h) {
-		let n = new ca(t, g);
+	for (let [e, t] of _) {
+		let n = new ca(t, v);
 		n.renderOrder = 3, e.add(n);
 	}
-	p.add(m);
-	let _ = new q(new qo(14.2, 12.4), f);
-	_.position.set(0, 0, .03), p.add(_);
-	let v = new J({
+	g.scale.z = 2, h.add(g);
+	let y = new q(new qo(14.2, 12.4), m);
+	y.position.set(0, 0, .06), h.add(y);
+	let b = new J({
 		roughness: .55,
 		metalness: 0
-	}), y = f_.x1 - f_.x0, b = f_.y1 - f_.y0, x = new q(new qo(y, b), v);
-	x.position.set((f_.x0 + f_.x1) / 2, (f_.y0 + f_.y1) / 2, f_.z), x.renderOrder = 1, p.add(x), p.rotation.set(Gt.degToRad(-i), Gt.degToRad(r), 0), c.add(p);
-	let S = new uc(26, 1, 1, 200);
-	S.position.set(0, .6, 37), S.lookAt(0, .6, 0);
-	let C = Object.assign(document.createElement("canvas"), {
+	}), x = f_.x1 - f_.x0, S = f_.y1 - f_.y0, C = new q(new qo(x, S), b);
+	C.position.set((f_.x0 + f_.x1) / 2, (f_.y0 + f_.y1) / 2, f_.z), C.renderOrder = 1, o && h.add(C), h.rotation.set(Gt.degToRad(-i), Gt.degToRad(r), Gt.degToRad(a)), u.add(h);
+	let w = new uc(26, 1, 1, 200);
+	w.position.set(0, .6, 37), w.lookAt(0, .6, 0);
+	let T = Object.assign(document.createElement("canvas"), {
 		width: 32,
 		height: 32
-	}).getContext("2d", { willReadFrequently: !0 }), w = [];
+	}).getContext("2d", { willReadFrequently: !0 }), E = [];
 	for (let e of t) {
 		let { src: t, align: n = "center" } = e && typeof e == "object" && !(e instanceof HTMLCanvasElement) ? e : { src: e }, r = t ? await p_(t) : null;
 		if (!r) {
-			w.push(null);
+			E.push(null);
 			continue;
 		}
-		let i = (r.image.width || 1) / (r.image.height || 1), a = y / b;
+		let i = (r.image.width || 1) / (r.image.height || 1), a = x / S;
 		r.repeat.set(i > a ? a / i : 1, i > a ? 1 : i / a);
-		let l = n === "left" ? 0 : n === "right" ? 1 - r.repeat.x : (1 - r.repeat.x) / 2, u = n === "bottom" ? 0 : n === "top" ? 1 - r.repeat.y : (1 - r.repeat.y) / 2;
-		r.offset.set(l, u), v.map = r, v.needsUpdate = !0, s.render(c, S), C.clearRect(0, 0, 32, 32), C.drawImage(o, 0, 0, 32, 32);
-		let d = C.getImageData(0, 0, 32, 32).data, f = 0;
+		let o = n === "left" ? 0 : n === "right" ? 1 - r.repeat.x : (1 - r.repeat.x) / 2, s = n === "bottom" ? 0 : n === "top" ? 1 - r.repeat.y : (1 - r.repeat.y) / 2;
+		r.offset.set(o, s), b.map = r, b.needsUpdate = !0, l.render(u, w), T.clearRect(0, 0, 32, 32), T.drawImage(c, 0, 0, 32, 32);
+		let d = T.getImageData(0, 0, 32, 32).data, f = 0;
 		for (let e = 3; e < d.length; e += 4) f += d[e];
-		w.push(f > 0 ? o.toDataURL("image/png") : null), r.dispose();
+		E.push(f > 0 ? c.toDataURL("image/png") : null), r.dispose();
 	}
-	return l.dispose(), s.dispose(), s.forceContextLoss?.(), w;
+	return d.dispose(), l.dispose(), l.forceContextLoss?.(), E;
 }
 // src/index.js
 function h_() {

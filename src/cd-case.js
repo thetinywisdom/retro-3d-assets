@@ -16,7 +16,7 @@ let modelP = null;
 const loadModel = (url) => (modelP ||= new OBJLoader().loadAsync(url));
 
 // the insert sits on the tray floor between the hinge strip and the right edge, under the lid
-const INSERT = { x0: -6.0, x1: 6.95, y0: -6.05, y1: 6.05, z: 0.43 };
+const INSERT = { x0: -6.0, x1: 6.95, y0: -6.05, y1: 6.05, z: 0.86 };
 
 const toTexture = (src) => new Promise((resolve) => {
   if (src instanceof HTMLCanvasElement) { const t = new THREE.CanvasTexture(src); t.colorSpace = THREE.SRGBColorSpace; resolve(t); return; }
@@ -32,7 +32,7 @@ const toTexture = (src) => new Promise((resolve) => {
  * 'center', 'bottom', 'left', 'right') says which part of art that is not square to keep (square art suits the case; other shapes
  * are cropped to fill). Returns PNG data URLs in the same order (null where a cover failed to load).
  */
-export async function renderCases(modelUrl, covers, { size = 480, angle = -34, tilt = 20 } = {}) {
+export async function renderCases(modelUrl, covers, { size = 480, angle = 32, tilt = 8, roll = 0, insert: withInsert = true } = {}) {
   const obj = await loadModel(modelUrl);
   const canvas = document.createElement('canvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -49,7 +49,7 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -34, t
   scene.add(key, new THREE.AmbientLight(0xffffff, 0.35));
 
   // the case: a clear, glossy lid over a black tray
-  const lidMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.16,
+  const lidMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.22,
     clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.2, depthWrite: false, side: THREE.DoubleSide });
   const trayMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.35, metalness: 0 });
   const box = new THREE.Group();
@@ -65,18 +65,19 @@ export async function renderCases(modelUrl, covers, { size = 480, angle = -34, t
   });
   const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false });
   for (const [o, g] of lidEdges) { const l = new THREE.LineSegments(g, edgeMat); l.renderOrder = 3; o.add(l); }
+  model.scale.z = 2;                                                // the model is a slim case: make it a standard 10 mm one
   box.add(model);
   // a solid black floor under everything, so the hinge strip reads as black plastic, not see-through
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(14.2, 12.4), trayMat);
-  floor.position.set(0, 0, 0.03);
+  floor.position.set(0, 0, 0.06);
   box.add(floor);
   const insertMat = new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0 });
   const iw = INSERT.x1 - INSERT.x0, ih = INSERT.y1 - INSERT.y0;
   const insert = new THREE.Mesh(new THREE.PlaneGeometry(iw, ih), insertMat);
   insert.position.set((INSERT.x0 + INSERT.x1) / 2, (INSERT.y0 + INSERT.y1) / 2, INSERT.z);
   insert.renderOrder = 1;
-  box.add(insert);
-  box.rotation.set(THREE.MathUtils.degToRad(-tilt), THREE.MathUtils.degToRad(angle), 0);
+  if (withInsert) box.add(insert);
+  box.rotation.set(THREE.MathUtils.degToRad(-tilt), THREE.MathUtils.degToRad(angle), THREE.MathUtils.degToRad(roll));
   scene.add(box);
 
   const camera = new THREE.PerspectiveCamera(26, 1, 1, 200);
