@@ -38,14 +38,14 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 | `src/pager-element.js` | `<retro-pager>`: the site's navigation dock, a 3D pager with its own canvas. Keys come from its child buttons; it drives a `<retro-shelf>` through its methods and events |
 | `src/map-element.js` | `<retro-map>`: a green hologram of the TV stack with its own canvas, copied as plain boxes from the shelf's sets. Shown while the camera is in on a set; lights that set and has keys for the set above and below |
 | `src/giant-element.js` | `<retro-giant src="giant.glb">`: Giant, the hologram robot from `characters/giant`, on its own canvas in the `<retro-map>` green. Loads the GLB when first shown; `face()`, `play()`, `say(mood)`, `talk(on)` |
-| `src/cd-case.js` | `renderCases(modelUrl, covers)`: CD jewel cases with cover art, rendered one after another in one WebGL context to still PNGs (also on `window.retro3d`). Uses `models/cd-case.obj` (copied to `dist/`) |
+| `src/cd-case.js` | `renderCases(modelUrl, covers)`: CD jewel cases with cover art, and `renderGameCases(modelUrl, items)`: each game in its platform's case (PS1 jewel case, other platforms from `src/props/shelf.js`), rendered one after another in one WebGL context to still PNGs (also on `window.retro3d`). Uses `models/cd-case.obj` (copied to `dist/`) |
 | `src/models/*.js` | One file per CRT. Each exports `META` (id, size, inputs, controls) and `buildMonitor()`; registered in `src/models/index.js` |
 | `src/kit.js` | Shared geometry helpers (`rr`, `loft`, `plate`, `rbox`) and the `Kit` builder (materials, buttons, knobs, sliders, decals, the CRT glass) |
 | `src/crt.js` | Glass shader. Draws the tube look and leaves a transparent window for the HTML underneath |
 | `src/labels.js` | Canvas-drawn textures: panel legends, brand badge, grain, shadows |
 | `src/props/consoles.js` | PS one, DualShock, Game Boy Advance, PS Vita, PSP Go |
 | `src/props/outlines.js` | Generated body outlines for the consoles, traced from reference images. Do not hand-edit |
-| `src/props/shelf.js` | Shelf unit, and the shelved items (PS1, GBA, Vita, PSP cases, books) with text-driven spines and covers |
+| `src/props/shelf.js` | Shelf unit, and the shelved items (PS1, PS2, PS4, PS5, PC, PSP, Vita cases, GBA / GBC cartons, SNES box, books) with text-driven spines and covers |
 | `src/arrange.js` | Scripted shelf arrangements (`tidy`, `browsed`, `piled`, `display`) |
 | `src/sound.js` | Synthesised clicks, power and degauss sounds |
 | `react/SonyPVM.jsx` | Thin React / Next.js wrapper for `<sony-pvm>` |

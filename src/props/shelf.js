@@ -12,6 +12,13 @@ export const ITEM_TYPES = {
   gba: { t: 23, h: 125, d: 125, name: 'Game Boy Advance game' },
   vita: { t: 12, h: 135, d: 105, name: 'PS Vita game' },
   psp: { t: 14, h: 168, d: 99, name: 'PSP game' },
+  // DVD and Blu-ray keep cases (Amaray: 135 x 190 x 14 mm; Blu-ray 135 x 170 x 11 mm), cartons
+  ps2: { t: 14, h: 190, d: 135, name: 'PlayStation 2 game' },
+  pc: { t: 14, h: 190, d: 135, name: 'PC game' },
+  ps4: { t: 11, h: 170, d: 135, name: 'PS4 game' },
+  ps5: { t: 11, h: 170, d: 135, name: 'PS5 game' },
+  gbc: { t: 23, h: 125, d: 125, name: 'Game Boy Color game' },
+  snes: { t: 38, h: 133, d: 184, name: 'Super NES game' },
   book: { t: 26, h: 205, d: 150, name: 'Book' },
 };
 
@@ -87,8 +94,10 @@ function art(g, spec, x, y, w, h, { font = FONT, upper = true } = {}) {
   g.fillStyle = spec.color; g.fillRect(x, y, w, h);
   if (spec.image) {
     const iw = spec.image.naturalWidth || spec.image.width, ih = spec.image.naturalHeight || spec.image.height;
-    const s = Math.max(w / iw, h / ih);
-    g.drawImage(spec.image, x + (w - iw * s) / 2, y + (h - ih * s) / 2, iw * s, ih * s);
+    const s = Math.max(w / iw, h / ih), a = spec.align || 'center';
+    const dx = a === 'left' ? 0 : a === 'right' ? w - iw * s : (w - iw * s) / 2;
+    const dy = a === 'top' ? 0 : a === 'bottom' ? h - ih * s : (h - ih * s) / 2;
+    g.drawImage(spec.image, x + dx, y + dy, iw * s, ih * s);
   } else {
     const ink = inkOn(spec.color), m = w * 0.09;
     g.fillStyle = ink; g.globalAlpha = 0.13;
@@ -213,6 +222,70 @@ const PRINT = {
     },
     back: null, edge: null,
   },
+};
+
+// keep cases: a clear sleeve over a printed insert with the platform's band across the top
+function keepCase(plastic, band, bandInk, label, bandH, spineBg) {
+  return {
+    plastic, rough: 0.22,
+    spine(g, s, t, h) {
+      g.fillStyle = spineBg; g.fillRect(0, 0, t, h);
+      g.fillStyle = band; g.fillRect(0.8, 2, t - 1.6, bandH + 6);
+      vtag(g, label, t / 2, 3, bandH + 6, Math.min(5.5, t * 0.45), bandInk);
+      spineText(g, s.title, t / 2, bandH + 12, h - 8, Math.min(5.6, t * 0.42), inkOn(spineBg));
+    },
+    cover(g, s, d, h) {
+      g.fillStyle = '#' + new THREE.Color(plastic).getHexString(); g.fillRect(0, 0, d, h);
+      const m = 2.4, w = d - m * 2, hh = h - m * 2;
+      g.fillStyle = band; g.fillRect(m, m, w, bandH);
+      g.fillStyle = bandInk; g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.font = `800 ${bandH * 0.58}px ${FONT}`; g.fillText(label, m + 6, m + bandH / 2 + 0.3);
+      art(g, s, m, m + bandH, w, hh - bandH);
+      g.fillStyle = 'rgba(255,255,255,0.16)'; g.fillRect(m, m, w, 1.2);
+    },
+    back: '#' + new THREE.Color(plastic).getHexString(), edge: plastic,
+  };
+}
+PRINT.ps2 = keepCase(0x121315, '#0c0c0e', '#f2f2ee', 'PlayStation 2', 15, '#121315');
+PRINT.pc = keepCase(0x121315, '#0c0c0e', '#f2f2ee', 'PC', 15, '#121315');
+PRINT.ps4 = keepCase(0x1d4fb8, '#1f5bd0', '#ffffff', 'PS4', 13, '#1d4fb8');
+PRINT.ps5 = keepCase(0x1d4fb8, '#f4f4f2', '#111111', 'PS5', 13, '#f4f4f2');
+// Game Boy Color carton: like the GBA one, with its own band
+PRINT.gbc = {
+  ...PRINT.gba,
+  spine(g, s, t, h) {
+    g.fillStyle = s.color; g.fillRect(0, 0, t, h);
+    g.fillStyle = '#d23a3a'; g.fillRect(0, 0, t, 27);
+    vtag(g, 'GAME BOY COLOR', t / 2, 2, 25, 3.3, '#fff6e0');
+    spineText(g, s.title.toUpperCase(), t / 2, 31, h - 8, 8.4, inkOn(s.color));
+  },
+  cover(g, s, d, h) {
+    g.fillStyle = s.color; g.fillRect(0, 0, d, h);
+    art(g, s, 0, 18, d, h - 18);
+    g.fillStyle = '#d23a3a'; g.fillRect(0, 0, d, 18);
+    g.fillStyle = '#ffd23f'; g.fillRect(0, 18, d, 1.4);
+    g.fillStyle = '#fff6e0'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.font = `800 9px ${FONT}`; g.fillText('GAME BOY COLOR', 6, 9.5);
+    g.fillStyle = 'rgba(255,255,255,0.2)'; g.fillRect(0, 0, d, 0.6); g.fillRect(0, h - 0.6, d, 0.6);
+  },
+};
+// Super NES carton, landscape: the art with a grey band along the foot
+PRINT.snes = {
+  plastic: null, rough: 0.8,
+  spine(g, s, t, h) {
+    g.fillStyle = '#d8d8d4'; g.fillRect(0, 0, t, h);
+    g.fillStyle = '#5a5a60'; g.fillRect(0, 0, t, 22);
+    vtag(g, 'SUPER NES', t / 2, 2, 20, 4.5, '#f2f2ee');
+    spineText(g, s.title.toUpperCase(), t / 2, 26, h - 6, 9, '#1a1a1c');
+  },
+  cover(g, s, d, h) {
+    art(g, s, 0, 0, d, h - 16);
+    g.fillStyle = '#5a5a60'; g.fillRect(0, h - 16, d, 16);
+    g.fillStyle = '#c8323a'; g.fillRect(0, h - 16, d, 1.2);
+    g.fillStyle = '#f2f2ee'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.font = `800 7.5px ${FONT}`; g.fillText('SUPER NINTENDO', 6, h - 8);
+  },
+  back: '#d8d8d4', edge: null,
 };
 
 function pageTexture(w, h, along) {

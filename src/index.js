@@ -14,7 +14,7 @@ import { RetroGiantElement } from './giant-element.js';
 
 export { SonyPVMElement, RetroShelfElement, RetroPagerElement, RetroMapElement, RetroGiantElement };
 export { MODELS } from './models/index.js';
-export { renderCases } from './cd-case.js';
+export { renderCases, renderGameCases } from './cd-case.js';
 export { STACKS } from './shelf-element.js';
 export { PROPS } from './props/consoles.js';
 export { ARRANGEMENTS } from './arrange.js';
@@ -33,4 +33,4 @@ export function define() {
 define();
 
 // for pages that load this file as a plain module script and cannot import from it
-if (typeof window !== 'undefined') window.retro3d = Object.assign(window.retro3d || {}, { renderCases: (...a) => import('./cd-case.js').then((m) => m.renderCases(...a)) });
+if (typeof window !== 'undefined') window.retro3d = Object.assign(window.retro3d || {}, { renderCases: (...a) => import('./cd-case.js').then((m) => m.renderCases(...a)), renderGameCases: (...a) => import('./cd-case.js').then((m) => m.renderGameCases(...a)) });

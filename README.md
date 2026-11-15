@@ -44,7 +44,7 @@ One straight-on camera. The first tap on a TV moves in to it. A tap on its scree
 
 TV pages go in `slot="<model id>"`: `pvm-20m4e`, `pvm-9042qm`, `kv-9pr1`, `kv-5200`. More pages for a TV's other inputs or channels use `slot="<model id>:<input>"`, for example `slot="kv-5200:ch-5"`.
 
-`<retro-item>` attributes: `type` (`ps1`, `gba`, `vita`, `psp`, `book`), `title`, `subtitle`, `color`, `cover` (image for the front), `href` and `link-text` (button on the card), and for books `thickness` and `height` in mm. Its content is the card text. Japanese titles are set vertically on the spine. Books thicker than 27 mm are drawn as cloth hardbacks and thinner ones as paperbacks; `binding="hard"` or `binding="paper"` overrides that. Items that do not fit on the shelf are skipped with a console warning.
+`<retro-item>` attributes: `type` (`ps1`, `gba`, `vita`, `psp`, `book`; also `ps2`, `ps4`, `ps5`, `pc`, `gbc`, `snes`), `title`, `subtitle`, `color`, `cover` (image for the front), `href` and `link-text` (button on the card), and for books `thickness` and `height` in mm. Its content is the card text. Japanese titles are set vertically on the spine. Books thicker than 27 mm are drawn as cloth hardbacks and thinner ones as paperbacks; `binding="hard"` or `binding="paper"` overrides that. Items that do not fit on the shelf are skipped with a console warning.
 
 Events (all bubble): `shelf-ready`, `shelf-select` `{ item, index }`, `shelf-focus` `{ tv }`, `shelf-read` `{ tv, open }`, `shelf-hover` `{ tv }` (the TV under the mouse, or `null`), `shelf-hint` `{ text }` (what the next tap does), and every `pvm-*` event from the TVs with `detail.tv` added.
 
@@ -52,7 +52,9 @@ While the camera is in on a TV, scrolling, a vertical swipe or the arrow / Page 
 
 Parts for styling: `card`, `back`, `fill` (the Read button), `reader`, `reader-close`, `hint`.
 
-The consoles use the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5). Their body outlines are traced from straight-on reference images (`src/props/outlines.js`), and button, screen and label positions were measured from perspective-corrected photos scaled by each LCD's known size. Backs and undersides are plain. Case sizes (mm): PS1 jewel case 142 × 125 × 10.4, GBA carton 125 × 125 × 23, PS Vita case 105 × 135 × 12, PSP case 99 × 168 × 14. The platform names printed on the cases are plain lettering, not the real logos.
+The consoles use the published body dimensions (PS one 193 × 38 × 144 mm, DualShock 157 × 55 × 95, Game Boy Advance 144.5 × 82 × 24.5, PS Vita PCH-2000 183.6 × 85.1 × 15, PSP Go 128 × 69 × 16.5). Their body outlines are traced from straight-on reference images (`src/props/outlines.js`), and button, screen and label positions were measured from perspective-corrected photos scaled by each LCD's known size. Backs and undersides are plain. Case sizes (mm): PS1 jewel case 142 × 125 × 10.4, GBA carton 125 × 125 × 23, PS Vita case 105 × 135 × 12, PSP case 99 × 168 × 14, PS2 / PC keep case 135 × 190 × 14, PS4 / PS5 case 135 × 170 × 11, Game Boy Color carton 125 × 125 × 23, Super Nintendo box 184 × 133 × 38.
+
+`window.retro3d.renderGameCases(objUrl, items, { size })` renders game cases to PNG data URLs, one per `{ platform, src, title, align }` (platform `PS1`, `PSP`, `PS2`, `PS4`, `PS5`, `PC` / `Steam`, `GBA`, `GBC`, `SNES`, `Vita`). The PS1 uses the jewel case model at `objUrl` (`dist/cd-case.obj`); the rest are the case types above. The site uses it ahead of time, not in the browser. The platform names printed on the cases are plain lettering, not the real logos.
 
 ## `<retro-pager>`
 
