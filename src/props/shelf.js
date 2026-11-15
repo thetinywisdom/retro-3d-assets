@@ -5,20 +5,22 @@
 import * as THREE from 'three';
 
 // Sizes (thickness x height x depth when shelved, mm). The Vita and PSP case
-// sizes are the published Amaray figures; the jewel case is the standard CD
-// jewel box; the GBA box is the common 125 mm square carton.
+// size is the published Amaray figure; the PSP case is the UMD case size
+// published with the format (177 x 104 x 14 mm); the jewel case is the
+// standard CD jewel box; the GBA box is the common 125 mm square carton.
 export const ITEM_TYPES = {
   ps1: { t: 10.4, h: 125, d: 142, name: 'PlayStation game' },
   gba: { t: 23, h: 125, d: 125, name: 'Game Boy Advance game' },
   vita: { t: 12, h: 135, d: 105, name: 'PS Vita game' },
-  psp: { t: 14, h: 168, d: 99, name: 'PSP game' },
-  // DVD and Blu-ray keep cases (Amaray: 135 x 190 x 14 mm; Blu-ray 135 x 170 x 11 mm), cartons
+  psp: { t: 14, h: 177, d: 104, name: 'PSP game' },
+  // DVD keep case 135 x 190 x 14 mm; Blu-ray case 135 x 171.5 x 13 mm (sources give 12-15);
+  // US Super NES box about 178 x 127 x 32 mm (7 x 5 x 1.25 in, a measured Chrono Trigger box)
   ps2: { t: 14, h: 190, d: 135, name: 'PlayStation 2 game' },
   pc: { t: 14, h: 190, d: 135, name: 'PC game' },
-  ps4: { t: 11, h: 170, d: 135, name: 'PS4 game' },
-  ps5: { t: 11, h: 170, d: 135, name: 'PS5 game' },
+  ps4: { t: 13, h: 171.5, d: 135, name: 'PS4 game' },
+  ps5: { t: 13, h: 171.5, d: 135, name: 'PS5 game' },
   gbc: { t: 23, h: 125, d: 125, name: 'Game Boy Color game' },
-  snes: { t: 38, h: 133, d: 184, name: 'Super NES game' },
+  snes: { t: 32, h: 127, d: 178, name: 'Super NES game' },
   book: { t: 26, h: 205, d: 150, name: 'Book' },
 };
 
@@ -179,7 +181,7 @@ const PRINT = {
     },
     back: '#1b5acb', edge: 0x1c5dcf,
   },
-  // Clear PSP keep case: sleeve with the black band on the spine side
+  // Clear PSP UMD case: sleeve with the black PSP band across the top
   psp: {
     plastic: 0xcfd5d8, rough: 0.18,
     spine(g, s, t, h) {
@@ -193,9 +195,10 @@ const PRINT = {
     cover(g, s, d, h) {
       g.fillStyle = '#cfd5d8'; g.fillRect(0, 0, d, h);
       const m = 2.6, w = d - m * 2, hh = h - m * 2;
-      g.fillStyle = '#0d0d0f'; g.fillRect(m, m, 12.5, hh);
-      vtag(g, 'PSP', m + 6.3, m + hh - 44, m + hh - 6, 9, '#f2f2ee');
-      art(g, s, m + 12.5, m, w - 12.5, hh);
+      g.fillStyle = '#0d0d0f'; g.fillRect(m, m, w, 13);
+      g.fillStyle = '#f2f2ee'; g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.save(); g.translate(m + 5, m + 6.9); g.scale(1.25, 1); g.font = `800 8px ${FONT}`; g.fillText('PSP', 0, 0); g.restore();
+      art(g, s, m, m + 13, w, hh - 13);
     },
     back: '#e9e9e5', edge: 0xc6cdd1,
   },
@@ -247,25 +250,37 @@ function keepCase(plastic, band, bandInk, label, bandH, spineBg) {
   };
 }
 PRINT.ps2 = keepCase(0x121315, '#0c0c0e', '#f2f2ee', 'PlayStation 2', 15, '#121315');
-PRINT.pc = keepCase(0x121315, '#0c0c0e', '#f2f2ee', 'PC', 15, '#121315');
+PRINT.pc = keepCase(0x121315, '#0c0c0e', '#f2f2ee', 'PC DVD', 15, '#121315');
 PRINT.ps4 = keepCase(0x1d4fb8, '#1f5bd0', '#ffffff', 'PS4', 13, '#1d4fb8');
 PRINT.ps5 = keepCase(0x1d4fb8, '#f4f4f2', '#111111', 'PS5', 13, '#f4f4f2');
-// Game Boy Color carton: like the GBA one, with its own band
+// Game Boy Color carton: a grey banner down the left side of the front, lettered
+// GAME BOY with COLOR in the five launch colours (plain lettering, not the logo)
+const GBC_INKS = ['#e0344a', '#7b4bc4', '#4fb548', '#f2c230', '#1fa7a8'];
+function gbcWord(g, x, y, size) {
+  g.font = `900 ${size}px ${FONT}`; g.textAlign = 'left'; g.textBaseline = 'middle';
+  let cx = x;
+  [...'COLOR'].forEach((c, i) => { g.fillStyle = GBC_INKS[i]; g.fillText(c, cx, y); cx += g.measureText(c).width; });
+  return cx - x;
+}
 PRINT.gbc = {
   ...PRINT.gba,
   spine(g, s, t, h) {
     g.fillStyle = s.color; g.fillRect(0, 0, t, h);
-    g.fillStyle = '#d23a3a'; g.fillRect(0, 0, t, 27);
-    vtag(g, 'GAME BOY COLOR', t / 2, 2, 25, 3.3, '#fff6e0');
-    spineText(g, s.title.toUpperCase(), t / 2, 31, h - 8, 8.4, inkOn(s.color));
+    g.fillStyle = '#8c8d92'; g.fillRect(0, 0, t, 30);
+    vtag(g, 'GAME BOY COLOR', t / 2, 2, 28, 3.3, '#f4f4f0');
+    spineText(g, s.title.toUpperCase(), t / 2, 34, h - 8, 8.4, inkOn(s.color));
+    g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(0, 0, 0.5, h); g.fillRect(t - 0.5, 0, 0.5, h);
   },
   cover(g, s, d, h) {
+    const bw = 17;
     g.fillStyle = s.color; g.fillRect(0, 0, d, h);
-    art(g, s, 0, 18, d, h - 18);
-    g.fillStyle = '#d23a3a'; g.fillRect(0, 0, d, 18);
-    g.fillStyle = '#ffd23f'; g.fillRect(0, 18, d, 1.4);
-    g.fillStyle = '#fff6e0'; g.textAlign = 'left'; g.textBaseline = 'middle';
-    g.font = `800 9px ${FONT}`; g.fillText('GAME BOY COLOR', 6, 9.5);
+    art(g, s, bw, 0, d - bw, h);
+    g.fillStyle = '#8c8d92'; g.fillRect(0, 0, bw, h);
+    g.fillStyle = '#b4b5b9'; g.fillRect(bw - 1, 0, 1, h);
+    g.save(); g.translate(bw / 2, h - 6); g.rotate(-Math.PI / 2);
+    g.fillStyle = '#f4f4f0'; g.font = `900 8.4px ${FONT}`; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.fillText('GAME BOY', 0, 0.3); const gx = g.measureText('GAME BOY ').width;
+    gbcWord(g, gx, 0.3, 8.4); g.restore();
     g.fillStyle = 'rgba(255,255,255,0.2)'; g.fillRect(0, 0, d, 0.6); g.fillRect(0, h - 0.6, d, 0.6);
   },
 };

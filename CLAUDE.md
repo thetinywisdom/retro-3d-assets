@@ -80,7 +80,7 @@ How closely each model follows a reference matters to the owner. Do not present 
 - **KV-9PR1:** no manual; size estimated from photos. Top control strip is a reconstruction. The frame and screen are centred vertically at the owner's request (not as in the photos).
 - **PVM-20M4E:** cabinet size from the published spec only; front layout is reconstructed.
 - **Consoles:** outlines traced, controls measured from photos; backs are plain. The PS Vita was also styled against a Sketchfab model by rose3d (Editorial licence, viewed as a reference only, nothing copied); its home screen is a generic invented one.
-- **Cases and books:** real case sizes; printed designs are drawn from memory of the packaging, not matched to photos.
+- **Cases and books:** real case sizes. Checked against published figures on 2026-11-15: DVD keep case 190 × 135 × 14, PSP UMD case 177 × 104 × 14, Blu-ray (PS4 / PS5) 171.5 × 135 × 13 (sources give 12–15 mm thick), US SNES box 178 × 127 × 32 (one measured box). Printed designs follow written descriptions (PS4 blue banner with white lettering, PS5 white banner with black lettering on a blue case, Game Boy Color grey banner down the left, Game Boy Advance logo down the left), not photos; the PSP top band, the PS2 band and the SNES foot band are from memory and unverified.
 
 ## Git
 
