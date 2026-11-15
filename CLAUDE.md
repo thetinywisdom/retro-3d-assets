@@ -38,6 +38,7 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 | `src/pager-element.js` | `<retro-pager>`: the site's navigation dock, a 3D pager with its own canvas. Keys come from its child buttons; it drives a `<retro-shelf>` through its methods and events |
 | `src/map-element.js` | `<retro-map>`: a green hologram of the TV stack with its own canvas, copied as plain boxes from the shelf's sets. Shown while the camera is in on a set; lights that set and has keys for the set above and below |
 | `src/giant-element.js` | `<retro-giant src="giant.glb">`: Giant, the hologram robot from `characters/giant`, on its own canvas in the `<retro-map>` green. Loads the GLB when first shown; `face()`, `play()`, `say(mood)`, `talk(on)` |
+| `src/cd-case.js` | `renderCases(modelUrl, covers)`: CD jewel cases with cover art, rendered one after another in one WebGL context to still PNGs (also on `window.retro3d`). Uses `models/cd-case.obj` (copied to `dist/`) |
 | `src/models/*.js` | One file per CRT. Each exports `META` (id, size, inputs, controls) and `buildMonitor()`; registered in `src/models/index.js` |
 | `src/kit.js` | Shared geometry helpers (`rr`, `loft`, `plate`, `rbox`) and the `Kit` builder (materials, buttons, knobs, sliders, decals, the CRT glass) |
 | `src/crt.js` | Glass shader. Draws the tube look and leaves a transparent window for the HTML underneath |
@@ -64,7 +65,7 @@ There are no automated tests. Check work by rendering the dev pages in a browser
 ## Conventions
 
 - Plain ES modules, no TypeScript, no framework. Two-space indent, single quotes, semicolons.
-- Geometry is procedural. No external model, texture, font or image files: textures are drawn on canvases at runtime.
+- Geometry is procedural (no external model, texture, font or image files; textures are drawn on canvases at runtime), with two exceptions the owner supplied: Giant (`characters/giant`, `dist/giant.glb`) and the CD jewel case (`models/cd-case.obj`, a slim case: lid and tray hinged on the left, 14.3 x 12.5 x 0.5 units).
 - New CRT: copy a file in `src/models/`, build it with `Kit`, register it in `src/models/index.js`.
 - New shelf arrangement: add a function to `ARRANGEMENTS` in `src/arrange.js`.
 - New TV stack: add an entry to `STACKS` in `src/shelf-element.js` (`x`, optional `z`, `ry` in degrees, `on` = the set it stands on).
