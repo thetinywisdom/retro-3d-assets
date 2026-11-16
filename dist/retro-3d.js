@@ -19761,7 +19761,7 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 		let n = t.hit;
 		this._selected >= 0 && (n.item === this._selected || (this.close(), n.item === void 0)) || (n.item === void 0 ? n.unit ? n.unit === this._focusKey ? n.screen && this.openReader() : this.focusTV(n.unit) : this._focusKey && this.unfocus() : this.select(n.item));
 	}
-}, Dh = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", Oh = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", kh = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Ah = 560, jh = -.2, Mh = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Nh = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\n/* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */\n:host([compact]) { height: 80px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
+}, Dh = "\"Barlow Semi Condensed\", \"Arial Narrow\", Arial, sans-serif", Oh = "\"IBM Plex Mono\", ui-monospace, Menlo, Consolas, monospace", kh = "\"DotGothic16\", \"IBM Plex Mono\", ui-monospace, monospace", Ah = 560, jh = -.2, Mh = typeof matchMedia == "function" && matchMedia("(pointer: coarse)").matches, Nh = "\n:host { display: block; position: relative; height: 128px; pointer-events: none; -webkit-tap-highlight-color: transparent; }\n:host([narrow]) { height: 176px; }\n/* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */\n:host([compact]) { height: 80px; }\n/* on a wide window the slim row is drawn as large as the full pager on the homepage (owner's request) */\n:host([compact]:not([narrow])) { height: 128px; }\ncanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }\n.pad { position: absolute; pointer-events: auto; touch-action: manipulation; }\n.keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }\n";
 function Ph(e, t, n, r = !1) {
 	let i = 6.5, a = n.length, o = a ? n.reduce((e, t) => e + t, 0) + (a - 1) * 3 : 0, s = {
 		nav: [],
@@ -19777,17 +19777,17 @@ function Ph(e, t, n, r = !1) {
 		}), r += e + 3;
 	};
 	if (r) {
-		let e = t * 30 + Math.max(0, t - 1) * 4, n = 6 + (a ? o + 6 : 0) + e + 6, r = -n / 2 + 6;
-		c(r, 0), r += a ? o + 6 : 0;
+		let n = e ? 30 : 38, r = e ? 18 : 20, i = r + 12, l = t * n + Math.max(0, t - 1) * 4, u = 6 + (a ? o + 6 : 0) + l + 6, d = -u / 2 + 6;
+		c(d, 0), d += a ? o + 6 : 0;
 		for (let e = 0; e < t; e++) s.nav.push({
-			x: r + 15 + e * 34,
+			x: d + n / 2 + e * (n + 4),
 			y: 0,
-			w: 30,
-			h: 18
+			w: n,
+			h: r
 		});
 		return s.lcd = null, s.led = null, Object.assign(s, {
-			W: n,
-			H: 30,
+			W: u,
+			H: i,
 			r: 7
 		});
 	}
@@ -20082,7 +20082,7 @@ var zh = class extends HTMLElement {
 		this._renderer.setSize(e, t, !1);
 		let r = this._camera;
 		r.aspect = e / t;
-		let i = Math.tan(Gt.degToRad(r.fov / 2)), a = this.hasAttribute("compact") ? Math.min(e - 32, 460) : Math.min(e - 24, 780), o = n.H * Math.cos(jh) + 16 * Math.abs(Math.sin(jh)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
+		let i = Math.tan(Gt.degToRad(r.fov / 2)), a = this.hasAttribute("compact") && this.hasAttribute("narrow") ? Math.min(e - 32, 460) : Math.min(e - 24, 780), o = n.H * Math.cos(jh) + 16 * Math.abs(Math.sin(jh)), s = Math.max(n.W * t / (2 * a * i), o / (1.68 * i));
 		r.position.set(0, 0, s), r.lookAt(0, 0, 0), r.updateProjectionMatrix(), r.updateMatrixWorld(), this._group.updateMatrixWorld(!0);
 		let c = new fr().setFromObject(this._group), l = [];
 		for (let e of [c.min.x, c.max.x]) for (let t of [c.min.y, c.max.y]) for (let n of [c.min.z, c.max.z]) l.push(new H(e, t, n).project(r));

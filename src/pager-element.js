@@ -35,6 +35,8 @@ const STYLE = /* css */ `
 :host([narrow]) { height: 176px; }
 /* compact: while a page is open full screen, a slim row of keys (Back and the TV keys), no screen */
 :host([compact]) { height: 80px; }
+/* on a wide window the slim row is drawn as large as the full pager on the homepage (owner's request) */
+:host([compact]:not([narrow])) { height: 128px; }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.7)); }
 .pad { position: absolute; pointer-events: auto; touch-action: manipulation; }
 .keys { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
@@ -49,7 +51,8 @@ function layout(narrow, nNav, extras, compact = false) {
   const row = (x0, y) => { let x = x0; for (const ew of extras) { parts.extra.push({ x: x + ew / 2, y, r: R, w: ew, h: 2 * R }); x += ew + eg; } };
   if (compact) {
     // one row: the round Back key, then the TV keys
-    const m = 6, kw = 30, kh = 18, kg = 4, gap = 6, H = kh + 2 * m;
+    // wide windows: longer keys, so the row is as wide as the full pager when drawn at its size
+    const m = 6, kw = narrow ? 30 : 38, kh = narrow ? 18 : 20, kg = 4, gap = 6, H = kh + 2 * m;
     const navW = nNav * kw + Math.max(0, nNav - 1) * kg;
     const W = m + (nExtra ? extraW + gap : 0) + navW + m;
     let x = -W / 2 + m;
@@ -378,7 +381,7 @@ export class RetroPagerElement extends HTMLElement {
     const cam = this._camera;
     cam.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
-    const target = this.hasAttribute('compact') ? Math.min(w - 32, 460) : Math.min(w - 24, 780);
+    const target = this.hasAttribute('compact') && this.hasAttribute('narrow') ? Math.min(w - 32, 460) : Math.min(w - 24, 780);
     const tallH = L.H * Math.cos(TILT) + 16 * Math.abs(Math.sin(TILT));
     const d = Math.max((L.W * h) / (2 * target * tan), tallH / (2 * 0.84 * tan));
     cam.position.set(0, 0, d);
