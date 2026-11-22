@@ -20074,7 +20074,7 @@ var zh = class extends HTMLElement {
 			let t = this._keys?.findIndex((t) => t.el === e.target) ?? -1;
 			t >= 0 && this._setHover(t);
 		}), this.addEventListener("focusout", () => this._setHover(-1)), this._onShelf = (e) => {
-			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-ready" && this._paintLegends(), e.type === "shelf-read" && !!this._shelf?._reading !== this.hasAttribute("compact") && (this.toggleAttribute("compact", !!this._shelf?._reading), this._hover = -1, this._pressed = -1, this._rebuild()), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
+			e.type === "pvm-input" && ((this._channels || (this._channels = {}))[e.detail.tv] = e.detail.input), e.type === "shelf-ready" && this._paintLegends(), (e.type === "shelf-read" || e.type === "shelf-ready") && this._syncCompact(), (e.type === "shelf-focus" || e.type === "shelf-read") && (this._note = null, this._layoutKeys(), this._paintLegends()), this._draw();
 		};
 	}
 	connectedCallback() {
@@ -20100,6 +20100,10 @@ var zh = class extends HTMLElement {
 	attributeChangedCallback(e) {
 		this._renderer && (e === "for" && this._bind(), this._draw());
 	}
+	_syncCompact() {
+		let e = !!this._shelf?._reading;
+		e !== this.hasAttribute("compact") && (this.toggleAttribute("compact", e), this._hover = -1, this._pressed = -1, this._renderer && this._rebuild());
+	}
 	get shelf() {
 		return this._shelf || null;
 	}
@@ -20115,7 +20119,7 @@ var zh = class extends HTMLElement {
 		if (this._nowMo?.disconnect(), this._shelf = null, e) return;
 		let n = this.getAttribute("for");
 		if (this._shelf = (n ? document.getElementById(n) : document.querySelector("retro-shelf")) || null, this._shelf) for (let e of t) this._shelf.addEventListener(e, this._onShelf);
-		this._nowMo?.disconnect(), this._shelf && (this._nowMo = new MutationObserver(() => this._draw()), this._nowMo.observe(this._shelf, {
+		this._syncCompact(), this._nowMo?.disconnect(), this._shelf && (this._nowMo = new MutationObserver(() => this._draw()), this._nowMo.observe(this._shelf, {
 			subtree: !0,
 			attributes: !0,
 			attributeFilter: ["data-now-playing"]

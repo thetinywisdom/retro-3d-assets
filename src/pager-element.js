@@ -163,11 +163,7 @@ export class RetroPagerElement extends HTMLElement {
     this._onShelf = (e) => {
       if (e.type === 'pvm-input') { (this._channels ||= {})[e.detail.tv] = e.detail.input; }
       if (e.type === 'shelf-ready') this._paintLegends();
-      if (e.type === 'shelf-read' && !!this._shelf?._reading !== this.hasAttribute('compact')) {
-        this.toggleAttribute('compact', !!this._shelf?._reading);
-        this._hover = -1; this._pressed = -1;
-        this._rebuild();
-      }
+      if (e.type === 'shelf-read' || e.type === 'shelf-ready') this._syncCompact();
       if (e.type === 'shelf-focus' || e.type === 'shelf-read') { this._note = null; this._layoutKeys(); this._paintLegends(); }
       this._draw();
     };
@@ -198,6 +194,16 @@ export class RetroPagerElement extends HTMLElement {
     this._draw();
   }
 
+  /** Compact while the shelf has a page open full screen. Checked on every shelf-read and whenever the pager
+   *  (re)connects, because a page opened from its address can open before the pager is listening. */
+  _syncCompact() {
+    const want = !!this._shelf?._reading;
+    if (want === this.hasAttribute('compact')) return;
+    this.toggleAttribute('compact', want);
+    this._hover = -1; this._pressed = -1;
+    if (this._renderer) this._rebuild();
+  }
+
   /** The <retro-shelf> this pager drives. */
   get shelf() { return this._shelf || null; }
 
@@ -211,6 +217,7 @@ export class RetroPagerElement extends HTMLElement {
     const id = this.getAttribute('for');
     this._shelf = (id ? document.getElementById(id) : document.querySelector('retro-shelf')) || null;
     if (this._shelf) for (const t of evs) this._shelf.addEventListener(t, this._onShelf);
+    this._syncCompact();
     // pages say what they are playing in data-now-playing (it can change once a player reports its title)
     this._nowMo?.disconnect();
     if (this._shelf) {
