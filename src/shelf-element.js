@@ -789,7 +789,7 @@ export class RetroShelfElement extends Base {
     this._wall.classList.add('locked');
     this._back.hidden = false; this._readBtn.hidden = !this.canRead(id);
     // say what the next tap does, briefly
-    this._hint.textContent = this.canRead(id) ? 'Tap the screen to read it full screen' : 'Press a channel key on the set';
+    this._hint.textContent = this.canRead(id) ? 'Tap the screen to read it full screen' : (this.getAttribute('live-hint') || 'Press a channel key on the set');
     this._say(this._hint.textContent);
     this._hint.classList.remove('gone');
     clearTimeout(this._hintT);
@@ -935,7 +935,7 @@ export class RetroShelfElement extends Base {
     r.page.setAttribute('slot', r.id);
     this._reader.classList.remove('open');
     this._readT = setTimeout(() => { this._reader.hidden = true; }, this._reduced ? 0 : 300);
-    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = !this.canRead(this._focusKey); this._say(this.canRead(this._focusKey) ? 'Tap the screen to read it full screen' : 'Press a channel key on the set'); }
+    if (this._focusKey) { this._setFill(false); this._back.hidden = false; this._readBtn.hidden = !this.canRead(this._focusKey); this._say(this.canRead(this._focusKey) ? 'Tap the screen to read it full screen' : (this.getAttribute('live-hint') || 'Press a channel key on the set')); }
     this.dispatchEvent(new CustomEvent('shelf-read', { detail: { tv: r.id, open: false }, bubbles: true, composed: true }));
   }
 

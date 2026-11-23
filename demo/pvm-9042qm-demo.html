@@ -19676,7 +19676,7 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 		} else this._tween("focus", t.duration ?? 850, (e) => {
 			this._f = i + (1 - i) * e;
 		});
-		this._setScreenLive(e, !0), this._applyStandby(), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
+		this._setScreenLive(e, !0), this._applyStandby(), this._wall.classList.add("locked"), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(e), this._hint.textContent = this.canRead(e) ? "Tap the screen to read it full screen" : this.getAttribute("live-hint") || "Press a channel key on the set", this._say(this._hint.textContent), this._hint.classList.remove("gone"), clearTimeout(this._hintT), this._hintT = setTimeout(() => this._hint.classList.add("gone"), 3200), this.dispatchEvent(new CustomEvent("shelf-focus", {
 			detail: { tv: e },
 			bubbles: !0,
 			composed: !0
@@ -19806,7 +19806,7 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 		let e = this._reading;
 		e && (this._reading = null, clearTimeout(this._readT), e.page.setAttribute("slot", e.id), this._reader.classList.remove("open"), this._readT = setTimeout(() => {
 			this._reader.hidden = !0;
-		}, this._reduced ? 0 : 300), this._focusKey && (this._setFill(!1), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(this._focusKey), this._say(this.canRead(this._focusKey) ? "Tap the screen to read it full screen" : "Press a channel key on the set")), this.dispatchEvent(new CustomEvent("shelf-read", {
+		}, this._reduced ? 0 : 300), this._focusKey && (this._setFill(!1), this._back.hidden = !1, this._readBtn.hidden = !this.canRead(this._focusKey), this._say(this.canRead(this._focusKey) ? "Tap the screen to read it full screen" : this.getAttribute("live-hint") || "Press a channel key on the set")), this.dispatchEvent(new CustomEvent("shelf-read", {
 			detail: {
 				tv: e.id,
 				open: !1
