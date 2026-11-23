@@ -721,7 +721,11 @@ export class RetroShelfElement extends Base {
     // what to frame: the picture, or the set's front (a model can narrow it with META.focus, e.g. leave out a handle)
     const W0 = this.clientWidth || 1, narrow = W0 < 560;
     // on a phone a model can frame tighter still (META.focusNarrow), e.g. so a small set's picture is readable
+    // a no-reader TV (one used on its own screen, like a channel guide) is framed on its picture with a little of
+    // the cabinet round it, so the screen is big enough to read and click; on a phone the model's framing stands
+    const live = !this.canRead(this._focusKey) && !narrow;
     const box = fill ? { cx: pic.cx, cy: pic.cy, z: pic.z, w: pic.w, h: pic.h }
+      : live ? { cx: pic.cx, cy: pic.cy, z: pic.z, w: pic.w * 1.22, h: pic.h * 1.22 }
       : Object.assign({ cx: 0, cy: size.h / 2, z: size.d / 2, w: size.w, h: size.h }, u._meta.focus || {}, (narrow && u._meta.focusNarrow) || {});
     // the space to frame it in: a safe margin at the sides and top, and room at the bottom for anything
     // laid over the scene there (the page's --focus-inset-bottom, e.g. a navigation dock)

@@ -19624,22 +19624,28 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 		this._renderer.render(this._scene, r), this._css.render(this._scene, r), t && this.invalidate();
 	}
 	_aim() {
-		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen, a = (this.clientWidth || 1) < 560, o = i ? {
+		let e = this._units[this._focusKey], t = e._parent, n = e._meta.size, r = e._m.picture, i = this._fillScreen, a = (this.clientWidth || 1) < 560, o = !this.canRead(this._focusKey) && !a, s = i ? {
 			cx: r.cx,
 			cy: r.cy,
 			z: r.z,
 			w: r.w,
 			h: r.h
+		} : o ? {
+			cx: r.cx,
+			cy: r.cy,
+			z: r.z,
+			w: r.w * 1.22,
+			h: r.h * 1.22
 		} : Object.assign({
 			cx: 0,
 			cy: n.h / 2,
 			z: n.d / 2,
 			w: n.w,
 			h: n.h
-		}, e._meta.focus || {}, a && e._meta.focusNarrow || {}), s = this.clientWidth || 1, c = this.clientHeight || 1, l = i ? 0 : Math.min(c * .45, this._insetBottom()), u = i ? 0 : o.edge ?? Math.min(40, Math.max(16, s * .04)), d = Math.max(1, s - 2 * u), f = Math.max(1, c - l - 2 * u), p = i ? 1.04 : 1, m = Math.max(o.h / 2 * p / (this._tan.v * f / c), o.w / 2 * p / (this._tan.h * d / s)), h = new H(o.cx, o.cy, o.z), g = t.localToWorld(h.clone()), _ = t.localToWorld(h.clone().add(new H(0, 0, m))), v = l / c * m * this._tan.v;
-		g.y -= v, _.y -= v, this._focus = {
-			pos: _,
-			look: g
+		}, e._meta.focus || {}, a && e._meta.focusNarrow || {}), c = this.clientWidth || 1, l = this.clientHeight || 1, u = i ? 0 : Math.min(l * .45, this._insetBottom()), d = i ? 0 : s.edge ?? Math.min(40, Math.max(16, c * .04)), f = Math.max(1, c - 2 * d), p = Math.max(1, l - u - 2 * d), m = i ? 1.04 : 1, h = Math.max(s.h / 2 * m / (this._tan.v * p / l), s.w / 2 * m / (this._tan.h * f / c)), g = new H(s.cx, s.cy, s.z), _ = t.localToWorld(g.clone()), v = t.localToWorld(g.clone().add(new H(0, 0, h))), y = u / l * h * this._tan.v;
+		_.y -= y, v.y -= y, this._focus = {
+			pos: v,
+			look: _
 		}, this.invalidate();
 	}
 	controlPoint(e, t) {
