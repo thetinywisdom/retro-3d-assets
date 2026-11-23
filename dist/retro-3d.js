@@ -18862,7 +18862,7 @@ var hh = [
 			z: 96
 		}
 	}
-}, yh = (e, t, n) => Math.min(n, Math.max(t, e)), bh = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, xh = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
+}, yh = (e, t, n) => Math.min(n, Math.max(t, e)), bh = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, xh = "\n:host { display: block; position: relative; width: 100%; height: 100vh; height: 100dvh; }\n.wall { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior-y: auto;\n  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }\n.wall::-webkit-scrollbar { display: none; }\n.wall.locked { overflow-y: hidden; touch-action: none; }\n.view { position: sticky; top: 0; height: 100%; overflow: hidden; }\n.grain { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-size: 256px 256px; opacity: 0; }\n.ui { position: absolute; inset: 0; z-index: 3; pointer-events: none; font: 500 14px/1.45 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; }\n.ui > * { pointer-events: auto; }\n.ui .back { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); }\n.fill { position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); left: calc(max(14px, env(safe-area-inset-left, 0px)) + 92px); padding: 8px 14px; border-radius: 999px;\n  border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(18, 18, 18, 0.72); color: #f2f2f2; font: 500 13px/1 system-ui, sans-serif; cursor: pointer;\n  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }\n.fill:hover { background: rgba(40, 40, 40, 0.85); }\n.fill:focus-visible, .card button:focus-visible, .card a:focus-visible { outline: 2px solid #7fb4ff; outline-offset: 2px; }\n.card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100% - 32px));\n  box-sizing: border-box; padding: 16px 18px; border-radius: 12px; background: rgba(20, 19, 18, 0.92); color: #ece8e0;\n  border: 1px solid rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);\n  display: flex; flex-direction: column; gap: 6px; max-height: 46%; overflow-y: auto; }\n.card-type { font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: #a39e93; }\n.card-title { margin: 0; font-size: 20px; line-height: 1.2; }\n.card-sub { margin: 0; color: #c9c4ba; }\n.card-body { color: #c9c4ba; }\n.card-row { display: flex; gap: 8px; margin-top: 8px; }\n.card a, .card button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; }\n.card a { background: #ece8e0; color: #151413; border: 1px solid #ece8e0; }\n.card button { background: transparent; color: #ece8e0; border: 1px solid rgba(255, 255, 255, 0.25); }\n.card[hidden], .fill[hidden], .reader[hidden] { display: none; }\n.reader { position: absolute; inset: 0; z-index: 6; overflow: hidden; opacity: 0; transition: opacity 0.28s ease; background: #0b0b0b; }\n.reader.open { opacity: 1; }\n.reader-page { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }\n.reader ::slotted(*) { box-sizing: border-box; min-height: 100%; width: 100%; }\n.reader ::slotted(iframe) { height: 100%; border: 0; display: block; }\n.reader .reader-close { position: fixed; z-index: 2; }\n@media (prefers-reduced-motion: reduce) { .reader { transition: none; } }\n/* a TV's whole picture full screen (fullScreen()): its channels keep playing, only their place on screen changes */\n.tvfull { position: absolute; inset: 0; z-index: 6; overflow: hidden; background: #000; }\n.tvfull[hidden] { display: none; }\n.tvfull > .picture { position: absolute; inset: 0; }\n.tvfull .input ::slotted(*) { box-sizing: border-box; width: 100%; height: 100%; }\n.ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }\n.fallback { display: none; padding: 16px; color: inherit; }\n:host(.nogl) .wall, :host(.nogl) .ui { display: none; }\n:host(.nogl) .fallback { display: block; }\n:host(.nogl) { height: auto; }\n";
 function Sh() {
 	let e = document.createElement("canvas");
 	e.width = 256, e.height = 160;
@@ -18959,7 +18959,7 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 			x: 0,
 			y: 0
 		}, this._frame = this._frame.bind(this), this._onKey = (e) => {
-			e.key === "Escape" ? this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus() : [
+			e.key === "Escape" && this._full ? this.exitFullScreen() : e.key === "Escape" ? this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus() : [
 				"ArrowDown",
 				"ArrowUp",
 				"PageDown",
@@ -18979,12 +18979,13 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
         </div>
         <div class="reader" part="reader" hidden><div class="reader-page"><slot name="reader"></slot></div>
           <button class="reader-close back" part="reader-close" type="button">&larr; Back to the TV</button></div>
+        <div class="tvfull" part="tvfull" hidden></div>
         <div class="hint" part="hint">Tap a TV, a game or a book</div>
       </div>
       <div class="sr" role="group" aria-label="Shelf"></div>
       <div class="fallback"><slot name="fallback">This page needs WebGL to show the 3D shelf.</slot></div>`;
 		let t = (t) => e.querySelector(t);
-		this._wall = t(".wall"), this._view = t(".view"), this._cssLayer = t(".css"), this._canvas = t("canvas"), this._spacer = t(".spacer"), this._back = t(".back"), this._readBtn = t(".fill"), this._reader = t(".reader"), this._card = t(".card"), this._hint = t(".hint"), this._sr = t(".sr"), this._back.addEventListener("click", () => this.unfocus()), this._readBtn.addEventListener("click", () => this.openReader()), t(".reader-close").addEventListener("click", () => this.closeReader()), t(".card-close").addEventListener("click", () => this.close());
+		this._wall = t(".wall"), this._view = t(".view"), this._cssLayer = t(".css"), this._canvas = t("canvas"), this._spacer = t(".spacer"), this._back = t(".back"), this._readBtn = t(".fill"), this._reader = t(".reader"), this._tvfull = t(".tvfull"), this._card = t(".card"), this._hint = t(".hint"), this._sr = t(".sr"), this._back.addEventListener("click", () => this.unfocus()), this._readBtn.addEventListener("click", () => this.openReader()), t(".reader-close").addEventListener("click", () => this.closeReader()), t(".card-close").addEventListener("click", () => this.close());
 		let n = this._wall;
 		n.addEventListener("pointerdown", (e) => this._onDown(e)), n.addEventListener("pointermove", (e) => this._onMove(e)), n.addEventListener("pointerup", (e) => this._onUp(e)), n.addEventListener("pointercancel", () => {
 			this._releaseButton(), this._drag = null;
@@ -19473,7 +19474,7 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 	}
 	focusTV(e, t = {}) {
 		if (!this._units[e] || !this._ready) return;
-		this._selected >= 0 && this.close(!0);
+		this._selected >= 0 && this.close(!0), this._full && this._full.id !== e && this.exitFullScreen();
 		let n = this._focus && this._f > 0 ? {
 			pos: this._focus.pos.clone(),
 			look: this._focus.look.clone()
@@ -19499,9 +19500,38 @@ var Th = typeof HTMLElement < "u" ? HTMLElement : class {}, Eh = class extends T
 			composed: !0
 		}));
 	}
+	fullScreen(e = this._focusKey) {
+		let t = this._units?.[e];
+		if (!t || this._full) return;
+		this._reading && this.closeReader(), e !== this._focusKey && this.focusTV(e, { duration: 0 });
+		let n = t._picture;
+		this._full = {
+			id: e,
+			home: n.parentNode,
+			next: n.nextSibling
+		}, this._tvfull.append(n), this._tvfull.hidden = !1, this.setAttribute("full-screen", e), this.dispatchEvent(new CustomEvent("shelf-full", {
+			detail: {
+				tv: e,
+				open: !0
+			},
+			bubbles: !0,
+			composed: !0
+		}));
+	}
+	exitFullScreen() {
+		let e = this._full;
+		e && (this._full = null, e.home.insertBefore(this._units[e.id]._picture, e.next), this._tvfull.hidden = !0, this.removeAttribute("full-screen"), this.invalidate?.(), this.dispatchEvent(new CustomEvent("shelf-full", {
+			detail: {
+				tv: e.id,
+				open: !1
+			},
+			bubbles: !0,
+			composed: !0
+		})));
+	}
 	unfocus() {
 		if (!this._focusKey) return;
-		this._reading && this.closeReader(), this._setScreenLive(this._focusKey, !1), this._focusKey = null, this._applyStandby();
+		this._full && this.exitFullScreen(), this._reading && this.closeReader(), this._setScreenLive(this._focusKey, !1), this._focusKey = null, this._applyStandby();
 		let e = this._f;
 		this._tween("focus", 750, (t) => {
 			this._f = e * (1 - t);

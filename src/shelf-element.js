@@ -106,6 +106,11 @@ const STYLE = /* css */ `
 .reader ::slotted(iframe) { height: 100%; border: 0; display: block; }
 .reader .reader-close { position: fixed; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .reader { transition: none; } }
+/* a TV's whole picture full screen (fullScreen()): its channels keep playing, only their place on screen changes */
+.tvfull { position: absolute; inset: 0; z-index: 6; overflow: hidden; background: #000; }
+.tvfull[hidden] { display: none; }
+.tvfull > .picture { position: absolute; inset: 0; }
+.tvfull .input ::slotted(*) { box-sizing: border-box; width: 100%; height: 100%; }
 .ui .hint { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
 .fallback { display: none; padding: 16px; color: inherit; }
 :host(.nogl) .wall, :host(.nogl) .ui { display: none; }
@@ -203,7 +208,8 @@ export class RetroShelfElement extends Base {
     this._par = { x: 0, y: 0 };
     this._frame = this._frame.bind(this);
     this._onKey = (e) => {
-      if (e.key === 'Escape') (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
+      if (e.key === 'Escape' && this._full) this.exitFullScreen();
+      else if (e.key === 'Escape') (this._reading ? this.closeReader() : this._selected >= 0 ? this.close() : this.unfocus());
       // in on a TV: the arrow keys and Page Up / Down move to the TV above or below
       else if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp'].includes(e.key) && this._focusKey && !this._reading && !e.target?.closest?.('input, textarea, select')) {
         if (this.stepTV(e.key === 'ArrowDown' || e.key === 'PageDown' ? 1 : -1)) e.preventDefault();
@@ -222,13 +228,14 @@ export class RetroShelfElement extends Base {
         </div>
         <div class="reader" part="reader" hidden><div class="reader-page"><slot name="reader"></slot></div>
           <button class="reader-close back" part="reader-close" type="button">&larr; Back to the TV</button></div>
+        <div class="tvfull" part="tvfull" hidden></div>
         <div class="hint" part="hint">Tap a TV, a game or a book</div>
       </div>
       <div class="sr" role="group" aria-label="Shelf"></div>
       <div class="fallback"><slot name="fallback">This page needs WebGL to show the 3D shelf.</slot></div>`;
     const q = (s) => root.querySelector(s);
     this._wall = q('.wall'); this._view = q('.view'); this._cssLayer = q('.css'); this._canvas = q('canvas'); this._spacer = q('.spacer');
-    this._back = q('.back'); this._readBtn = q('.fill'); this._reader = q('.reader'); this._card = q('.card'); this._hint = q('.hint'); this._sr = q('.sr');
+    this._back = q('.back'); this._readBtn = q('.fill'); this._reader = q('.reader'); this._tvfull = q('.tvfull'); this._card = q('.card'); this._hint = q('.hint'); this._sr = q('.sr');
     this._back.addEventListener('click', () => this.unfocus());
     this._readBtn.addEventListener('click', () => this.openReader());
     q('.reader-close').addEventListener('click', () => this.closeReader());
@@ -763,6 +770,7 @@ export class RetroShelfElement extends Base {
   focusTV(id, options = {}) {
     if (!this._units[id] || !this._ready) return;
     if (this._selected >= 0) this.close(true);
+    if (this._full && this._full.id !== id) this.exitFullScreen();
     const from = this._focus && this._f > 0 ? { pos: this._focus.pos.clone(), look: this._focus.look.clone() } : null;
     if (this._focusKey) this._setScreenLive(this._focusKey, false);
     this._focusKey = id;
@@ -789,9 +797,40 @@ export class RetroShelfElement extends Base {
     this.dispatchEvent(new CustomEvent('shelf-focus', { detail: { tv: id }, bubbles: true, composed: true }));
   }
 
+  /**
+   * Show a TV's whole picture full screen: the set's picture (every channel, the static and the bars) moves
+   * out of the tube into a layer over the room, so whatever is on air keeps playing and the set's keys still
+   * switch channels. The host page can style its channel pages for it with retro-shelf[full-screen="<id>"].
+   */
+  fullScreen(id = this._focusKey) {
+    const u = this._units?.[id];
+    if (!u || this._full) return;
+    if (this._reading) this.closeReader();
+    if (id !== this._focusKey) this.focusTV(id, { duration: 0 });
+    const pic = u._picture;
+    this._full = { id, home: pic.parentNode, next: pic.nextSibling };
+    this._tvfull.append(pic);
+    this._tvfull.hidden = false;
+    this.setAttribute('full-screen', id);
+    this.dispatchEvent(new CustomEvent('shelf-full', { detail: { tv: id, open: true }, bubbles: true, composed: true }));
+  }
+
+  /** Put the picture back on its TV. */
+  exitFullScreen() {
+    const f = this._full;
+    if (!f) return;
+    this._full = null;
+    f.home.insertBefore(this._units[f.id]._picture, f.next);
+    this._tvfull.hidden = true;
+    this.removeAttribute('full-screen');
+    this.invalidate?.();
+    this.dispatchEvent(new CustomEvent('shelf-full', { detail: { tv: f.id, open: false }, bubbles: true, composed: true }));
+  }
+
   /** Back to the whole shelf. */
   unfocus() {
     if (!this._focusKey) return;
+    if (this._full) this.exitFullScreen();
     if (this._reading) this.closeReader();
     this._setScreenLive(this._focusKey, false);
     this._focusKey = null;
