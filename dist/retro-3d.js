@@ -16024,7 +16024,10 @@ var Kp = (e) => ({
 		let i = e.createGain();
 		i.gain.setValueAtTime(.55, t), i.gain.exponentialRampToValueAtTime(.001, t + 1.3), n.connect(r).connect(i).connect(this.master), n.start(t), n.stop(t + 1.35);
 	}
-}, Xp = Gt.degToRad(150), Zp = (e, t, n) => Math.min(n, Math.max(t, e)), Qp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, $p = (e) => 1 - (1 - e) ** 3, em = (e) => e, tm = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//, nm = (e) => tm.test(e.getAttribute("src") || e.dataset.held || ""), rm = /* @__PURE__ */ new Set(), im = (e, t) => {
+}, Xp = Gt.degToRad(150), Zp = (e, t, n) => Math.min(n, Math.max(t, e)), Qp = (e) => e < .5 ? 4 * e * e * e : 1 - (-2 * e + 2) ** 3 / 2, $p = (e) => 1 - (1 - e) ** 3, em = (e) => e, tm = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//, nm = (e) => {
+	let t = e.getAttribute("src");
+	return tm.test(t && t !== "about:blank" ? t : e.dataset.held || "");
+}, rm = /* @__PURE__ */ new Set(), im = (e, t) => {
 	try {
 		e.contentWindow?.postMessage(JSON.stringify(t), "*");
 	} catch {}
@@ -16044,21 +16047,21 @@ function sm(e, t) {
 	}, rm.add(e), e.addEventListener("load", () => {
 		if (!tm.test(e.src)) return;
 		let t = e._yt;
-		t.state = -1, t.blocked = !1, clearTimeout(t.t);
-		for (let n of [
-			250,
-			900,
-			2e3
-		]) setTimeout(() => {
+		t.state = -1, t.blocked = !1, t.heard = !1, clearTimeout(t.t), clearInterval(t.ask);
+		let n = 0, r = () => {
+			if (!e.isConnected || !tm.test(e.src) || t.heard && n > 2 || ++n > 30) {
+				clearInterval(t.ask);
+				return;
+			}
 			im(e, {
 				event: "listening",
 				id: 1,
 				channel: "widget"
 			});
-			let { vol: n, quiet: r, standby: i } = t.level();
-			i || t.playing === !1 ? am(e, "pauseVideo") : om(e, n, r);
-		}, n);
-		t.t = setTimeout(() => {
+			let { vol: r, quiet: i, standby: a } = t.level();
+			a || t.playing === !1 ? am(e, "pauseVideo") : om(e, r, i);
+		};
+		setTimeout(r, 250), t.ask = setInterval(r, 700), t.t = setTimeout(() => {
 			let { vol: n, quiet: r, standby: i } = t.level();
 			!i && t.playing !== !1 && t.state !== 1 && !r && n > 0 && (t.blocked = !0, am(e, "mute"), am(e, "playVideo"));
 		}, 3200);
@@ -16074,7 +16077,11 @@ if (typeof window < "u") {
 			return;
 		}
 		let n = t?.info?.playerState;
-		if (n !== void 0) for (let t of rm) t.contentWindow === e.source && t._yt && (t._yt.state = n);
+		if (n !== void 0) for (let t of rm) {
+			if (t.contentWindow !== e.source || !t._yt) continue;
+			let r = t._yt;
+			r.state = n, r.heard = !0, n === 1 && (r.playing === !1 || r.level().standby) && am(t, "pauseVideo");
+		}
 	});
 	let e = () => {
 		for (let e of rm) {

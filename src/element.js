@@ -30,7 +30,8 @@ const linear = (t) => t;
 // key press.
 // ---------------------------------------------------------------------------
 const YT = /^https:\/\/www\.youtube(-nocookie)?\.com\/embed\//;
-const isYouTube = (f) => YT.test(f.getAttribute('src') || f.dataset.held || '');
+// a player held off air has src about:blank and its address in data-held, so look there too
+const isYouTube = (f) => { const src = f.getAttribute('src'); return YT.test(src && src !== 'about:blank' ? src : f.dataset.held || ''); };
 const players = new Set();
 const ytPost = (f, msg) => { try { f.contentWindow?.postMessage(JSON.stringify(msg), '*'); } catch {} };
 const ytCmd = (f, func, args = []) => ytPost(f, { event: 'command', func, args });
@@ -50,16 +51,20 @@ function ytWire(f, level) {
   f.addEventListener('load', () => {
     if (!YT.test(f.src)) return;
     const y = f._yt;
-    y.state = -1; y.blocked = false;
-    clearTimeout(y.t);
-    for (const t of [250, 900, 2000]) {
-      setTimeout(() => {
-        ytPost(f, { event: 'listening', id: 1, channel: 'widget' });
-        const { vol, quiet, standby } = y.level();
-        if (standby || y.playing === false) ytCmd(f, 'pauseVideo');   // in standby, or its channel already left: wait
-        else ytLevel(f, vol, quiet);
-      }, t);
-    }
+    y.state = -1; y.blocked = false; y.heard = false;
+    clearTimeout(y.t); clearInterval(y.ask);
+    // ask the player to report its state, and set its level, until it answers (a slow connection can keep it
+    // from listening for several seconds); until then it is held paused if its channel has been left
+    let tries = 0;
+    const hello = () => {
+      if (!f.isConnected || !YT.test(f.src) || (y.heard && tries > 2) || ++tries > 30) { clearInterval(y.ask); return; }
+      ytPost(f, { event: 'listening', id: 1, channel: 'widget' });
+      const { vol, quiet, standby } = y.level();
+      if (standby || y.playing === false) ytCmd(f, 'pauseVideo');   // in standby, or its channel already left: wait
+      else ytLevel(f, vol, quiet);
+    };
+    setTimeout(hello, 250);
+    y.ask = setInterval(hello, 700);
     // the browser refused to start it with sound: play it muted until the visitor does something
     y.t = setTimeout(() => {
       const { vol, quiet, standby } = y.level();
@@ -75,7 +80,14 @@ if (typeof window !== 'undefined') {
     try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch { return; }
     const state = d?.info?.playerState;
     if (state === undefined) return;
-    for (const f of players) if (f.contentWindow === e.source && f._yt) f._yt.state = state;
+    for (const f of players) {
+      if (f.contentWindow !== e.source || !f._yt) continue;
+      const y = f._yt;
+      y.state = state; y.heard = true;
+      // a player that starts on its own (autoplay) after its channel was left, or while the set is in standby,
+      // is paused again at once
+      if (state === 1 && (y.playing === false || y.level().standby)) ytCmd(f, 'pauseVideo');
+    }
   });
   const wake = () => {
     for (const f of players) {
